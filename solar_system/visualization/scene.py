@@ -290,9 +290,9 @@ class SolarSystemScene:
 
         Returns:
             False if should quit
-        """
-        if key == K_ESCAPE:
-            return False
+                    print(f"✓ Trajectory created successfully!")
+                    print(f"  Departure: {trajectory.departure_time:.1f}")
+                    print(f"  Arrival: {trajectory.arrival_time:.1f}")
 
         elif key == K_SPACE:
             self.time_manager.toggle_pause()
@@ -335,7 +335,13 @@ class SolarSystemScene:
 
         elif key == K_t:
             # Plan trajectory to Mars from Earth
-            self.plan_trajectory("Earth", "Mars")
+            trajectory = self.plan_trajectory("Earth", "Mars")
+            if trajectory:
+                print(f"✓ Trajectory created successfully!")
+                print(f"  Departure: {trajectory.departure_time:.1f}")
+                print(f"  Arrival: {trajectory.arrival_time:.1f}")
+                print(f"  Flight time: {trajectory.time_of_flight:.1f} days")
+                print(f"  Total ΔV: {trajectory.total_delta_v:.1f} m/s")
 
         # Number keys for planet selection
         elif key == K_0:
