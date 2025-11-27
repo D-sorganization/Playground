@@ -163,7 +163,9 @@ class LowerSegmentProperties:
     @property
     def inertia_about_com(self) -> float:
         shaft_inertia_com = (1.0 / 12.0) * self.shaft_mass_kg * self.length_m**2
-        shaft_offset = (self.length_m * 0.5 - self.center_of_mass_distance) ** 2
+        # Shaft COM is at shaft_com_ratio * length, not at midpoint
+        shaft_com_position = self.length_m * self.shaft_com_ratio
+        shaft_offset = (shaft_com_position - self.center_of_mass_distance) ** 2
         clubhead_offset = (self.length_m - self.center_of_mass_distance) ** 2
         parallel_axis = self.shaft_mass_kg * shaft_offset + self.clubhead_mass_kg * clubhead_offset
         return shaft_inertia_com + parallel_axis

@@ -508,36 +508,51 @@ class DoublePendulumApp:
             )
             self.dynamics = DoublePendulumDynamics(parameters=parameters, forcing_functions=forcing)
             
-            # Update state with new angles
+            # Update state with new parameters
             # If simulation is running and angles change, pause to avoid physically inconsistent states
             # (changing angles while preserving velocities would create discontinuities)
+            # However, non-angle parameters (mass, damping, etc.) can change without resetting motion
             was_running = self.running
-            if was_running:
+            angles_changed = False
+            
+            if was_running and self.state is not None:
                 # Check if angles actually changed
-                old_theta1 = math.degrees(self.state.theta1) if self.state else None
-                old_theta2 = math.degrees(self.state.theta2) if self.state else None
-                old_phi = math.degrees(self.state.phi) if self.state and hasattr(self.state, 'phi') else None
+                old_theta1 = math.degrees(self.state.theta1)
+                old_theta2 = math.degrees(self.state.theta2)
+                old_phi = math.degrees(self.state.phi) if hasattr(self.state, 'phi') else 0.0
                 
                 angles_changed = (
-                    old_theta1 is None or
                     abs(old_theta1 - user_inputs.shoulder_angle_deg) > 0.1 or
                     abs(old_theta2 - user_inputs.wrist_angle_deg) > 0.1 or
-                    (old_phi is not None and abs(old_phi - user_inputs.out_of_plane_angle_deg) > 0.1)
+                    abs(old_phi - user_inputs.out_of_plane_angle_deg) > 0.1
                 )
                 
                 if angles_changed:
                     # Pause simulation when angles change to maintain physical consistency
                     self.running = False
             
-            # Always reset state when angles change (or on initial setup)
-            self.state = DoublePendulumState(
-                theta1=math.radians(user_inputs.shoulder_angle_deg),
-                theta2=math.radians(user_inputs.wrist_angle_deg),
-                omega1=0.0,
-                omega2=0.0,
-                phi=math.radians(user_inputs.out_of_plane_angle_deg),
-                omega_phi=0.0,
-            )
+            # Only reset velocities if angles changed or if this is initial setup
+            if angles_changed or self.state is None or not was_running:
+                # Reset state when angles change (or on initial setup)
+                self.state = DoublePendulumState(
+                    theta1=math.radians(user_inputs.shoulder_angle_deg),
+                    theta2=math.radians(user_inputs.wrist_angle_deg),
+                    omega1=0.0,
+                    omega2=0.0,
+                    phi=math.radians(user_inputs.out_of_plane_angle_deg),
+                    omega_phi=0.0,
+                )
+            else:
+                # Preserve state when only non-angle parameters changed
+                # Just update the angles if they changed slightly (within tolerance)
+                self.state = DoublePendulumState(
+                    theta1=math.radians(user_inputs.shoulder_angle_deg),
+                    theta2=math.radians(user_inputs.wrist_angle_deg),
+                    omega1=self.state.omega1,
+                    omega2=self.state.omega2,
+                    phi=math.radians(user_inputs.out_of_plane_angle_deg),
+                    omega_phi=self.state.omega_phi if hasattr(self.state, 'omega_phi') else 0.0,
+                )
             
             self._draw_pendulum_3d()
         except Exception as e:
