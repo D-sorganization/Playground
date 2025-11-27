@@ -110,6 +110,7 @@ class SolarSystemScene:
         self.time_nav_panel: Optional[TimeNavigationPanel] = None
         self.educational_panel: Optional[EducationalInfoPanel] = None
         self.historical_events: Optional[HistoricalEventsPanel] = None
+        self._last_ui_sync_jd: Optional[float] = None
 
     def initialize(self) -> bool:
         # Create renderer
@@ -583,7 +584,16 @@ class SolarSystemScene:
 
     def _update(self):
         # Update time
-        self.time_manager.update()
+        delta_jd = self.time_manager.update()
+
+        current_jd = self.time_manager.julian_date
+
+        if delta_jd or self._last_ui_sync_jd is None:
+            if self._last_ui_sync_jd is None or not math.isclose(
+                current_jd, self._last_ui_sync_jd
+            ):
+                self._update_ui_date()
+                self._last_ui_sync_jd = current_jd
 
         # Update camera
         self.renderer.camera.update(

@@ -64,6 +64,11 @@ pip install numpy pygame PyOpenGL PyOpenGL_accelerate
 python run_solar_system.py
 ```
 
+For a one-click start with built-in dependency checks, double-click the
+top-level `launch_solar_system.py` script (or run
+`python launch_solar_system.py`). It launches a windowed view at 1280x720 and
+prints a clear message if PyGame or PyOpenGL still need to be installed.
+
 Or as a module:
 
 ```bash
