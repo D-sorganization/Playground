@@ -295,8 +295,8 @@ class SolarSystemScene:
             trajectory = self.plan_trajectory("Earth", "Mars")
             if trajectory:
                 print(f"✓ Trajectory created successfully!")
-                print(f"  Departure: {trajectory.departure_date:.1f}")
-                print(f"  Arrival: {trajectory.arrival_date:.1f}")
+                print(f"  Departure: {trajectory.departure_time:.1f}")
+                print(f"  Arrival: {trajectory.arrival_time:.1f}")
                 print(f"  Flight time: {trajectory.time_of_flight:.1f} days")
                 print(f"  Total ΔV: {trajectory.total_delta_v/1000:.2f} km/s")
                 print("  Spacecraft visible on trajectory (green rocket icon)")
@@ -304,7 +304,6 @@ class SolarSystemScene:
             else:
                 print("✗ Failed to create trajectory")
                 print("="*60 + "\n")
->>>>>>> origin/main
 
         # Number keys for planet selection
         elif key == K_0:
