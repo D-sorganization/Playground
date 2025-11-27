@@ -1,0 +1,61 @@
+# Ruff configuration for Playground projects
+# This provides code quality checks but is flexible for pet projects
+
+target-version = "py311"
+line-length = 100
+
+[lint]
+# Enable common rules but be lenient for playground projects
+select = [
+    "E",   # pycodestyle errors
+    "F",   # pyflakes
+    "W",   # pycodestyle warnings
+    "I",   # isort
+    "N",   # pep8-naming
+    "UP",  # pyupgrade
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "SIM", # flake8-simplify
+]
+
+ignore = [
+    "D",      # Docstring checks (optional for playground)
+    "ANN",    # Type annotation checks (optional for playground)
+    "COM812", # Missing trailing comma (conflicts with black)
+    "ISC001", # Single line implicit string concat
+    "PLR",    # Pylint refactor (too strict for playground)
+    "PLW",    # Pylint warnings (too strict for playground)
+    "PLC",    # Pylint convention (too strict for playground)
+    "PLE",    # Pylint error (too strict for playground)
+]
+
+# Stricter than defaults but still flexible
+fixable = ["ALL"]
+unfixable = []
+
+# Exclude common directories
+exclude = [
+    "archive/",
+    "legacy/",
+    "experimental/",
+    "*/migrations/",
+    "*_pb2.py",
+    "__pycache__/",
+    ".git/",
+    "node_modules/",
+]
+
+[lint.per-file-ignores]
+# Tests can be more relaxed
+"test_*.py" = [
+    "S101",   # Use of assert
+    "PLR2004", # Magic numbers allowed in tests
+]
+"**/tests/*.py" = [
+    "S101",
+    "PLR2004", 
+]
+
+[lint.mccabe]
+max-complexity = 15  # More lenient for playground projects
+
