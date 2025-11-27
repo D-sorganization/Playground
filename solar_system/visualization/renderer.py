@@ -704,9 +704,9 @@ class Renderer:
 
     def render_help_overlay(self, controls: List[Tuple[str, str]]):
         """Render help overlay with control instructions."""
-        x = self.settings.window_width - 250
+        x = self.settings.window_width - 350
         y = 20
-        line_height = 18
+        line_height = 20
 
         glMatrixMode(GL_PROJECTION)
         glPushMatrix()
@@ -721,28 +721,51 @@ class Renderer:
         glDisable(GL_DEPTH_TEST)
         glEnable(GL_BLEND)
 
-        # Background
-        glColor4f(0.0, 0.0, 0.0, 0.7)
-        height = len(controls) * line_height + 30
+        # Background with border
+        glColor4f(0.0, 0.0, 0.0, 0.85)
+        height = len(controls) * line_height + 40
 
         glBegin(GL_QUADS)
-        glVertex2f(x - 10, y - 10)
-        glVertex2f(self.settings.window_width - 10, y - 10)
+        glVertex2f(x - 15, y - 15)
+        glVertex2f(self.settings.window_width - 10, y - 15)
         glVertex2f(self.settings.window_width - 10, y + height)
-        glVertex2f(x - 10, y + height)
+        glVertex2f(x - 15, y + height)
+        glEnd()
+
+        # Border
+        glLineWidth(2.0)
+        glColor4f(0.3, 0.5, 0.7, 0.8)
+        glBegin(GL_LINE_LOOP)
+        glVertex2f(x - 15, y - 15)
+        glVertex2f(self.settings.window_width - 10, y - 15)
+        glVertex2f(self.settings.window_width - 10, y + height)
+        glVertex2f(x - 15, y + height)
         glEnd()
 
         # Title
-        title_surface = self._font.render("Controls", True, (255, 255, 100))
+        title_surface = self._font.render("CONTROLS (Press H to hide)", True, (100, 200, 255))
         title_data = pygame.image.tostring(title_surface, "RGBA", True)
         w, h = title_surface.get_size()
         glRasterPos2i(x, y + h)
         glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, title_data)
 
-        current_y = y + 25
+        current_y = y + 30
         for key, action in controls:
-            text = f"{key}: {action}"
-            text_surface = self._small_font.render(text, True, (180, 180, 180))
+            # Section headers (MOUSE:, KEYBOARD:)
+            if action == "":
+                if key:  # Section header
+                    text_surface = self._font.render(key, True, (255, 200, 100))
+                else:  # Empty line for spacing
+                    current_y += line_height // 2
+                    continue
+            else:
+                # Regular control line
+                if key.strip():  # Has a key
+                    text = f"{key}: {action}"
+                    text_surface = self._small_font.render(text, True, (220, 220, 220))
+                else:  # No key, just action
+                    text_surface = self._small_font.render(action, True, (180, 180, 180))
+
             text_data = pygame.image.tostring(text_surface, "RGBA", True)
             w, h = text_surface.get_size()
 
