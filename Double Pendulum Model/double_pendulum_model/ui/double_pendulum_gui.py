@@ -481,7 +481,22 @@ class DoublePendulumApp:
         """Update pendulum position immediately when parameters change."""
         try:
             user_inputs = self._read_inputs()
-            upper_inertia = (1.0 / 12.0) * user_inputs.upper_mass_kg * user_inputs.upper_length_m**2
+            # Calculate upper segment inertia about COM
+            # For a uniform rod: I = (1/12) * m * L^2 (COM at L/2)
+            # When COM ratio != 0.5, we use an approximation that scales with the COM position
+            # This assumes a mass distribution consistent with the specified COM ratio
+            com_ratio = user_inputs.upper_com_ratio
+            if abs(com_ratio - 0.5) < 0.01:
+                # Close to uniform rod - use standard formula
+                upper_inertia = (1.0 / 12.0) * user_inputs.upper_mass_kg * user_inputs.upper_length_m**2
+            else:
+                # For non-uniform distribution, use an approximation
+                # Scale the uniform rod inertia based on how far COM is from center
+                # This is an approximation - exact value depends on actual mass distribution
+                uniform_inertia = (1.0 / 12.0) * user_inputs.upper_mass_kg * user_inputs.upper_length_m**2
+                # Adjust based on COM position (empirical scaling factor)
+                com_offset_factor = 1.0 + 3.0 * (com_ratio - 0.5) ** 2
+                upper_inertia = uniform_inertia * com_offset_factor
             
             parameters = DoublePendulumParameters(
                 upper_segment=DoublePendulumParameters.default().upper_segment.__class__(
