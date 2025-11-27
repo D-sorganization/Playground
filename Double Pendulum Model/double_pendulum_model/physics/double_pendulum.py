@@ -34,6 +34,9 @@ DEFAULT_PLANE_INCLINATION_DEG = 35.0  # Golf swing plane tilt from vertical (deg
 DEFAULT_DAMPING_SHOULDER = 0.4
 DEFAULT_DAMPING_WRIST = 0.25
 
+# Numerical tolerance for detecting singular mass matrices (dimensionless)
+MASS_MATRIX_SINGULAR_TOLERANCE = 1e-12
+
 
 class ExpressionFunction:
     """Safe evaluation of user-provided expressions.
@@ -106,7 +109,9 @@ class ExpressionFunction:
             if (
                 type(child) not in self._ALLOWED_NODES
             ):  # noqa: E721 - type comparison is intentional
-                raise ValueError(f"Disallowed syntax in expression: {type(child).__name__}")
+                raise ValueError(
+                    f"Disallowed syntax in expression: {type(child).__name__}"
+                )
             if isinstance(child, ast.Name) and child.id not in {
                 "t",
                 "theta1",
@@ -119,7 +124,10 @@ class ExpressionFunction:
             if isinstance(child, ast.Call):
                 if not isinstance(child.func, (ast.Name, ast.Attribute)):
                     raise ValueError("Only direct function calls are permitted")
-                if isinstance(child.func, ast.Name) and child.func.id not in self._ALLOWED_NAMES:
+                if (
+                    isinstance(child.func, ast.Name)
+                    and child.func.id not in self._ALLOWED_NAMES
+                ):
                     raise ValueError(f"Function '{child.func.id}' is not permitted")
 
 
@@ -157,7 +165,9 @@ class LowerSegmentProperties:
     @property
     def center_of_mass_distance(self) -> float:
         shaft_com = self.length_m * self.shaft_com_ratio
-        weighted_sum = shaft_com * self.shaft_mass_kg + self.length_m * self.clubhead_mass_kg
+        weighted_sum = (
+            shaft_com * self.shaft_mass_kg + self.length_m * self.clubhead_mass_kg
+        )
         return weighted_sum / self.total_mass
 
     @property
@@ -167,12 +177,16 @@ class LowerSegmentProperties:
         shaft_com_position = self.length_m * self.shaft_com_ratio
         shaft_offset = (shaft_com_position - self.center_of_mass_distance) ** 2
         clubhead_offset = (self.length_m - self.center_of_mass_distance) ** 2
-        parallel_axis = self.shaft_mass_kg * shaft_offset + self.clubhead_mass_kg * clubhead_offset
+        parallel_axis = (
+            self.shaft_mass_kg * shaft_offset + self.clubhead_mass_kg * clubhead_offset
+        )
         return shaft_inertia_com + parallel_axis
 
     @property
     def inertia_about_proximal_joint(self) -> float:
-        return self.inertia_about_com + self.total_mass * self.center_of_mass_distance**2
+        return (
+            self.inertia_about_com + self.total_mass * self.center_of_mass_distance**2
+        )
 
 
 @dataclass
@@ -190,7 +204,9 @@ class DoublePendulumParameters:
 
     @classmethod
     def default(cls) -> "DoublePendulumParameters":
-        upper_inertia = DEFAULT_ARM_INERTIA_SCALING * DEFAULT_ARM_MASS_KG * DEFAULT_ARM_LENGTH_M**2
+        upper_inertia = (
+            DEFAULT_ARM_INERTIA_SCALING * DEFAULT_ARM_MASS_KG * DEFAULT_ARM_LENGTH_M**2
+        )
         upper_segment = SegmentProperties(
             length_m=DEFAULT_ARM_LENGTH_M,
             mass_kg=DEFAULT_ARM_MASS_KG,
@@ -246,13 +262,17 @@ class DoublePendulumDynamics:
     def __init__(
         self,
         parameters: DoublePendulumParameters | None = None,
-        forcing_functions: Tuple[Callable[[float, DoublePendulumState], float], ...] | None = None,
+        forcing_functions: (
+            Tuple[Callable[[float, DoublePendulumState], float], ...] | None
+        ) = None,
     ) -> None:
         self.parameters = parameters or DoublePendulumParameters.default()
         zero_input: Callable[[float, DoublePendulumState], float] = lambda t, s: 0.0
         self.forcing_functions = forcing_functions or (zero_input, zero_input)
 
-    def mass_matrix(self, theta2: float) -> Tuple[Tuple[float, float], Tuple[float, float]]:
+    def mass_matrix(
+        self, theta2: float
+    ) -> Tuple[Tuple[float, float], Tuple[float, float]]:
         p = self.parameters
         m1 = p.upper_segment.mass_kg
         m2 = p.lower_segment.total_mass
@@ -268,7 +288,9 @@ class DoublePendulumDynamics:
         m22 = I2 + m2 * lc2**2
         return ((m11, m12), (m12, m22))
 
-    def coriolis_vector(self, theta2: float, omega1: float, omega2: float) -> Tuple[float, float]:
+    def coriolis_vector(
+        self, theta2: float, omega1: float, omega2: float
+    ) -> Tuple[float, float]:
         p = self.parameters
         m2 = p.lower_segment.total_mass
         l1 = p.upper_segment.length_m
@@ -287,7 +309,9 @@ class DoublePendulumDynamics:
         lc1 = p.upper_segment.center_of_mass_distance
         lc2 = p.lower_segment.center_of_mass_distance
         g = p.projected_gravity
-        g1 = (m1 * lc1 + m2 * l1) * g * math.sin(theta1) + m2 * lc2 * g * math.sin(theta1 + theta2)
+        g1 = (m1 * lc1 + m2 * l1) * g * math.sin(theta1) + m2 * lc2 * g * math.sin(
+            theta1 + theta2
+        )
         g2 = m2 * lc2 * g * math.sin(theta1 + theta2)
         return g1, g2
 
@@ -297,20 +321,28 @@ class DoublePendulumDynamics:
         d2 = p.damping_wrist * omega2
         return d1, d2
 
+    def _invert_mass_matrix(
+        self, theta2: float
+    ) -> Tuple[Tuple[float, float], Tuple[float, float]]:
+        mass = self.mass_matrix(theta2)
+        determinant = mass[0][0] * mass[1][1] - mass[0][1] * mass[1][0]
+        if abs(determinant) <= MASS_MATRIX_SINGULAR_TOLERANCE:
+            raise ZeroDivisionError(
+                "Mass matrix determinant is too close to zero; check pendulum parameters"
+            )
+        inv_m = (
+            (mass[1][1] / determinant, -mass[0][1] / determinant),
+            (-mass[1][0] / determinant, mass[0][0] / determinant),
+        )
+        return mass, inv_m
+
     def control_affine(
         self, state: DoublePendulumState
     ) -> Tuple[Tuple[float, ...], Tuple[Tuple[float, ...], ...]]:
         c1, c2 = self.coriolis_vector(state.theta2, state.omega1, state.omega2)
         g1, g2 = self.gravity_vector(state.theta1, state.theta2)
         d1, d2 = self.damping_vector(state.omega1, state.omega2)
-        mass = self.mass_matrix(state.theta2)
-        determinant = mass[0][0] * mass[1][1] - mass[0][1] * mass[1][0]
-        if determinant == 0.0:
-            raise ZeroDivisionError("Mass matrix determinant is zero; check parameters")
-        inv_m = (
-            (mass[1][1] / determinant, -mass[0][1] / determinant),
-            (-mass[1][0] / determinant, mass[0][0] / determinant),
-        )
+        mass, inv_m = self._invert_mass_matrix(state.theta2)
 
         drift_acc1 = -(inv_m[0][0] * (c1 + g1 + d1) + inv_m[0][1] * (c2 + g2 + d2))
         drift_acc2 = -(inv_m[1][0] * (c1 + g1 + d1) + inv_m[1][1] * (c2 + g2 + d2))
@@ -328,9 +360,26 @@ class DoublePendulumDynamics:
         )
         return f, G
 
-    def applied_torques(self, t: float, state: DoublePendulumState) -> Tuple[float, float]:
+    def applied_torques(
+        self, t: float, state: DoublePendulumState
+    ) -> Tuple[float, float]:
         tau1 = self.forcing_functions[0](t, state)
         tau2 = self.forcing_functions[1](t, state)
+        return tau1, tau2
+
+    def inverse_dynamics(
+        self, state: DoublePendulumState, accelerations: Tuple[float, float]
+    ) -> Tuple[float, float]:
+        """Compute joint torques required to realize the provided accelerations."""
+
+        c1, c2 = self.coriolis_vector(state.theta2, state.omega1, state.omega2)
+        g1, g2 = self.gravity_vector(state.theta1, state.theta2)
+        d1, d2 = self.damping_vector(state.omega1, state.omega2)
+        mass, _ = self._invert_mass_matrix(state.theta2)
+
+        acc1, acc2 = accelerations
+        tau1 = mass[0][0] * acc1 + mass[0][1] * acc2 + c1 + g1 + d1
+        tau2 = mass[1][0] * acc1 + mass[1][1] * acc2 + c2 + g2 + d2
         return tau1, tau2
 
     def joint_torque_breakdown(
@@ -353,26 +402,21 @@ class DoublePendulumDynamics:
         c1, c2 = self.coriolis_vector(state.theta2, state.omega1, state.omega2)
         g1, g2 = self.gravity_vector(state.theta1, state.theta2)
         d1, d2 = self.damping_vector(state.omega1, state.omega2)
-        mass = self.mass_matrix(state.theta2)
-        determinant = mass[0][0] * mass[1][1] - mass[0][1] * mass[1][0]
-        if determinant == 0.0:
-            raise ZeroDivisionError("Mass matrix determinant is zero; check parameters")
-        inv_m = (
-            (mass[1][1] / determinant, -mass[0][1] / determinant),
-            (-mass[1][0] / determinant, mass[0][0] / determinant),
-        )
+        _, inv_m = self._invert_mass_matrix(state.theta2)
         acc1 = inv_m[0][0] * (tau1 - c1 - g1 - d1) + inv_m[0][1] * (tau2 - c2 - g2 - d2)
         acc2 = inv_m[1][0] * (tau1 - c1 - g1 - d1) + inv_m[1][1] * (tau2 - c2 - g2 - d2)
         return state.omega1, state.omega2, acc1, acc2
 
-    def step(self, t: float, state: DoublePendulumState, dt: float) -> DoublePendulumState:
+    def step(
+        self, t: float, state: DoublePendulumState, dt: float
+    ) -> DoublePendulumState:
         def rk4_increment(
             current_state: DoublePendulumState, scale: float, derivs: Iterable[float]
         ) -> DoublePendulumState:
             dtheta1, dtheta2, domega1, domega2 = derivs
             # Preserve phi and omega_phi (out-of-plane motion not yet in dynamics)
-            phi = getattr(current_state, 'phi', 0.0)
-            omega_phi = getattr(current_state, 'omega_phi', 0.0)
+            phi = getattr(current_state, "phi", 0.0)
+            omega_phi = getattr(current_state, "omega_phi", 0.0)
             return DoublePendulumState(
                 theta1=current_state.theta1 + scale * dtheta1,
                 theta2=current_state.theta2 + scale * dtheta2,
@@ -391,10 +435,10 @@ class DoublePendulumDynamics:
         new_theta2 = state.theta2 + dt / 6.0 * (k1[1] + 2 * k2[1] + 2 * k3[1] + k4[1])
         new_omega1 = state.omega1 + dt / 6.0 * (k1[2] + 2 * k2[2] + 2 * k3[2] + k4[2])
         new_omega2 = state.omega2 + dt / 6.0 * (k1[3] + 2 * k2[3] + 2 * k3[3] + k4[3])
-        
+
         # Preserve phi and omega_phi
-        phi = getattr(state, 'phi', 0.0)
-        omega_phi = getattr(state, 'omega_phi', 0.0)
+        phi = getattr(state, "phi", 0.0)
+        omega_phi = getattr(state, "omega_phi", 0.0)
 
         return DoublePendulumState(
             theta1=new_theta1,
@@ -406,9 +450,8 @@ class DoublePendulumDynamics:
         )
 
 
-def compile_forcing_functions(
-    shoulder_expression: str, wrist_expression: str
-) -> Tuple[
-    Callable[[float, DoublePendulumState], float], Callable[[float, DoublePendulumState], float]
+def compile_forcing_functions(shoulder_expression: str, wrist_expression: str) -> Tuple[
+    Callable[[float, DoublePendulumState], float],
+    Callable[[float, DoublePendulumState], float],
 ]:
     return ExpressionFunction(shoulder_expression), ExpressionFunction(wrist_expression)

@@ -28,6 +28,10 @@ python -m double_pendulum_model
 python -m double_pendulum_model.ui.double_pendulum_gui
 ```
 
+## Where did the rotatable/advanced GUI go?
+
+The 3D rotatable Tkinter GUI with gravity toggles, plane constraints, and logging tools is still present. It was introduced in commit `92eb6a4` ("Enhance double pendulum GUI with 3D visualization and advanced features") and has only received physics fixes since (`98d6c88`, `1f5017f`, `f7da94c`). The recent "golf swing" update (`12f3420`) touched only the browser playground (`visualization/double_pendulum_web/app.js`) and did not remove the advanced desktop GUI. Launch the GUI via the commands above to access the rotatable view.
+
 ## Running the tests
 ```bash
 python -m pytest "Double Pendulum Model/double_pendulum_model/tests"

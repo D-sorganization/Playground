@@ -3,6 +3,8 @@
 
 # Core numerical computing
 numpy>=1.20.0
+sympy>=1.12
+PyQt6>=6.7
 
 # 3D visualization
 matplotlib>=3.5.0

@@ -1,7 +1,11 @@
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 const pixelsPerMeter = 300;
-const pivot = { x: canvas.width / 2, y: canvas.height / 5 };
+const planeGuideLengthPx = pixelsPerMeter * 3;
+const pivot = {
+  x: canvas.width * 0.32,
+  y: canvas.height * 0.28,
+};
 let animationId = null;
 
 const gravity = 9.80665;
@@ -26,6 +30,18 @@ const params = {
   damping1: 0.4,
   damping2: 0.25,
 };
+
+function rotatePoint(point, angleRad, center = pivot) {
+  const dx = point.x - center.x;
+  const dy = point.y - center.y;
+  const cosA = Math.cos(angleRad);
+  const sinA = Math.sin(angleRad);
+
+  return {
+    x: center.x + dx * cosA - dy * sinA,
+    y: center.y + dx * sinA + dy * cosA,
+  };
+}
 
 function parseInputs() {
   state.theta1 = Number(document.getElementById('theta1').value) * Math.PI / 180;
@@ -144,19 +160,35 @@ function draw() {
   ctx.strokeStyle = '#2a3545';
   ctx.setLineDash([6, 4]);
   ctx.beginPath();
-  ctx.moveTo(pivot.x - Math.sin(planeRad) * 900, pivot.y + Math.cos(planeRad) * 900);
-  ctx.lineTo(pivot.x + Math.sin(planeRad) * 900, pivot.y - Math.cos(planeRad) * 900);
+  const planeDirection = { x: Math.sin(planeRad), y: Math.cos(planeRad) };
+  ctx.moveTo(
+    pivot.x - planeDirection.x * planeGuideLengthPx,
+    pivot.y - planeDirection.y * planeGuideLengthPx,
+  );
+  ctx.lineTo(
+    pivot.x + planeDirection.x * planeGuideLengthPx,
+    pivot.y + planeDirection.y * planeGuideLengthPx,
+  );
   ctx.stroke();
   ctx.setLineDash([]);
 
-  const elbow = {
+  const elbowUnrotated = {
     x: pivot.x + Math.sin(state.theta1) * params.l1 * pixelsPerMeter,
     y: pivot.y + Math.cos(state.theta1) * params.l1 * pixelsPerMeter,
   };
-  const wrist = {
-    x: elbow.x + Math.sin(state.theta1 + state.theta2) * params.l2 * pixelsPerMeter,
-    y: elbow.y + Math.cos(state.theta1 + state.theta2) * params.l2 * pixelsPerMeter,
+  const wristUnrotated = {
+    x: pivot.x + (
+      Math.sin(state.theta1) * params.l1 +
+      Math.sin(state.theta1 + state.theta2) * params.l2
+    ) * pixelsPerMeter,
+    y: pivot.y + (
+      Math.cos(state.theta1) * params.l1 +
+      Math.cos(state.theta1 + state.theta2) * params.l2
+    ) * pixelsPerMeter,
   };
+
+  const elbow = rotatePoint(elbowUnrotated, -planeRad);
+  const wrist = rotatePoint(wristUnrotated, -planeRad);
 
   ctx.strokeStyle = '#66fcf1';
   ctx.lineWidth = 6;
@@ -174,6 +206,16 @@ function draw() {
   ctx.fillStyle = '#ff6b6b';
   ctx.beginPath();
   ctx.arc(wrist.x, wrist.y, 10, 0, Math.PI * 2);
+  ctx.fill();
+
+  const contactRadius = (params.l1 + params.l2) * pixelsPerMeter * 0.95;
+  const contactPoint = {
+    x: pivot.x + planeDirection.x * contactRadius,
+    y: pivot.y + planeDirection.y * contactRadius,
+  };
+  ctx.fillStyle = '#fcd34d';
+  ctx.beginPath();
+  ctx.arc(contactPoint.x, contactPoint.y, 8, 0, Math.PI * 2);
   ctx.fill();
 }
 
