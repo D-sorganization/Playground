@@ -114,7 +114,9 @@ def _dispatch_calculation(
     if payload.operation == "derivative":
         if not payload.variable:
             raise ValueError("Variable is required for derivatives")
-        order = payload.order or 1
+        order = payload.order if payload.order is not None else 1
+        if order <= 0:
+            raise ValueError("Derivative order must be a positive integer")
         return calculator.derivative(payload.expression, payload.variable, order=order)
 
     if payload.operation == "integral":

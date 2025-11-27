@@ -207,4 +207,7 @@ class TI89Calculator:
             "ln": sp.log,
             "sqrt": sp.sqrt,
             "abs": sp.Abs,
+            "pi": sp.pi,
+            "E": sp.E,
+            "e": sp.E,
         }

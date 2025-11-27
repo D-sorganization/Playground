@@ -39,6 +39,17 @@ def test_derivative_and_limit_modes() -> None:
     derivative = perform_request(client, derivative_payload)
     assert derivative["result"] == "exp(x)"
 
+    derivative_zero_order: dict[str, object] = {
+        "operation": "derivative",
+        "expression": "exp(x)",
+        "variable": "x",
+        "order": 0,
+    }
+    response = client.post("/api/calculate", json=derivative_zero_order)
+    assert response.status_code == 400
+    error_data = response.get_json()
+    assert error_data["error"] == "Derivative order must be a positive integer"
+
     limit_payload: dict[str, object] = {
         "operation": "limit",
         "expression": "sin(x)/x",

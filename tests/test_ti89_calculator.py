@@ -9,6 +9,12 @@ def test_evaluate_with_trigonometric_identity() -> None:
     assert sp.simplify(result.result - 1) == 0
 
 
+def test_e_constant_is_available() -> None:
+    calculator = TI89Calculator()
+    result = calculator.evaluate("e^x", {"x": 1}).result
+    assert result == sp.E
+
+
 def test_solve_quadratic_equation() -> None:
     calculator = TI89Calculator()
     solutions = calculator.solve_equation("x^2 - 5*x + 6 = 0", "x").result
