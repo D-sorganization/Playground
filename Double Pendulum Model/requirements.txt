@@ -1,0 +1,12 @@
+# Double Pendulum Model Dependencies
+# ===================================
+
+# Core numerical computing
+numpy>=1.20.0
+
+# 3D visualization
+matplotlib>=3.5.0
+
+# GUI (usually included with Python)
+# tkinter is part of Python standard library on most systems
+
