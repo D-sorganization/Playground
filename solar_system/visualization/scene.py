@@ -36,7 +36,7 @@ class ViewState:
     show_labels: bool = True
     show_trajectories: bool = True
     show_info_panel: bool = True
-    show_help: bool = False
+    show_help: bool = True  # Show help by default for new users
     focus_inner_system: bool = False
 
 
@@ -69,21 +69,28 @@ class SolarSystemScene:
 
         # Control bindings displayed in help
         self.controls = [
-            ("SPACE", "Pause/Resume"),
-            ("+ / -", "Speed up/slow down time"),
-            ("R", "Reverse time"),
-            ("1-9", "Select planet"),
-            ("0", "Select Sun"),
-            ("F", "Focus on selected"),
-            ("C", "Cycle camera mode"),
-            ("O", "Toggle orbits"),
-            ("L", "Toggle labels"),
-            ("I", "Toggle info panel"),
-            ("G", "Toggle grid"),
-            ("T", "Plan trajectory to Mars"),
-            ("H", "Toggle help"),
-            ("HOME", "Reset view"),
-            ("ESC", "Quit")
+            ("MOUSE:", ""),
+            ("  Scroll Wheel", "Zoom in/out"),
+            ("  Left Drag", "Rotate camera"),
+            ("  Right Drag", "Pan camera"),
+            ("", ""),
+            ("KEYBOARD:", ""),
+            ("  SPACE", "Pause/Resume"),
+            ("  + / -", "Speed up/slow down time"),
+            ("  R", "Reverse time flow"),
+            ("  T", "Plan trip to Mars 🚀"),
+            ("", ""),
+            ("  0-9", "Select planet (0=Sun, 3=Earth, 4=Mars)"),
+            ("  F", "Focus camera on selected"),
+            ("  C", "Cycle camera modes"),
+            ("  HOME", "Reset camera view"),
+            ("", ""),
+            ("  O", "Toggle orbital paths"),
+            ("  L", "Toggle planet labels"),
+            ("  I", "Toggle info panel"),
+            ("  G", "Toggle reference grid"),
+            ("  H", "Toggle this help"),
+            ("  ESC", "Quit simulation")
         ]
 
     def initialize(self) -> bool:
@@ -283,13 +290,21 @@ class SolarSystemScene:
 
         elif key == K_t:
             # Plan trajectory to Mars from Earth
+            print("\n" + "="*60)
+            print("Planning trajectory from Earth to Mars...")
             trajectory = self.plan_trajectory("Earth", "Mars")
             if trajectory:
                 print(f"✓ Trajectory created successfully!")
-                print(f"  Departure: {trajectory.departure_time:.1f}")
-                print(f"  Arrival: {trajectory.arrival_time:.1f}")
+                print(f"  Departure: {trajectory.departure_date:.1f}")
+                print(f"  Arrival: {trajectory.arrival_date:.1f}")
                 print(f"  Flight time: {trajectory.time_of_flight:.1f} days")
-                print(f"  Total ΔV: {trajectory.total_delta_v:.1f} m/s")
+                print(f"  Total ΔV: {trajectory.total_delta_v/1000:.2f} km/s")
+                print("  Spacecraft visible on trajectory (green rocket icon)")
+                print("="*60 + "\n")
+            else:
+                print("✗ Failed to create trajectory")
+                print("="*60 + "\n")
+>>>>>>> origin/main
 
         # Number keys for planet selection
         elif key == K_0:
@@ -426,15 +441,15 @@ class SolarSystemScene:
 
         # Render spacecraft
         for spacecraft in self.spacecraft.values():
-            state = spacecraft.get_state_at_time(jd)
             # Only render if within trajectory time
-            if trajectory.trajectory_points:
-                start_time = trajectory.trajectory_points[0].time
-                end_time = trajectory.trajectory_points[-1].time
+            if spacecraft.trajectory and len(spacecraft.trajectory) >= 2:
+                start_time = spacecraft.trajectory[0].time
+                end_time = spacecraft.trajectory[-1].time
                 if start_time <= jd <= end_time:
+                    state = spacecraft.get_state_at_time(jd)
                     pos = state.position * renderer.distance_scale
                     # Draw as bright point
-                    renderer.render_label("🚀 Spacecraft", pos, (0, 255, 128))
+                    renderer.render_label("🚀 " + spacecraft.name, pos, (0, 255, 128))
 
         # UI overlays
         # Status bar
