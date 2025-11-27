@@ -10,6 +10,7 @@ import math
 import numpy as np
 from typing import Dict, List, Optional, Tuple, Any
 from dataclasses import dataclass
+from datetime import timedelta
 
 from ..core.constants import (
     PLANET_ORDER, INNER_PLANETS, OUTER_PLANETS, DWARF_PLANETS,
@@ -399,6 +400,26 @@ class SolarSystemScene:
             self.time_manager.advance_days(1)
             self._update_ui_date()
 
+        elif key == K_LEFTBRACE:
+            # Jump backward 1 month
+            current_dt = self.time_manager.current_time.datetime_utc
+            # Go to first day of current month, then subtract 1 day
+            first_of_month = current_dt.replace(day=1)
+            prev_month = first_of_month - timedelta(days=1)
+            self.time_manager.set_datetime(prev_month)
+            self._update_ui_date()
+
+        elif key == K_RIGHTBRACE:
+            # Jump forward 1 month
+            current_dt = self.time_manager.current_time.datetime_utc
+            # Go to first day of next month
+            if current_dt.month == 12:
+                next_month = current_dt.replace(year=current_dt.year + 1, month=1, day=1)
+            else:
+                next_month = current_dt.replace(month=current_dt.month + 1, day=1)
+            self.time_manager.set_datetime(next_month)
+            self._update_ui_date()
+
         elif key == K_HOME:
             self.renderer.camera.reset()
             self.renderer.camera.mode = CameraMode.FREE
@@ -637,12 +658,12 @@ class SolarSystemScene:
 
         # Render spacecraft
         for spacecraft in self.spacecraft.values():
-            state = spacecraft.get_state_at_time(jd)
             # Only render if within trajectory time
-            if trajectory.trajectory_points:
-                start_time = trajectory.trajectory_points[0].time
-                end_time = trajectory.trajectory_points[-1].time
+            if spacecraft.trajectory and len(spacecraft.trajectory) >= 2:
+                start_time = spacecraft.trajectory[0].time
+                end_time = spacecraft.trajectory[-1].time
                 if start_time <= jd <= end_time:
+                    state = spacecraft.get_state_at_time(jd)
                     pos = state.position * renderer.distance_scale
                     # Draw as bright point
                     renderer.render_label("🚀 Spacecraft", pos, (0, 255, 128))
