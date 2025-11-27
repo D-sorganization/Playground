@@ -263,7 +263,7 @@ class TriplePendulumDynamics:
     ) -> TripleJointTorques:
         theta = (state.theta1, state.theta2, state.theta3)
         params = self._parameter_vector()
-        gravity_components = self._gravity_func(*theta, *params)
+        gravity_components = np.array(self._gravity_func(*theta, *params), dtype=float).flatten()
         damping_components = tuple(
             float(self.parameters.damping[i] * state_component)
             for i, state_component in enumerate(
@@ -272,7 +272,7 @@ class TriplePendulumDynamics:
         )
         coriolis_bias = (
             self.bias_vector(state)
-            - np.array(gravity_components, dtype=float)
+            - gravity_components
             - np.array(damping_components, dtype=float)
         )
         return TripleJointTorques(

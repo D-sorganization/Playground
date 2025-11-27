@@ -268,20 +268,22 @@ class PendulumController(QtWidgets.QWidget):
         alpha1 = profiles[0].alpha(self.time)
         alpha2 = profiles[1].alpha(self.time)
 
+        state_with_profile = DoublePendulumState(
+            theta1=state.theta1,
+            theta2=state.theta2,
+            omega1=omega1,
+            omega2=omega2,
+        )
+
         accelerations = (alpha1, alpha2)
-        torques = self.double_dynamics.inverse_dynamics(state, accelerations)
+        torques = self.double_dynamics.inverse_dynamics(
+            state_with_profile, accelerations
+        )
         self.double_dynamics.forcing_functions = (
             lambda _t, _s: torques[0],
             lambda _t, _s: torques[1],
         )
-
-        next_state = DoublePendulumState(
-            theta1=state.theta1 + omega1 * TIME_STEP,
-            theta2=state.theta2 + omega2 * TIME_STEP,
-            omega1=omega1,
-            omega2=omega2,
-        )
-        return self.double_dynamics.step(self.time, next_state, TIME_STEP)
+        return self.double_dynamics.step(self.time, state_with_profile, TIME_STEP)
 
     def _apply_inverse_profile_triple(
         self,
@@ -291,16 +293,18 @@ class PendulumController(QtWidgets.QWidget):
         omega = [profile.omega(self.time) for profile in profiles]
         alpha = [profile.alpha(self.time) for profile in profiles]
         accelerations = tuple(alpha)
-        torques = self.triple_dynamics.inverse_dynamics(state, accelerations)
-        next_state = TriplePendulumState(
-            theta1=state.theta1 + omega[0] * TIME_STEP,
-            theta2=state.theta2 + omega[1] * TIME_STEP,
-            theta3=state.theta3 + omega[2] * TIME_STEP,
+        state_with_profile = TriplePendulumState(
+            theta1=state.theta1,
+            theta2=state.theta2,
+            theta3=state.theta3,
             omega1=omega[0],
             omega2=omega[1],
             omega3=omega[2],
         )
-        return self.triple_dynamics.step(self.time, next_state, TIME_STEP, torques)
+        torques = self.triple_dynamics.inverse_dynamics(state_with_profile, accelerations)
+        return self.triple_dynamics.step(
+            self.time, state_with_profile, TIME_STEP, torques
+        )
 
     def _update_plot(self) -> None:
         config = self._current_config()
