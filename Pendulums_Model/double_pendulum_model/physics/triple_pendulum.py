@@ -219,9 +219,9 @@ class TriplePendulumDynamics:
             segs[0].mass_kg,
             segs[1].mass_kg,
             segs[2].mass_kg,
-            segs[0].inertia_about_proximal_joint,
-            segs[1].inertia_about_proximal_joint,
-            segs[2].inertia_about_proximal_joint,
+            segs[0].inertia_about_com,
+            segs[1].inertia_about_com,
+            segs[2].inertia_about_com,
             self.parameters.gravity,
         )
 
