@@ -185,7 +185,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
+          # Note: cache is not enabled because it requires package-lock.json
+          # For playground projects, caching is optional
           
       - name: Install dependencies
         run: |
