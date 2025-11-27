@@ -55,3 +55,20 @@ def test_manifest_and_service_worker_routes() -> None:
 
     assert client.get("/manifest.webmanifest").status_code == 200
     assert client.get("/service-worker.js").status_code == 200
+
+
+def test_rejects_unsafe_sympify_inputs() -> None:
+    app = create_app()
+    client = app.test_client()
+
+    payload: dict[str, object] = {
+        "operation": "limit",
+        "expression": "x",
+        "variable": "x",
+        "value": "__import__('os').system('echo unsafe')",
+    }
+
+    response = client.post("/api/calculate", json=payload)
+    assert response.status_code == 400
+    data = response.get_json()
+    assert data["error"] == "Invalid numeric or symbolic value provided"

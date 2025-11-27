@@ -6,6 +6,7 @@ from typing import Any
 
 import sympy as sp
 from flask import Flask, jsonify, render_template, request, send_from_directory
+from sympy.parsing.sympy_parser import convert_xor, parse_expr, standard_transformations
 
 from .calculator import CalculatorResult, TI89Calculator
 
@@ -90,7 +91,7 @@ def _dispatch_calculation(
     calculator: TI89Calculator, payload: CalculationPayload
 ) -> CalculatorResult:
     if payload.operation == "evaluate":
-        substitutions = _normalize_variables(payload.variables)
+        substitutions = _normalize_variables(payload.variables, calculator)
         return calculator.evaluate(payload.expression, substitutions)
 
     if payload.operation == "simplify":
@@ -122,8 +123,13 @@ def _dispatch_calculation(
         if payload.lower is not None or payload.upper is not None:
             if payload.lower is None or payload.upper is None:
                 raise ValueError("Both lower and upper bounds are required for definite integrals")
-            lower = _sympify_value(payload.lower)
-            upper = _sympify_value(payload.upper)
+            variable_symbol = sp.Symbol(payload.variable)
+            lower = _sympify_value(
+                payload.lower, calculator=calculator, symbols={payload.variable: variable_symbol}
+            )
+            upper = _sympify_value(
+                payload.upper, calculator=calculator, symbols={payload.variable: variable_symbol}
+            )
             return calculator.integral(
                 payload.expression, payload.variable, lower=lower, upper=upper
             )
@@ -138,7 +144,7 @@ def _dispatch_calculation(
         return calculator.limit(
             payload.expression,
             payload.variable,
-            _sympify_value(payload.value),
+            _sympify_value(payload.value, calculator=calculator),
             direction=direction,
         )
 
@@ -152,7 +158,7 @@ def _dispatch_calculation(
         return calculator.taylor_series(
             payload.expression,
             payload.variable,
-            _sympify_value(payload.around),
+            _sympify_value(payload.around, calculator=calculator),
             payload.order,
         )
 
@@ -201,14 +207,57 @@ def _serialize(result: object) -> object:
     return result
 
 
-def _normalize_variables(variables: Mapping[str, str] | None) -> Mapping[str, sp.Expr]:
+def _safe_constants() -> Mapping[str, sp.Expr]:
+    return {
+        "pi": sp.pi,
+        "E": sp.E,
+        "e": sp.E,
+        "oo": sp.oo,
+        "Infinity": sp.oo,
+        "inf": sp.oo,
+        "nan": sp.nan,
+    }
+
+
+def _safe_parse_globals() -> Mapping[str, object]:
+    return {
+        "__builtins__": {},
+        "Symbol": sp.Symbol,
+        "Integer": sp.Integer,
+        "Rational": sp.Rational,
+        "Float": sp.Float,
+        "Pow": sp.Pow,
+    }
+
+
+def _normalize_variables(
+    variables: Mapping[str, str] | None, calculator: TI89Calculator
+) -> Mapping[str, sp.Expr]:
     if not variables:
         return {}
-    return {name: _sympify_value(value) for name, value in variables.items()}
+    return {name: _sympify_value(value, calculator=calculator) for name, value in variables.items()}
 
 
-def _sympify_value(value: str) -> sp.Expr:
-    return sp.sympify(value, convert_xor=True)
+def _sympify_value(
+    value: str,
+    *,
+    calculator: TI89Calculator,
+    symbols: Mapping[str, sp.Symbol | sp.Expr] | None = None,
+) -> sp.Expr:
+    try:
+        return parse_expr(
+            value,
+            local_dict={
+                **calculator._allowed_functions,
+                **_safe_constants(),
+                **(symbols or {}),
+            },
+            global_dict=_safe_parse_globals(),
+            transformations=standard_transformations + (convert_xor,),
+            evaluate=True,
+        )
+    except Exception as error:
+        raise ValueError("Invalid numeric or symbolic value provided") from error
 
 
 def _parse_optional_int(value: object | None) -> int | None:
