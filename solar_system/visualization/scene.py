@@ -236,9 +236,14 @@ class SolarSystemScene:
         """
         Handle keyboard input.
 
-        return True
+        Returns:
+            False if should quit, True otherwise
+        """
+        if key == K_ESCAPE:
+            return False
+
         elif key == K_SPACE:
-        self.time_manager.toggle_pause()
+            self.time_manager.toggle_pause()
 
         elif key == K_EQUALS or key == K_PLUS or key == K_KP_PLUS:
             self.time_manager.increase_time_warp()
@@ -299,12 +304,13 @@ class SolarSystemScene:
         return True
 
     def _handle_mouse_button(self, button: int, pressed: bool):
-        pass
+        """Handle mouse button events."""
         if button == 1:  # Left button
             self._mouse_dragging = pressed
             if pressed:
                 self._last_mouse_pos = pygame.mouse.get_pos()
 
+        elif button == 3:  # Right button
             if pressed:
                 self._mouse_dragging = True
                 self._last_mouse_pos = pygame.mouse.get_pos()
@@ -312,7 +318,7 @@ class SolarSystemScene:
                 self._mouse_dragging = False
 
     def _handle_mouse_motion(self, pos: Tuple[int, int], rel: Tuple[int, int]):
-        pass
+        """Handle mouse motion."""
         if self._mouse_dragging:
             # Get mouse buttons
             buttons = pygame.mouse.get_pressed()
@@ -324,7 +330,7 @@ class SolarSystemScene:
                 self.renderer.camera.pan(-rel[0], rel[1])
 
     def _cycle_camera_mode(self):
-        pass
+        """Cycle through camera modes."""
         camera = self.renderer.camera
         modes = [CameraMode.FREE, CameraMode.HELIOCENTRIC, CameraMode.TOP_DOWN]
 
