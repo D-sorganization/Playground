@@ -201,9 +201,9 @@ jobs:
       - name: Run ESLint (if configured)
         continue-on-error: true
         run: |
-          if find . -name ".eslintrc*" -o -name "eslint.config.*" | head -n1 | grep -q .; then
+          if find . -name ".eslintrc*" -o -name "eslint.config.*" -not -path "*/node_modules/*" | head -n1 | grep -q .; then
             echo "Running ESLint..."
-            find . -name "package.json" -not -path "./.git/*" | while read pkg; do
+            find . -name "package.json" -not -path "./.git/*" -not -path "*/node_modules/*" | while read pkg; do
               dir=$(dirname "$pkg")
               if grep -q '"lint"' "$pkg"; then
                 echo "Running lint in $dir"
@@ -218,9 +218,9 @@ jobs:
       - name: Run Prettier check (if configured)
         continue-on-error: true
         run: |
-          if find . -name ".prettierrc*" -o -name "prettier.config.*" | head -n1 | grep -q .; then
+          if find . -name ".prettierrc*" -o -name "prettier.config.*" -not -path "*/node_modules/*" | head -n1 | grep -q .; then
             echo "Checking code formatting with Prettier..."
-            find . -name "package.json" -not -path "./.git/*" | while read pkg; do
+            find . -name "package.json" -not -path "./.git/*" -not -path "*/node_modules/*" | while read pkg; do
               dir=$(dirname "$pkg")
               if grep -q '"format"' "$pkg" || grep -q '"prettier"' "$pkg"; then
                 echo "Running format check in $dir"
@@ -235,9 +235,9 @@ jobs:
       - name: TypeScript type check (if configured)
         continue-on-error: true
         run: |
-          if find . -name "tsconfig.json" -not -path "./.git/*" | head -n1 | grep -q .; then
+          if find . -name "tsconfig.json" -not -path "./.git/*" -not -path "*/node_modules/*" | head -n1 | grep -q .; then
             echo "Running TypeScript type check..."
-            find . -name "tsconfig.json" -not -path "./.git/*" | while read tsconfig; do
+            find . -name "tsconfig.json" -not -path "./.git/*" -not -path "*/node_modules/*" | while read tsconfig; do
               dir=$(dirname "$tsconfig")
               echo "Type checking in $dir"
               cd "$dir" && npx tsc --noEmit || echo "⚠️ TypeScript found type errors in $dir"
@@ -250,7 +250,7 @@ jobs:
       - name: Run tests (if available)
         continue-on-error: true
         run: |
-          find . -name "package.json" -not -path "./.git/*" | while read pkg; do
+          find . -name "package.json" -not -path "./.git/*" -not -path "*/node_modules/*" | while read pkg; do
             dir=$(dirname "$pkg")
             if grep -q '"test"' "$pkg"; then
               echo "Running tests in $dir"
