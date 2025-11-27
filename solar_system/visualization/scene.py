@@ -1,10 +1,3 @@
-"""
-Solar System Scene
-==================
-
-Manages all celestial bodies and provides the main rendering loop.
-Coordinates between the physics simulation and visualization.
-"""
 
 import math
 import numpy as np
@@ -36,7 +29,6 @@ except ImportError:
 
 @dataclass
 class ViewState:
-    """Current view configuration."""
     show_inner_planets: bool = True
     show_outer_planets: bool = True
     show_dwarf_planets: bool = True
@@ -49,24 +41,8 @@ class ViewState:
 
 
 class SolarSystemScene:
-    """
-    Main scene class for the solar system simulation.
-
-    Manages:
-    - All celestial bodies (Sun, planets, moons)
-    - Spacecraft and trajectories
-    - Time simulation
-    - User interaction
-    - Rendering coordination
-    """
 
     def __init__(self, settings: RenderSettings = None):
-        """
-        Initialize the solar system scene.
-
-        Args:
-            settings: Optional render settings
-        """
         self.settings = settings or RenderSettings()
         self.renderer: Optional[Renderer] = None
         self.time_manager = TimeManager()
@@ -111,12 +87,6 @@ class SolarSystemScene:
         ]
 
     def initialize(self) -> bool:
-        """
-        Initialize the scene and all subsystems.
-
-        Returns:
-            True if successful
-        """
         # Create renderer
         self.renderer = Renderer(self.settings)
         if not self.renderer.initialize():
@@ -134,7 +104,6 @@ class SolarSystemScene:
         return True
 
     def _create_solar_system(self):
-        """Create all celestial bodies in the solar system."""
         # Create the Sun
         self.sun = Star("Sun")
 
@@ -167,7 +136,6 @@ class SolarSystemScene:
         self.moons["Moon"] = earth_moon
 
     def get_all_bodies(self) -> List[CelestialBody]:
-        """Get list of all celestial bodies."""
         bodies = [self.sun]
         bodies.extend(self.planets.values())
         bodies.extend(self.moons.values())
@@ -175,7 +143,6 @@ class SolarSystemScene:
         return bodies
 
     def get_body_by_name(self, name: str) -> Optional[CelestialBody]:
-        """Get a celestial body by name."""
         if name == "Sun":
             return self.sun
         if name in self.planets:
@@ -187,7 +154,6 @@ class SolarSystemScene:
         return None
 
     def select_body(self, body: CelestialBody):
-        """Select a celestial body."""
         self.selected_body = body
         self.renderer.selected_body = body
 
@@ -197,17 +163,6 @@ class SolarSystemScene:
         destination_name: str,
         departure_date: Optional[float] = None
     ) -> Optional[TransferTrajectory]:
-        """
-        Plan a trajectory between two bodies.
-
-        Args:
-            origin_name: Name of origin body
-            destination_name: Name of destination body
-            departure_date: Optional departure date (Julian date)
-
-        Returns:
-            TransferTrajectory or None if planning failed
-        """
         origin = self.get_body_by_name(origin_name)
         destination = self.get_body_by_name(destination_name)
 
@@ -236,7 +191,6 @@ class SolarSystemScene:
         return trajectory
 
     def run(self):
-        """Main simulation loop."""
         if not self.renderer:
             raise RuntimeError("Scene not initialized. Call initialize() first.")
 
@@ -256,12 +210,6 @@ class SolarSystemScene:
         self.renderer.cleanup()
 
     def _handle_events(self) -> bool:
-        """
-        Handle pygame events.
-
-        Returns:
-            False if should quit, True otherwise
-        """
         for event in pygame.event.get():
             if event.type == QUIT:
                 return False
@@ -290,7 +238,7 @@ class SolarSystemScene:
 
         return True
         elif key == K_SPACE:
-            self.time_manager.toggle_pause()
+        self.time_manager.toggle_pause()
 
         elif key == K_EQUALS or key == K_PLUS or key == K_KP_PLUS:
             self.time_manager.increase_time_warp()
@@ -357,7 +305,6 @@ class SolarSystemScene:
             if pressed:
                 self._last_mouse_pos = pygame.mouse.get_pos()
 
-        elif button == 3:  # Right button
             if pressed:
                 self._mouse_dragging = True
                 self._last_mouse_pos = pygame.mouse.get_pos()
