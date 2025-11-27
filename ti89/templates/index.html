@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>TI-89 Inspired Calculator</title>
+    <link rel="manifest" href="/manifest.webmanifest">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="calculator-shell">
+        <header class="status-bar">
+            <span class="brand">TI-89</span>
+            <span class="mode" id="active-mode">HOME</span>
+            <span class="battery" aria-label="battery level">▮▮▮▮</span>
+        </header>
+        <main class="screen">
+            <div class="history" id="history" aria-live="polite"></div>
+            <div class="io-grid">
+                <label for="expression">Expression</label>
+                <input id="expression" name="expression" autocomplete="off" placeholder="sin(x)^2 + cos(x)^2" />
+
+                <label for="variable">Variable / Unknown</label>
+                <input id="variable" name="variable" autocomplete="off" placeholder="x or x,y" />
+
+                <label for="order">Order (derivatives/series)</label>
+                <input id="order" name="order" type="number" inputmode="numeric" min="1" placeholder="1" />
+
+                <label for="bounds">Bounds / Values</label>
+                <div class="bounds-row">
+                    <input id="lower" name="lower" autocomplete="off" placeholder="lower" />
+                    <input id="upper" name="upper" autocomplete="off" placeholder="upper" />
+                    <input id="value" name="value" autocomplete="off" placeholder="limit or around" />
+                </div>
+
+                <label for="variables">Substitutions</label>
+                <input id="variables" name="variables" autocomplete="off" placeholder="x=pi/4, y=2" />
+            </div>
+            <div class="result-display" id="result-display">
+                <div class="result-header">Result</div>
+                <pre id="result-text">Ready.</pre>
+                <div class="approx-line" id="approx-line" hidden>
+                    ≈ <span id="approx-value"></span>
+                </div>
+            </div>
+        </main>
+
+        <section class="mode-strip" aria-label="calculation modes">
+            <button type="button" class="mode-button active" data-mode="evaluate">CALC</button>
+            <button type="button" class="mode-button" data-mode="solve_equation">SOLVE</button>
+            <button type="button" class="mode-button" data-mode="solve_system">SYS</button>
+            <button type="button" class="mode-button" data-mode="derivative">d/dx</button>
+            <button type="button" class="mode-button" data-mode="integral">∫</button>
+            <button type="button" class="mode-button" data-mode="limit">LIM</button>
+            <button type="button" class="mode-button" data-mode="taylor_series">TSER</button>
+            <button type="button" class="mode-button" data-mode="solve_ode">ODE</button>
+            <button type="button" class="mode-button" data-mode="simplify">SIMPL</button>
+        </section>
+
+        <section class="keypad" aria-label="calculator keypad">
+            <div class="key-row">
+                <button type="button" data-token="sin(" class="key soft">sin</button>
+                <button type="button" data-token="cos(" class="key soft">cos</button>
+                <button type="button" data-token="tan(" class="key soft">tan</button>
+                <button type="button" data-token="^" class="key operator">^</button>
+                <button type="button" data-token="(" class="key">(</button>
+                <button type="button" data-token=")" class="key">)</button>
+            </div>
+            <div class="key-row">
+                <button type="button" data-token="ln(" class="key soft">ln</button>
+                <button type="button" data-token="log(" class="key soft">log</button>
+                <button type="button" data-token="sqrt(" class="key soft">√</button>
+                <button type="button" data-token="exp(" class="key soft">exp</button>
+                <button type="button" data-token="," class="key">,</button>
+                <button type="button" data-token="=" class="key">=</button>
+            </div>
+            <div class="key-row">
+                <button type="button" data-token="7" class="key">7</button>
+                <button type="button" data-token="8" class="key">8</button>
+                <button type="button" data-token="9" class="key">9</button>
+                <button type="button" data-token="/" class="key operator">÷</button>
+                <button type="button" data-token="pi" class="key">π</button>
+                <button type="button" data-token="e" class="key">e</button>
+            </div>
+            <div class="key-row">
+                <button type="button" data-token="4" class="key">4</button>
+                <button type="button" data-token="5" class="key">5</button>
+                <button type="button" data-token="6" class="key">6</button>
+                <button type="button" data-token="*" class="key operator">×</button>
+                <button type="button" data-token="-" class="key operator">−</button>
+                <button type="button" data-token="+" class="key operator">+</button>
+            </div>
+            <div class="key-row">
+                <button type="button" data-token="1" class="key">1</button>
+                <button type="button" data-token="2" class="key">2</button>
+                <button type="button" data-token="3" class="key">3</button>
+                <button type="button" data-token="0" class="key wide">0</button>
+                <button type="button" data-token="." class="key">.</button>
+                <button type="button" id="delete" class="key">DEL</button>
+            </div>
+        </section>
+
+        <section class="action-row">
+            <button type="button" id="clear" class="action secondary">CLEAR</button>
+            <button type="button" id="execute" class="action primary">ENTER</button>
+        </section>
+    </div>
+    <script src="{{ url_for('static', filename='app.js') }}" defer></script>
+</body>
+</html>

@@ -1,0 +1,182 @@
+const expressionInput = document.getElementById("expression");
+const variableInput = document.getElementById("variable");
+const orderInput = document.getElementById("order");
+const lowerInput = document.getElementById("lower");
+const upperInput = document.getElementById("upper");
+const valueInput = document.getElementById("value");
+const variablesInput = document.getElementById("variables");
+const historyPane = document.getElementById("history");
+const resultText = document.getElementById("result-text");
+const approxLine = document.getElementById("approx-line");
+const approxValue = document.getElementById("approx-value");
+const activeModeLabel = document.getElementById("active-mode");
+
+let currentMode = "evaluate";
+
+function setMode(mode) {
+    currentMode = mode;
+    activeModeLabel.textContent = mode.toUpperCase();
+    document.querySelectorAll(".mode-button").forEach((button) => {
+        button.classList.toggle("active", button.dataset.mode === mode);
+    });
+}
+
+function appendToken(token) {
+    const cursor = expressionInput.selectionStart ?? expressionInput.value.length;
+    const before = expressionInput.value.slice(0, cursor);
+    const after = expressionInput.value.slice(cursor);
+    expressionInput.value = `${before}${token}${after}`;
+    const newPosition = cursor + token.length;
+    expressionInput.setSelectionRange(newPosition, newPosition);
+    expressionInput.focus();
+}
+
+function deleteToken() {
+    const cursor = expressionInput.selectionStart ?? expressionInput.value.length;
+    if (cursor === 0) return;
+    const before = expressionInput.value.slice(0, cursor - 1);
+    const after = expressionInput.value.slice(cursor);
+    expressionInput.value = `${before}${after}`;
+    expressionInput.setSelectionRange(cursor - 1, cursor - 1);
+    expressionInput.focus();
+}
+
+async function executeCalculation() {
+    const payload = buildPayload();
+    resultText.textContent = "Working…";
+    approxLine.hidden = true;
+
+    try {
+        const response = await fetch("/api/calculate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.error || "Calculation failed");
+        }
+
+        renderResult(data);
+        pushHistory(payload.expression, data.result);
+    } catch (error) {
+        resultText.textContent = error.message;
+    }
+}
+
+function buildPayload() {
+    const basePayload = {
+        operation: currentMode,
+        expression: expressionInput.value.trim(),
+        variable: variableInput.value.trim() || undefined,
+    };
+
+    const substitutions = parseVariableAssignments(variablesInput.value.trim());
+    if (Object.keys(substitutions).length > 0) {
+        basePayload.variables = substitutions;
+    }
+
+    if (orderInput.value) {
+        basePayload.order = Number(orderInput.value);
+    }
+
+    if (lowerInput.value) {
+        basePayload.lower = lowerInput.value.trim();
+    }
+
+    if (upperInput.value) {
+        basePayload.upper = upperInput.value.trim();
+    }
+
+    if (valueInput.value) {
+        basePayload.value = valueInput.value.trim();
+        basePayload.around = valueInput.value.trim();
+    }
+
+    if (currentMode === "limit") {
+        basePayload.direction = "two-sided";
+    }
+
+    if (currentMode === "solve_ode") {
+        basePayload.function = variableInput.value.trim() || "f";
+    }
+
+    return basePayload;
+}
+
+function parseVariableAssignments(raw) {
+    if (!raw) return {};
+    return raw.split(",").reduce((accumulator, part) => {
+        const [name, value] = part.split("=").map((piece) => piece.trim());
+        if (name && value) {
+            accumulator[name] = value;
+        }
+        return accumulator;
+    }, {});
+}
+
+function renderResult(data) {
+    const pretty = data.pretty ? `${data.pretty}` : `${data.result}`;
+    resultText.textContent = pretty;
+
+    if (typeof data.approximation === "number") {
+        approxValue.textContent = data.approximation;
+        approxLine.hidden = false;
+    } else {
+        approxLine.hidden = true;
+    }
+}
+
+function pushHistory(expression, result) {
+    const historyEntry = document.createElement("div");
+    historyEntry.className = "history-line";
+    historyEntry.textContent = `${expression} → ${result}`;
+    historyPane.prepend(historyEntry);
+    const lines = historyPane.querySelectorAll(".history-line");
+    if (lines.length > 6) {
+        lines[lines.length - 1].remove();
+    }
+}
+
+function registerEvents() {
+    document.querySelectorAll(".mode-button").forEach((button) => {
+        button.addEventListener("click", () => setMode(button.dataset.mode));
+    });
+
+    document.querySelectorAll("[data-token]").forEach((key) => {
+        key.addEventListener("click", () => appendToken(key.dataset.token));
+    });
+
+    document.getElementById("delete").addEventListener("click", deleteToken);
+    document.getElementById("clear").addEventListener("click", () => {
+        expressionInput.value = "";
+        variableInput.value = "";
+        orderInput.value = "";
+        lowerInput.value = "";
+        upperInput.value = "";
+        valueInput.value = "";
+        variablesInput.value = "";
+        resultText.textContent = "Ready.";
+        approxLine.hidden = true;
+    });
+
+    document.getElementById("execute").addEventListener("click", executeCalculation);
+
+    expressionInput.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" && !event.shiftKey) {
+            event.preventDefault();
+            executeCalculation();
+        }
+    });
+}
+
+if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+        navigator.serviceWorker.register("/service-worker.js").catch(() => {
+            /* Service worker registration failed silently to keep offline optional */
+        });
+    });
+}
+
+registerEvents();
