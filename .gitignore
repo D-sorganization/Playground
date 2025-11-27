@@ -1,12 +1,8 @@
-# Byte-compiled / optimized / DLL files
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
-
-# C extensions
 *.so
-
-# Distribution / packaging
 .Python
 build/
 develop-eggs/
@@ -98,7 +94,12 @@ venv.bak/
 .dmypy.json
 dmypy.json
 
-# IDE
+# Virtual environments
+venv/
+ENV/
+env/
+
+# IDEs
 .vscode/
 .idea/
 *.swp

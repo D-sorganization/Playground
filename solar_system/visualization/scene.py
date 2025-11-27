@@ -11,6 +11,7 @@ import numpy as np
 from typing import Dict, List, Optional, Tuple, Any
 from dataclasses import dataclass
 from datetime import timedelta
+from calendar import monthrange
 
 from ..core.constants import (
     PLANET_ORDER, INNER_PLANETS, OUTER_PLANETS, DWARF_PLANETS,
@@ -50,7 +51,7 @@ class ViewState:
     show_labels: bool = True
     show_trajectories: bool = True
     show_info_panel: bool = True
-    show_help: bool = False
+    show_help: bool = True  # Show help by default for new users
     focus_inner_system: bool = False
 
 
@@ -99,26 +100,33 @@ class SolarSystemScene:
 
         # Control bindings displayed in help
         self.controls = [
-            ("SPACE", "Pause/Resume"),
-            ("+ / -", "Speed up/slow down time"),
-            ("R", "Reverse time"),
-            ("D", "Toggle date picker"),
-            ("N", "Toggle time navigation panel"),
-            ("E", "Toggle historical events"),
-            ("[ / ]", "Jump backward/forward 1 day"),
-            ("{ / }", "Jump backward/forward 1 month"),
-            ("1-9", "Select planet"),
-            ("0", "Select Sun"),
-            ("F", "Focus on selected"),
-            ("C", "Cycle camera mode"),
-            ("O", "Toggle orbits"),
-            ("L", "Toggle labels"),
-            ("I", "Toggle info panel"),
-            ("G", "Toggle grid"),
-            ("T", "Plan trajectory to Mars"),
-            ("H", "Toggle help"),
-            ("HOME", "Reset view"),
-            ("ESC", "Quit")
+            ("MOUSE:", ""),
+            ("  Scroll Wheel", "Zoom in/out"),
+            ("  Left Drag", "Rotate camera"),
+            ("  Right Drag", "Pan camera"),
+            ("", ""),
+            ("KEYBOARD:", ""),
+            ("  SPACE", "Pause/Resume"),
+            ("  + / -", "Speed up/slow down time"),
+            ("  R", "Reverse time flow"),
+            ("  D", "Toggle date picker"),
+            ("  N", "Toggle time navigation panel"),
+            ("  E", "Toggle historical events"),
+            ("  [ / ]", "Jump backward/forward 1 day"),
+            ("  { / }", "Jump backward/forward 1 month"),
+            ("  T", "Plan trip to Mars 🚀"),
+            ("", ""),
+            ("  0-9", "Select planet (0=Sun, 3=Earth, 4=Mars)"),
+            ("  F", "Focus camera on selected"),
+            ("  C", "Cycle camera modes"),
+            ("  HOME", "Reset camera view"),
+            ("", ""),
+            ("  O", "Toggle orbital paths"),
+            ("  L", "Toggle planet labels"),
+            ("  I", "Toggle info panel"),
+            ("  G", "Toggle reference grid"),
+            ("  H", "Toggle this help"),
+            ("  ESC", "Quit simulation")
         ]
 
         # Enhanced UI widgets
@@ -401,23 +409,45 @@ class SolarSystemScene:
             self._update_ui_date()
 
         elif key == K_LEFTBRACE:
-            # Jump backward 1 month
+            # Jump backward 1 month, preserving day of month when possible
             current_dt = self.time_manager.current_time.datetime_utc
-            # Go to first day of current month, then subtract 1 day
-            first_of_month = current_dt.replace(day=1)
-            prev_month = first_of_month - timedelta(days=1)
-            self.time_manager.set_datetime(prev_month)
+            target_day = current_dt.day
+            
+            # Calculate previous month
+            if current_dt.month == 1:
+                prev_month = 12
+                prev_year = current_dt.year - 1
+            else:
+                prev_month = current_dt.month - 1
+                prev_year = current_dt.year
+            
+            # Ensure day exists in previous month (handle cases like Jan 31 -> Dec 31)
+            max_days_in_prev = monthrange(prev_year, prev_month)[1]
+            actual_day = min(target_day, max_days_in_prev)
+            
+            prev_date = current_dt.replace(year=prev_year, month=prev_month, day=actual_day)
+            self.time_manager.set_datetime(prev_date)
             self._update_ui_date()
 
         elif key == K_RIGHTBRACE:
-            # Jump forward 1 month
+            # Jump forward 1 month, preserving day of month when possible
             current_dt = self.time_manager.current_time.datetime_utc
-            # Go to first day of next month
+            target_day = current_dt.day
+            
+            # Calculate next month
             if current_dt.month == 12:
-                next_month = current_dt.replace(year=current_dt.year + 1, month=1, day=1)
+                next_month = 1
+                next_year = current_dt.year + 1
             else:
-                next_month = current_dt.replace(month=current_dt.month + 1, day=1)
-            self.time_manager.set_datetime(next_month)
+                next_month = current_dt.month + 1
+                next_year = current_dt.year
+            
+            # Ensure day exists in next month (handle cases like Jan 31 -> Feb 28/29)
+            max_days_in_next = monthrange(next_year, next_month)[1]
+            actual_day = min(target_day, max_days_in_next)
+            
+            next_date = current_dt.replace(year=next_year, month=next_month, day=actual_day)
+            self.time_manager.set_datetime(next_date)
             self._update_ui_date()
 
         elif key == K_HOME:
@@ -449,7 +479,20 @@ class SolarSystemScene:
 
         elif key == K_t:
             # Plan trajectory to Mars from Earth
-            self.plan_trajectory("Earth", "Mars")
+            print("\n" + "="*60)
+            print("Planning trajectory from Earth to Mars...")
+            trajectory = self.plan_trajectory("Earth", "Mars")
+            if trajectory:
+                print(f"✓ Trajectory created successfully!")
+                print(f"  Departure: {trajectory.departure_date:.1f}")
+                print(f"  Arrival: {trajectory.arrival_date:.1f}")
+                print(f"  Flight time: {trajectory.time_of_flight:.1f} days")
+                print(f"  Total ΔV: {trajectory.total_delta_v/1000:.2f} km/s")
+                print("  Spacecraft visible on trajectory (green rocket icon)")
+                print("="*60 + "\n")
+            else:
+                print("✗ Failed to create trajectory")
+                print("="*60 + "\n")
 
         # Period/comma for cycling fun facts
         elif key == K_PERIOD:
@@ -666,7 +709,7 @@ class SolarSystemScene:
                     state = spacecraft.get_state_at_time(jd)
                     pos = state.position * renderer.distance_scale
                     # Draw as bright point
-                    renderer.render_label("🚀 Spacecraft", pos, (0, 255, 128))
+                    renderer.render_label("🚀 " + spacecraft.name, pos, (0, 255, 128))
 
         # UI overlays
         # Status bar

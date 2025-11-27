@@ -373,8 +373,15 @@ class DateTimePicker:
                 if 1 <= value <= 12:
                     self._current_date = self._current_date.replace(month=value)
             elif self._editing_field == 'day':
-                if 1 <= value <= 31:
-                    self._current_date = self._current_date.replace(day=value)
+                # Validate that the day exists in the current month/year
+                from calendar import monthrange
+                max_days = monthrange(self._current_date.year, self._current_date.month)[1]
+                if 1 <= value <= max_days:
+                    try:
+                        self._current_date = self._current_date.replace(day=value)
+                    except ValueError:
+                        # Invalid date (e.g., Feb 30), ignore
+                        pass
             elif self._editing_field == 'hour':
                 if 0 <= value <= 23:
                     self._current_date = self._current_date.replace(hour=value)

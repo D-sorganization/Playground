@@ -55,7 +55,7 @@ class Camera:
 
     def __init__(
         self,
-        position: Tuple[float, float, float] = (0, 0, 10),
+        position: Tuple[float, float, float] = (0, 1500, 4500),
         target: Tuple[float, float, float] = (0, 0, 0),
         up: Tuple[float, float, float] = (0, 1, 0),
         fov: float = 60.0
@@ -64,7 +64,7 @@ class Camera:
         Initialize the camera.
 
         Args:
-            position: Initial camera position
+            position: Initial camera position (default shows entire solar system)
             target: Initial look-at target
             up: Up vector
             fov: Field of view in degrees
@@ -95,11 +95,11 @@ class Camera:
 
         # View bounds
         self.min_distance = 0.01
-        self.max_distance = 100.0
+        self.max_distance = 6000.0  # Increased to view entire solar system (Neptune ~4500 units)
 
         # Near/far clipping planes
         self.near = 0.0001
-        self.far = 1000.0
+        self.far = 10000.0  # Increased to prevent clipping outer planets
 
         # Animation state
         self._target_position = self.position.copy()
@@ -221,7 +221,8 @@ class Camera:
 
     def reset(self):
         """Reset camera to default view."""
-        self.position = np.array([0, 5, 15], dtype=np.float64)
+        # Position camera far enough to see entire solar system (Neptune at ~4500 units)
+        self.position = np.array([0, 1500, 4500], dtype=np.float64)
         self.target = np.array([0, 0, 0], dtype=np.float64)
         self.up = np.array([0, 1, 0], dtype=np.float64)
         self._update_angles_from_position()

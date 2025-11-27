@@ -14,6 +14,7 @@ Each event includes:
 
 from typing import List, Dict, Any
 from datetime import datetime
+from calendar import monthrange
 
 # List of historical space events
 SPACE_EVENTS = [
@@ -434,13 +435,21 @@ def get_events_for_date(dt: datetime, window_days: int = 3) -> List[Dict[str, An
                 matching_events.append(event)
 
         # Also check adjacent months if within window
-        elif abs(event["month"] - dt.month) == 1:
+        # Handle month wrapping (December <-> January)
+        month_diff = abs(event["month"] - dt.month)
+        is_adjacent = (month_diff == 1) or (month_diff == 11)  # 11 handles Dec->Jan or Jan->Dec
+        
+        if is_adjacent:
             # Calculate day difference across month boundary
-            # Simplified - assumes 30 day months
-            if event["month"] == dt.month + 1:
-                day_diff = (30 - dt.day) + event["day"]
+            # Use calendar module to get actual days in month
+            if event["month"] == dt.month + 1 or (dt.month == 12 and event["month"] == 1):
+                # Event is in next month
+                days_in_current = monthrange(dt.year, dt.month)[1]
+                day_diff = (days_in_current - dt.day) + event["day"]
             else:
-                day_diff = (30 - event["day"]) + dt.day
+                # Event is in previous month
+                days_in_event_month = monthrange(dt.year, event["month"])[1]
+                day_diff = (days_in_event_month - event["day"]) + dt.day
 
             if day_diff <= window_days:
                 matching_events.append(event)
