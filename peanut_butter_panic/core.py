@@ -254,7 +254,7 @@ class GameWorld:
 
     def _move_enemies(self, dt: float) -> None:
         for enemy in self.enemies:
-            target = self._primary_target()
+            target = self._primary_target(enemy)
             direction = _normalize(
                 (target[0] - enemy.position[0], target[1] - enemy.position[1])
             )
@@ -263,11 +263,11 @@ class GameWorld:
                 _add(enemy.position, _scale(direction, speed * dt))
             )
 
-    def _primary_target(self) -> Vec2:
+    def _primary_target(self, enemy: Enemy) -> Vec2:
         living = [s for s in self.sandwiches if s.alive]
         if living:
             return min(
-                living, key=lambda s: _distance(s.position, self.player.position)
+                living, key=lambda s: _distance(s.position, enemy.position)
             ).position
         return self.player.position
 
@@ -289,6 +289,9 @@ class GameWorld:
             else:
                 self.player.health = max(0, self.player.health - enemy.damage)
         self.enemies = surviving_enemies
+        self.stats.sandwiches_saved = sum(
+            1 for sandwich in self.sandwiches if sandwich.alive
+        )
 
     def _find_hit_target(self, enemy: Enemy) -> Sandwich | Player | None:
         for sandwich in self.sandwiches:
