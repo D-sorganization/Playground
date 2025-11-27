@@ -27,6 +27,10 @@ Controls:
     SPACE       Pause/Resume simulation
     +/-         Speed up/slow down time
     R           Reverse time flow
+    D           Toggle date picker (jump to any date)
+    N           Toggle time navigation panel
+    E           Toggle historical events panel
+    [ / ]       Jump backward/forward 1 day
     0-9         Select celestial body
     F           Focus on selected body
     C           Cycle camera mode
@@ -36,6 +40,7 @@ Controls:
     G           Toggle grid
     H           Toggle help overlay
     T           Plan trajectory to Mars
+    .           Cycle through fun facts (when planet selected)
     HOME        Reset view
     ESC         Quit
 
@@ -43,6 +48,12 @@ Mouse:
     Left drag   Orbit camera
     Right drag  Pan camera
     Scroll      Zoom in/out
+
+Educational Features:
+    - Manual date navigation to see planetary positions at any time in history
+    - Historical space exploration events panel (press E)
+    - Educational fun facts about each celestial body
+    - Accurate orbital mechanics visualization
 """
 
 import sys
@@ -144,9 +155,17 @@ def main():
     print("Controls:")
     print("  SPACE      - Pause/Resume")
     print("  +/-        - Speed up/slow down time")
+    print("  D          - Toggle date picker")
+    print("  E          - Toggle historical events")
+    print("  [ / ]      - Jump backward/forward by day")
     print("  0-9        - Select planet (0=Sun)")
     print("  H          - Toggle help overlay")
     print("  ESC        - Quit")
+    print()
+    print("Educational Features:")
+    print("  - Navigate to any date in history (1800-2200)")
+    print("  - View space exploration events at different times")
+    print("  - Learn fun facts about each celestial body")
     print()
     print("Starting simulation...")
 

@@ -25,6 +25,11 @@ from ..physics.trajectory_planner import (
 )
 from .renderer import Renderer, RenderSettings
 from .camera import Camera, CameraMode
+from ..ui.widgets import (
+    DateTimePicker, TimeNavigationPanel, EducationalInfoPanel,
+    HistoricalEventsPanel, PanelStyle
+)
+from ..data.planet_info import PLANET_DESCRIPTIONS
 
 try:
     import pygame
@@ -96,6 +101,11 @@ class SolarSystemScene:
             ("SPACE", "Pause/Resume"),
             ("+ / -", "Speed up/slow down time"),
             ("R", "Reverse time"),
+            ("D", "Toggle date picker"),
+            ("N", "Toggle time navigation panel"),
+            ("E", "Toggle historical events"),
+            ("[ / ]", "Jump backward/forward 1 day"),
+            ("{ / }", "Jump backward/forward 1 month"),
             ("1-9", "Select planet"),
             ("0", "Select Sun"),
             ("F", "Focus on selected"),
@@ -109,6 +119,12 @@ class SolarSystemScene:
             ("HOME", "Reset view"),
             ("ESC", "Quit")
         ]
+
+        # Enhanced UI widgets
+        self.date_picker: Optional[DateTimePicker] = None
+        self.time_nav_panel: Optional[TimeNavigationPanel] = None
+        self.educational_panel: Optional[EducationalInfoPanel] = None
+        self.historical_events: Optional[HistoricalEventsPanel] = None
 
     def initialize(self) -> bool:
         """
@@ -131,7 +147,57 @@ class SolarSystemScene:
         # Set initial time warp
         self.time_manager.time_warp = 86400  # 1 day per second
 
+        # Initialize enhanced UI widgets
+        self._initialize_ui_widgets()
+
         return True
+
+    def _initialize_ui_widgets(self):
+        """Initialize enhanced UI widgets for educational features."""
+        # Date picker for manual time navigation
+        self.date_picker = DateTimePicker(
+            position=(20, 100),
+            on_date_change=self._on_date_picker_change
+        )
+        self.date_picker.set_date(self.time_manager.current_time.datetime_utc)
+
+        # Time navigation panel with quick jump buttons
+        self.time_nav_panel = TimeNavigationPanel(
+            position=(20, 60)
+        )
+
+        # Educational info panel
+        self.educational_panel = EducationalInfoPanel(
+            position=(self.settings.window_width - 370, 20),
+            width=350
+        )
+
+        # Historical events panel
+        self.historical_events = HistoricalEventsPanel(
+            position=(self.settings.window_width - 420, self.settings.window_height - 200),
+            width=400
+        )
+        self.historical_events.set_date(self.time_manager.current_time.datetime_utc)
+
+    def _on_date_picker_change(self, new_date: 'datetime'):
+        """
+        Handle date changes from the date picker.
+
+        Args:
+            new_date: The new selected date
+        """
+        from datetime import datetime, timezone
+
+        # Ensure timezone aware
+        if new_date.tzinfo is None:
+            new_date = new_date.replace(tzinfo=timezone.utc)
+
+        # Update simulation time
+        self.time_manager.set_datetime(new_date)
+
+        # Update historical events
+        if self.historical_events:
+            self.historical_events.set_date(new_date)
 
     def _create_solar_system(self):
         """Create all celestial bodies in the solar system."""
@@ -306,6 +372,33 @@ class SolarSystemScene:
         elif key == K_r:
             self.time_manager.reverse_time()
 
+        elif key == K_d:
+            # Toggle date picker
+            if self.date_picker:
+                self.date_picker.toggle()
+                if self.date_picker.visible:
+                    self.date_picker.set_date(self.time_manager.current_time.datetime_utc)
+
+        elif key == K_n:
+            # Toggle time navigation panel
+            if self.time_nav_panel:
+                self.time_nav_panel.toggle()
+
+        elif key == K_e:
+            # Toggle historical events panel
+            if self.historical_events:
+                self.historical_events.toggle()
+
+        elif key == K_LEFTBRACKET:
+            # Jump backward 1 day
+            self.time_manager.advance_days(-1)
+            self._update_ui_date()
+
+        elif key == K_RIGHTBRACKET:
+            # Jump forward 1 day
+            self.time_manager.advance_days(1)
+            self._update_ui_date()
+
         elif key == K_HOME:
             self.renderer.camera.reset()
             self.renderer.camera.mode = CameraMode.FREE
@@ -337,17 +430,86 @@ class SolarSystemScene:
             # Plan trajectory to Mars from Earth
             self.plan_trajectory("Earth", "Mars")
 
+        # Period/comma for cycling fun facts
+        elif key == K_PERIOD:
+            if self.educational_panel and self.educational_panel.visible:
+                self.educational_panel.cycle_fact()
+
         # Number keys for planet selection
         elif key == K_0:
             self.select_body(self.sun)
+            self._update_educational_panel()
 
         elif K_1 <= key <= K_9:
             planet_index = key - K_1
             if planet_index < len(PLANET_ORDER):
                 planet_name = PLANET_ORDER[planet_index]
                 self.select_body(self.planets[planet_name])
+                self._update_educational_panel()
 
         return True
+
+    def _update_ui_date(self):
+        """Update all UI widgets with current date."""
+        current_dt = self.time_manager.current_time.datetime_utc
+
+        if self.date_picker:
+            self.date_picker.set_date(current_dt)
+
+        if self.historical_events:
+            self.historical_events.set_date(current_dt)
+
+    def _update_educational_panel(self):
+        """Update educational panel with selected body information."""
+        if not self.selected_body or not self.educational_panel:
+            return
+
+        # Get educational info from PLANET_DESCRIPTIONS
+        body_name = self.selected_body.name
+        if body_name in PLANET_DESCRIPTIONS:
+            info = PLANET_DESCRIPTIONS[body_name]
+
+            # Build properties dict
+            properties = {}
+            for key, value in info.items():
+                if key != 'fun_facts':
+                    properties[key.replace('_', ' ').title()] = value
+
+            # Get fun facts
+            fun_facts = info.get('fun_facts', [])
+
+            self.educational_panel.set_body(body_name, properties, fun_facts)
+
+    def _handle_time_nav_action(self, action: str):
+        """
+        Handle time navigation panel button actions.
+
+        Args:
+            action: The navigation action to perform
+        """
+        if action == "prev_day":
+            self.time_manager.advance_days(-1)
+        elif action == "next_day":
+            self.time_manager.advance_days(1)
+        elif action == "prev_week":
+            self.time_manager.advance_days(-7)
+        elif action == "next_week":
+            self.time_manager.advance_days(7)
+        elif action == "prev_month":
+            self.time_manager.advance_days(-30)
+        elif action == "next_month":
+            self.time_manager.advance_days(30)
+        elif action == "prev_year":
+            self.time_manager.advance_years(-1)
+        elif action == "next_year":
+            self.time_manager.advance_years(1)
+        elif action == "goto_today":
+            self.time_manager.set_to_now()
+        elif action == "goto_j2000":
+            self.time_manager.set_to_j2000()
+
+        # Update UI after time change
+        self._update_ui_date()
 
     def _handle_mouse_button(self, button: int, pressed: bool):
         """Handle mouse button events."""
@@ -510,6 +672,19 @@ class SolarSystemScene:
         # Help overlay
         if self.view_state.show_help:
             renderer.render_help_overlay(self.controls)
+
+        # Enhanced UI widgets
+        if self.date_picker:
+            renderer.render_date_picker(self.date_picker.get_render_data())
+
+        if self.time_nav_panel:
+            renderer.render_time_navigation_panel(self.time_nav_panel.get_render_data())
+
+        if self.educational_panel and self.selected_body:
+            renderer.render_educational_panel(self.educational_panel.get_render_data())
+
+        if self.historical_events:
+            renderer.render_historical_events(self.historical_events.get_render_data())
 
         # End frame
         renderer.end_frame()
