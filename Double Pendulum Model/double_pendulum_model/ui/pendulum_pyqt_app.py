@@ -349,7 +349,7 @@ class PendulumController(QtWidgets.QWidget):
             [
                 length * math.sin(angle),
                 0.0,
-                length * math.cos(angle),
+                -length * math.cos(angle),
             ]
         )
         return rotation @ local
