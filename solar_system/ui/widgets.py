@@ -3,10 +3,14 @@ UI Widgets
 ==========
 
 Reusable UI components for the simulation overlay.
+
+This module provides interactive widgets for controlling the simulation,
+displaying information, and enhancing the educational experience.
 """
 
-from typing import Dict, List, Tuple, Any, Optional
+from typing import Dict, List, Tuple, Any, Optional, Callable
 from dataclasses import dataclass
+from datetime import datetime, timedelta
 
 
 @dataclass
@@ -277,3 +281,341 @@ class TooltipManager:
         if self.should_show():
             return self._active_tooltip
         return None
+
+
+class DateTimePicker:
+    """
+    Interactive date/time picker for navigating to specific points in time.
+
+    Allows users to manually input or select dates to see planetary positions
+    at any point in history (within supported range).
+    """
+
+    def __init__(
+        self,
+        position: Tuple[int, int] = (20, 100),
+        style: PanelStyle = None,
+        on_date_change: Optional[Callable[[datetime], None]] = None
+    ):
+        """
+        Initialize the date/time picker.
+
+        Args:
+            position: Top-left position (x, y)
+            style: Visual styling
+            on_date_change: Callback when date is changed
+        """
+        self.position = position
+        self.style = style or PanelStyle()
+        self.visible = False
+        self._current_date: Optional[datetime] = None
+        self._on_date_change = on_date_change
+        self._editing_field: Optional[str] = None  # 'year', 'month', 'day', 'hour'
+        self._input_buffer: str = ""
+
+    def toggle(self):
+        """Toggle visibility of the picker."""
+        self.visible = not self.visible
+
+    def set_date(self, dt: datetime):
+        """
+        Set the current date.
+
+        Args:
+            dt: The datetime to display
+        """
+        self._current_date = dt
+
+    def get_date(self) -> Optional[datetime]:
+        """Get the current selected date."""
+        return self._current_date
+
+    def handle_input(self, char: str) -> bool:
+        """
+        Handle text input for date editing.
+
+        Args:
+            char: Character input
+
+        Returns:
+            True if input was handled
+        """
+        if not self._editing_field:
+            return False
+
+        if char.isdigit():
+            self._input_buffer += char
+            return True
+        elif char == '\r' or char == '\n':  # Enter
+            self._apply_input()
+            return True
+        elif char == '\b':  # Backspace
+            if self._input_buffer:
+                self._input_buffer = self._input_buffer[:-1]
+            return True
+
+        return False
+
+    def _apply_input(self):
+        """Apply the input buffer to the current field."""
+        if not self._input_buffer or not self._current_date:
+            self._editing_field = None
+            self._input_buffer = ""
+            return
+
+        try:
+            value = int(self._input_buffer)
+
+            if self._editing_field == 'year':
+                if 1800 <= value <= 2200:
+                    self._current_date = self._current_date.replace(year=value)
+            elif self._editing_field == 'month':
+                if 1 <= value <= 12:
+                    self._current_date = self._current_date.replace(month=value)
+            elif self._editing_field == 'day':
+                # Validate that the day exists in the current month/year
+                from calendar import monthrange
+                max_days = monthrange(self._current_date.year, self._current_date.month)[1]
+                if 1 <= value <= max_days:
+                    try:
+                        self._current_date = self._current_date.replace(day=value)
+                    except ValueError:
+                        # Invalid date (e.g., Feb 30), ignore
+                        pass
+            elif self._editing_field == 'hour':
+                if 0 <= value <= 23:
+                    self._current_date = self._current_date.replace(hour=value)
+
+            if self._on_date_change:
+                self._on_date_change(self._current_date)
+
+        except ValueError:
+            pass  # Invalid input, ignore
+
+        self._editing_field = None
+        self._input_buffer = ""
+
+    def start_editing(self, field: str):
+        """
+        Start editing a specific date field.
+
+        Args:
+            field: Field name ('year', 'month', 'day', 'hour')
+        """
+        self._editing_field = field
+        self._input_buffer = ""
+
+    def get_render_data(self) -> Dict[str, Any]:
+        """Get data for rendering."""
+        return {
+            "position": self.position,
+            "date": self._current_date,
+            "editing_field": self._editing_field,
+            "input_buffer": self._input_buffer,
+            "style": self.style,
+            "visible": self.visible
+        }
+
+
+class TimeNavigationPanel:
+    """
+    Panel with buttons for navigating through time.
+
+    Provides quick navigation controls:
+    - Jump forward/backward by day, week, month, year
+    - Jump to specific dates (today, J2000, etc.)
+    - Quick time warp presets
+    """
+
+    def __init__(
+        self,
+        position: Tuple[int, int] = (20, 250),
+        style: PanelStyle = None
+    ):
+        """
+        Initialize the time navigation panel.
+
+        Args:
+            position: Top-left position (x, y)
+            style: Visual styling
+        """
+        self.position = position
+        self.style = style or PanelStyle()
+        self.visible = True
+
+        # Define navigation buttons
+        self.buttons = [
+            {"label": "◀◀ Year", "action": "prev_year", "tooltip": "Go back 1 year"},
+            {"label": "◀ Month", "action": "prev_month", "tooltip": "Go back 1 month"},
+            {"label": "◀ Week", "action": "prev_week", "tooltip": "Go back 1 week"},
+            {"label": "◀ Day", "action": "prev_day", "tooltip": "Go back 1 day"},
+            {"label": "Today", "action": "goto_today", "tooltip": "Jump to current date"},
+            {"label": "J2000", "action": "goto_j2000", "tooltip": "Jump to J2000 epoch"},
+            {"label": "Day ▶", "action": "next_day", "tooltip": "Go forward 1 day"},
+            {"label": "Week ▶", "action": "next_week", "tooltip": "Go forward 1 week"},
+            {"label": "Month ▶", "action": "next_month", "tooltip": "Go forward 1 month"},
+            {"label": "Year ▶▶", "action": "next_year", "tooltip": "Go forward 1 year"},
+        ]
+
+    def toggle(self):
+        """Toggle visibility."""
+        self.visible = not self.visible
+
+    def get_render_data(self) -> Dict[str, Any]:
+        """Get data for rendering."""
+        return {
+            "position": self.position,
+            "buttons": self.buttons,
+            "style": self.style,
+            "visible": self.visible
+        }
+
+
+class EducationalInfoPanel:
+    """
+    Enhanced info panel showing educational information about celestial bodies.
+
+    Displays:
+    - Physical properties
+    - Orbital characteristics
+    - Fun facts and educational content
+    - Historical significance
+    """
+
+    def __init__(
+        self,
+        position: Tuple[int, int] = (20, 20),
+        width: int = 350,
+        style: PanelStyle = None
+    ):
+        """
+        Initialize the educational info panel.
+
+        Args:
+            position: Top-left position (x, y)
+            width: Panel width in pixels
+            style: Visual styling
+        """
+        self.position = position
+        self.width = width
+        self.style = style or PanelStyle()
+        self.visible = True
+        self._body_name: Optional[str] = None
+        self._properties: Dict[str, Any] = {}
+        self._fun_facts: List[str] = []
+        self._current_fact_index: int = 0
+
+    def set_body(self, name: str, properties: Dict[str, Any], fun_facts: List[str] = None):
+        """
+        Set the celestial body to display information about.
+
+        Args:
+            name: Body name
+            properties: Dictionary of properties to display
+            fun_facts: Optional list of educational fun facts
+        """
+        self._body_name = name
+        self._properties = properties
+        self._fun_facts = fun_facts or []
+        self._current_fact_index = 0
+
+    def cycle_fact(self):
+        """Cycle to the next fun fact."""
+        if self._fun_facts:
+            self._current_fact_index = (self._current_fact_index + 1) % len(self._fun_facts)
+
+    def get_current_fact(self) -> Optional[str]:
+        """Get the currently displayed fun fact."""
+        if self._fun_facts:
+            return self._fun_facts[self._current_fact_index]
+        return None
+
+    def toggle(self):
+        """Toggle visibility."""
+        self.visible = not self.visible
+
+    def get_render_data(self) -> Dict[str, Any]:
+        """Get data for rendering."""
+        return {
+            "position": self.position,
+            "width": self.width,
+            "body_name": self._body_name,
+            "properties": self._properties,
+            "current_fact": self.get_current_fact(),
+            "fact_count": len(self._fun_facts),
+            "fact_index": self._current_fact_index,
+            "style": self.style,
+            "visible": self.visible
+        }
+
+
+class HistoricalEventsPanel:
+    """
+    Displays historical events related to the current date.
+
+    Shows significant astronomical events, space missions, discoveries, etc.
+    that occurred on or near the current simulation date.
+    """
+
+    def __init__(
+        self,
+        position: Tuple[int, int] = (20, 450),
+        width: int = 400,
+        style: PanelStyle = None
+    ):
+        """
+        Initialize the historical events panel.
+
+        Args:
+            position: Top-left position (x, y)
+            width: Panel width in pixels
+            style: Visual styling
+        """
+        self.position = position
+        self.width = width
+        self.style = style or PanelStyle()
+        self.visible = False
+        self._current_date: Optional[datetime] = None
+        self._events: List[Dict[str, str]] = []
+
+    def set_date(self, dt: datetime):
+        """
+        Set the current date and find relevant events.
+
+        Args:
+            dt: Current simulation date
+        """
+        self._current_date = dt
+        self._events = self._find_events_for_date(dt)
+
+    def _find_events_for_date(self, dt: datetime) -> List[Dict[str, str]]:
+        """
+        Find historical events for the given date.
+
+        Args:
+            dt: Date to search
+
+        Returns:
+            List of event dictionaries with 'date', 'title', 'description'
+        """
+        try:
+            from ..data.historical_events import get_events_for_date
+            return get_events_for_date(dt, window_days=7)
+        except ImportError:
+            # Fallback to empty list if module not available
+            return []
+
+    def toggle(self):
+        """Toggle visibility."""
+        self.visible = not self.visible
+
+    def get_render_data(self) -> Dict[str, Any]:
+        """Get data for rendering."""
+        return {
+            "position": self.position,
+            "width": self.width,
+            "date": self._current_date,
+            "events": self._events,
+            "style": self.style,
+            "visible": self.visible
+        }
