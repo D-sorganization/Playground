@@ -288,12 +288,7 @@ class SolarSystemScene:
         """
         Handle keyboard input.
 
-        Returns:
-            False if should quit
-                    print(f"✓ Trajectory created successfully!")
-                    print(f"  Departure: {trajectory.departure_time:.1f}")
-                    print(f"  Arrival: {trajectory.arrival_time:.1f}")
-
+        return True
         elif key == K_SPACE:
             self.time_manager.toggle_pause()
 
@@ -356,7 +351,7 @@ class SolarSystemScene:
         return True
 
     def _handle_mouse_button(self, button: int, pressed: bool):
-        """Handle mouse button events."""
+        pass
         if button == 1:  # Left button
             self._mouse_dragging = pressed
             if pressed:
@@ -370,7 +365,7 @@ class SolarSystemScene:
                 self._mouse_dragging = False
 
     def _handle_mouse_motion(self, pos: Tuple[int, int], rel: Tuple[int, int]):
-        """Handle mouse motion."""
+        pass
         if self._mouse_dragging:
             # Get mouse buttons
             buttons = pygame.mouse.get_pressed()
@@ -382,7 +377,7 @@ class SolarSystemScene:
                 self.renderer.camera.pan(-rel[0], rel[1])
 
     def _cycle_camera_mode(self):
-        """Cycle through camera modes."""
+        pass
         camera = self.renderer.camera
         modes = [CameraMode.FREE, CameraMode.HELIOCENTRIC, CameraMode.TOP_DOWN]
 
@@ -396,7 +391,6 @@ class SolarSystemScene:
         camera.set_mode(new_mode, self.selected_body)
 
     def _focus_on_selected(self):
-        """Focus camera on selected body."""
         if not self.selected_body:
             return
 
@@ -415,7 +409,6 @@ class SolarSystemScene:
             self.renderer.camera.set_distance(15)
 
     def _update(self):
-        """Update simulation state."""
         # Update time
         self.time_manager.update()
 
@@ -426,7 +419,6 @@ class SolarSystemScene:
         )
 
     def _render(self):
-        """Render the current frame."""
         renderer = self.renderer
         jd = self.time_manager.julian_date
 
@@ -521,7 +513,6 @@ class SolarSystemScene:
         renderer.end_frame()
 
     def _should_render_body(self, body: CelestialBody) -> bool:
-        """Check if a body should be rendered based on view settings."""
         if body.name in INNER_PLANETS:
             return self.view_state.show_inner_planets
         elif body.name in OUTER_PLANETS:
@@ -535,16 +526,6 @@ class SolarSystemScene:
         origin_name: str,
         destination_name: str
     ) -> Optional[Dict[str, Any]]:
-        """
-        Get a summary of transfer options between two bodies.
-
-        Args:
-            origin_name: Name of origin body
-            destination_name: Name of destination body
-
-        Returns:
-            Dictionary with transfer information
-        """
         origin = self.get_body_by_name(origin_name)
         destination = self.get_body_by_name(destination_name)
 
