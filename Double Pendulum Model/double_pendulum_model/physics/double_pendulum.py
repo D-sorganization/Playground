@@ -183,6 +183,8 @@ class DoublePendulumParameters:
     damping_shoulder: float = DEFAULT_DAMPING_SHOULDER
     damping_wrist: float = DEFAULT_DAMPING_WRIST
     gravity_m_s2: float = GRAVITATIONAL_ACCELERATION
+    gravity_enabled: bool = True
+    constrained_to_plane: bool = True
 
     @classmethod
     def default(cls) -> "DoublePendulumParameters":
@@ -207,6 +209,10 @@ class DoublePendulumParameters:
 
     @property
     def projected_gravity(self) -> float:
+        if not self.gravity_enabled:
+            return 0.0
+        if not self.constrained_to_plane:
+            return self.gravity_m_s2
         return self.gravity_m_s2 * math.cos(self.plane_inclination_rad)
 
 
@@ -214,10 +220,12 @@ class DoublePendulumParameters:
 class DoublePendulumState:
     """Dynamic state of the pendulum."""
 
-    theta1: float
-    theta2: float
-    omega1: float
-    omega2: float
+    theta1: float  # Angle of upper segment from vertical (in-plane)
+    theta2: float  # Relative angle of lower segment from upper segment (in-plane)
+    omega1: float  # Angular velocity of upper segment
+    omega2: float  # Angular velocity of lower segment
+    phi: float = 0.0  # Out-of-plane angle (above/below plane, in radians)
+    omega_phi: float = 0.0  # Out-of-plane angular velocity
 
 
 @dataclass
@@ -360,11 +368,16 @@ class DoublePendulumDynamics:
             current_state: DoublePendulumState, scale: float, derivs: Iterable[float]
         ) -> DoublePendulumState:
             dtheta1, dtheta2, domega1, domega2 = derivs
+            # Preserve phi and omega_phi (out-of-plane motion not yet in dynamics)
+            phi = getattr(current_state, 'phi', 0.0)
+            omega_phi = getattr(current_state, 'omega_phi', 0.0)
             return DoublePendulumState(
                 theta1=current_state.theta1 + scale * dtheta1,
                 theta2=current_state.theta2 + scale * dtheta2,
                 omega1=current_state.omega1 + scale * domega1,
                 omega2=current_state.omega2 + scale * domega2,
+                phi=phi,
+                omega_phi=omega_phi,
             )
 
         k1 = self.derivatives(t, state)
@@ -376,12 +389,18 @@ class DoublePendulumDynamics:
         new_theta2 = state.theta2 + dt / 6.0 * (k1[1] + 2 * k2[1] + 2 * k3[1] + k4[1])
         new_omega1 = state.omega1 + dt / 6.0 * (k1[2] + 2 * k2[2] + 2 * k3[2] + k4[2])
         new_omega2 = state.omega2 + dt / 6.0 * (k1[3] + 2 * k2[3] + 2 * k3[3] + k4[3])
+        
+        # Preserve phi and omega_phi
+        phi = getattr(state, 'phi', 0.0)
+        omega_phi = getattr(state, 'omega_phi', 0.0)
 
         return DoublePendulumState(
             theta1=new_theta1,
             theta2=new_theta2,
             omega1=new_omega1,
             omega2=new_omega2,
+            phi=phi,
+            omega_phi=omega_phi,
         )
 
 

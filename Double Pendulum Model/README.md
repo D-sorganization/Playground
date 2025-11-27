@@ -9,6 +9,21 @@ This folder contains a standalone, driven double pendulum toolkit with both a Tk
 - `double_pendulum_model/tests/`: unit tests for the physics utilities.
 
 ## Running the GUI
+
+You can run the GUI in several ways:
+
+### Option 1: Run the launcher script (Easiest for IDE)
+```bash
+python "Double Pendulum Model/run_pendulum.py"
+```
+Or simply click the play button in your IDE when `run_pendulum.py` is open.
+
+### Option 2: Run as a module
+```bash
+python -m double_pendulum_model
+```
+
+### Option 3: Run the GUI module directly
 ```bash
 python -m double_pendulum_model.ui.double_pendulum_gui
 ```
