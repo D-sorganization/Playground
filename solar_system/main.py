@@ -38,6 +38,7 @@ Controls:
     L           Toggle labels
     I           Toggle info panel
     G           Toggle grid
+    M           Toggle immersion checklist
     H           Toggle help overlay
     T           Plan trajectory to Mars
     .           Cycle through fun facts (when planet selected)
@@ -172,6 +173,7 @@ def main():
     print("  • T             - Plan trip to Mars from Earth")
     print("  • 0-9           - Select planets (0=Sun, 3=Earth, 4=Mars, etc.)")
     print("  • I             - Toggle info panel")
+    print("  • M             - Toggle immersion checklist")
     print("  • H             - Toggle help overlay")
     print("  • ESC           - Quit")
     print("\n  EDUCATIONAL FEATURES:")

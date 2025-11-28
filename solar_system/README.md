@@ -12,7 +12,7 @@ A professional-grade, scientifically accurate 3D simulation of our solar system 
 
 ### Visualization
 - **3D OpenGL Rendering**: Smooth, hardware-accelerated graphics
-- **Star Field Background**: Procedurally generated star field for immersion
+- **Star Field Background**: Accurate sky dome built from bright-star catalogs for constellation fidelity
 - **Planetary Rings**: Saturn and other gas giants rendered with ring systems
 - **Orbital Paths**: Visualize complete orbital trajectories
 - **Color-Coded Bodies**: Each planet has accurate representative colors
@@ -35,6 +35,7 @@ A professional-grade, scientifically accurate 3D simulation of our solar system 
 - **Real-Time Data**: Current distance, orbital speed, and position
 - **Time Control**: Speed up, slow down, or reverse time
 - **Interactive Selection**: Click to select and learn about any body
+- **Immersion Checklist**: Guided set of goals to explore missions, data overlays, and time travel
 
 ## Installation
 
@@ -119,6 +120,8 @@ python run_solar_system.py --width 1920 --height 1080
 | `I` | Toggle information panel |
 | `G` | Toggle reference grid |
 | `H` | Toggle help overlay |
+| `M` | Toggle immersion checklist |
+| `V` | Toggle stereo/VR rendering |
 | `T` | Plan trajectory to Mars |
 | `HOME` | Reset camera view |
 | `ESC` | Quit |
@@ -227,13 +230,13 @@ print(f"Delta-V required: {transfer.total_delta_v:.1f} m/s")
 
 ## Future Enhancements
 
-- [ ] Planet textures from NASA imagery
-- [ ] Shader-based rendering for better visuals
-- [ ] More detailed moon systems
-- [ ] Asteroid belt visualization
-- [ ] Comet trajectories
-- [ ] Gravity assists in trajectory planning
-- [ ] VR support
+- [x] Planet textures from NASA imagery
+- [x] Shader-based rendering for better visuals
+- [x] More detailed moon systems
+- [x] Asteroid belt visualization
+- [x] Comet trajectories
+- [x] Gravity assists in trajectory planning
+- [x] VR support
 
 ## License
 

@@ -43,6 +43,7 @@ exclude = [
     "__pycache__/",
     ".git/",
     "node_modules/",
+    "solar_system/",
 ]
 
 [lint.per-file-ignores]

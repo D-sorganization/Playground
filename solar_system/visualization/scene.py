@@ -1,34 +1,36 @@
+from __future__ import annotations
+
+# ruff: noqa: F403, F405, I001
 
 import math
-import numpy as np
-from typing import Dict, List, Optional, Tuple, Any
-from dataclasses import dataclass
-from datetime import timedelta
 from calendar import monthrange
+from dataclasses import dataclass
+from datetime import datetime
+from typing import Any
 
-from ..core.constants import (
-    PLANET_ORDER, INNER_PLANETS, OUTER_PLANETS, DWARF_PLANETS,
-    ORBITAL_ELEMENTS, PHYSICAL_PROPERTIES, AU, J2000
-)
-from ..core.celestial_body import (
-    CelestialBody, Star, Planet, Moon, Spacecraft, BodyType, StateVector
-)
-from ..core.time_manager import TimeManager, SimulationTime
-from ..physics.orbital_mechanics import OrbitalMechanics
-from ..physics.trajectory_planner import (
-    TrajectoryPlanner, TransferTrajectory, TransferType
-)
-from .renderer import Renderer, RenderSettings
-from .camera import Camera, CameraMode
-from ..ui.widgets import (
-    DateTimePicker, TimeNavigationPanel, EducationalInfoPanel,
-    HistoricalEventsPanel, PanelStyle
-)
+import numpy as np
+
+from ..core.celestial_body import (BodyType, CelestialBody, Moon, Planet,
+                                   Spacecraft, Star)
+from ..core.constants import (AU, DWARF_PLANETS, INNER_PLANETS, OUTER_PLANETS,
+                              PLANET_ORDER)
+from ..core.time_manager import TimeManager
+from ..data.asteroids import MAJOR_ASTEROIDS, generate_belt_particles
+from ..data.comets import COMETS
+from ..data.moon_systems import moons_by_parent
 from ..data.planet_info import PLANET_DESCRIPTIONS
+from ..physics.trajectory_planner import (TrajectoryPlanner,
+                                          TransferTrajectory, TransferType)
+from ..ui.widgets import (DateTimePicker, EducationalInfoPanel,
+                          HistoricalEventsPanel, ImmersionChecklistPanel,
+                          TimeNavigationPanel)
+from .camera import CameraMode
+from .renderer import Renderer, RenderSettings
 
 try:
     import pygame
     from pygame.locals import *
+
     PYGAME_AVAILABLE = True
 except ImportError:
     PYGAME_AVAILABLE = False
@@ -39,33 +41,43 @@ class ViewState:
     show_inner_planets: bool = True
     show_outer_planets: bool = True
     show_dwarf_planets: bool = True
+    show_minor_bodies: bool = True
     show_orbits: bool = True
     show_labels: bool = True
     show_trajectories: bool = True
     show_info_panel: bool = True
     show_help: bool = True  # Show help by default for new users
     focus_inner_system: bool = False
+    show_immersion_checklist: bool = True
 
 
 class SolarSystemScene:
 
-    def __init__(self, settings: RenderSettings = None):
+    def __init__(self, settings: RenderSettings | None = None):
         self.settings = settings or RenderSettings()
-        self.renderer: Optional[Renderer] = None
+        self.renderer: Renderer | None = None
         self.time_manager = TimeManager()
         self.trajectory_planner = TrajectoryPlanner()
 
         # Celestial bodies
-        self.sun: Optional[Star] = None
-        self.planets: Dict[str, Planet] = {}
-        self.moons: Dict[str, Moon] = {}
-        self.spacecraft: Dict[str, Spacecraft] = {}
+        self.sun: Star | None = None
+        self.planets: dict[str, Planet] = {}
+        self.moons: dict[str, Moon] = {}
+        self.asteroids: dict[str, CelestialBody] = {}
+        self.comets: dict[str, CelestialBody] = {}
+        self.spacecraft: dict[str, Spacecraft] = {}
+
+        # Pre-computed asteroid belt cloud
+        self.asteroid_belt_points = generate_belt_particles()
 
         # Active trajectories
-        self.trajectories: List[TransferTrajectory] = []
+        self.trajectories: list[TransferTrajectory] = []
 
         # View state
         self.view_state = ViewState()
+
+        # Recent action feedback for status bar
+        self._action_message: str = ""
 
         # Selection
         self.selected_body: Optional[CelestialBody] = None
@@ -91,6 +103,7 @@ class SolarSystemScene:
             ("  [ / ]", "Jump backward/forward 1 day"),
             ("  { / }", "Jump backward/forward 1 month"),
             ("  T", "Plan trip to Mars 🚀"),
+            ("  M", "Toggle immersion checklist"),
             ("", ""),
             ("  0-9", "Select planet (0=Sun, 3=Earth, 4=Mars)"),
             ("  F", "Focus camera on selected"),
@@ -101,16 +114,18 @@ class SolarSystemScene:
             ("  L", "Toggle planet labels"),
             ("  I", "Toggle info panel"),
             ("  G", "Toggle reference grid"),
+            ("  V", "Toggle stereo/VR view"),
             ("  H", "Toggle this help"),
             ("  ESC", "Quit simulation")
         ]
 
         # Enhanced UI widgets
-        self.date_picker: Optional[DateTimePicker] = None
-        self.time_nav_panel: Optional[TimeNavigationPanel] = None
-        self.educational_panel: Optional[EducationalInfoPanel] = None
-        self.historical_events: Optional[HistoricalEventsPanel] = None
-        self._last_ui_sync_jd: Optional[float] = None
+        self.date_picker: DateTimePicker | None = None
+        self.time_nav_panel: TimeNavigationPanel | None = None
+        self.educational_panel: EducationalInfoPanel | None = None
+        self.historical_events: HistoricalEventsPanel | None = None
+        self.immersion_checklist: ImmersionChecklistPanel | None = None
+        self._last_ui_sync_jd: float | None = None
 
     def initialize(self) -> bool:
         # Create renderer
@@ -159,18 +174,19 @@ class SolarSystemScene:
         )
         self.historical_events.set_date(self.time_manager.current_time.datetime_utc)
 
-    def _on_date_picker_change(self, new_date: 'datetime'):
+        # Immersive checklist to guide educational exploration
+        self.immersion_checklist = ImmersionChecklistPanel(position=(20, 240))
+
+    def _on_date_picker_change(self, new_date: datetime):
         """
         Handle date changes from the date picker.
 
         Args:
             new_date: The new selected date
         """
-        from datetime import datetime, timezone
-
         # Ensure timezone aware
         if new_date.tzinfo is None:
-            new_date = new_date.replace(tzinfo=timezone.utc)
+            new_date = new_date.replace(tzinfo=datetime.UTC)
 
         # Update simulation time
         self.time_manager.set_datetime(new_date)
@@ -178,6 +194,8 @@ class SolarSystemScene:
         # Update historical events
         if self.historical_events:
             self.historical_events.set_date(new_date)
+
+        self._mark_immersion_task("navigate_time")
 
     def _create_solar_system(self):
         # Create the Sun
@@ -194,27 +212,45 @@ class SolarSystemScene:
             self.planets[planet_name] = planet
 
         # Create Earth's Moon
-        moon_orbital_elements = type(ORBITAL_ELEMENTS["Mercury"])(
-            semi_major_axis=384400 / AU / 1000,  # km to AU
-            eccentricity=0.0549,
-            inclination=5.145,
-            longitude_ascending=125.08,
-            longitude_perihelion=318.15,
-            mean_longitude=135.27,
-            mean_longitude_rate=13.176358  # degrees per day * 36525
-        )
+        for parent_name, moon_list in moons_by_parent().items():
+            parent_body = self.planets.get(parent_name)
+            if not parent_body:
+                continue
+            for descriptor in moon_list:
+                moon = Moon(
+                    name=descriptor.name,
+                    parent=parent_body,
+                    orbital_elements=descriptor.elements,
+                    physical_properties=descriptor.properties,
+                )
+                self.moons[descriptor.name] = moon
 
-        earth_moon = Moon(
-            name="Moon",
-            parent=self.planets["Earth"],
-            orbital_elements=moon_orbital_elements
-        )
-        self.moons["Moon"] = earth_moon
+        for asteroid in MAJOR_ASTEROIDS:
+            asteroid_body = CelestialBody(
+                name=asteroid.name,
+                body_type=BodyType.ASTEROID,
+                orbital_elements=asteroid.elements,
+                physical_properties=asteroid.properties,
+                parent=self.sun
+            )
+            self.asteroids[asteroid.name] = asteroid_body
+
+        for comet in COMETS:
+            comet_body = CelestialBody(
+                name=comet.name,
+                body_type=BodyType.COMET,
+                orbital_elements=comet.elements,
+                physical_properties=comet.properties,
+                parent=self.sun
+            )
+            self.comets[comet.name] = comet_body
 
     def get_all_bodies(self) -> List[CelestialBody]:
         bodies = [self.sun]
         bodies.extend(self.planets.values())
         bodies.extend(self.moons.values())
+        bodies.extend(self.asteroids.values())
+        bodies.extend(self.comets.values())
         bodies.extend(self.spacecraft.values())
         return bodies
 
@@ -225,6 +261,10 @@ class SolarSystemScene:
             return self.planets[name]
         if name in self.moons:
             return self.moons[name]
+        if name in self.asteroids:
+            return self.asteroids[name]
+        if name in self.comets:
+            return self.comets[name]
         if name in self.spacecraft:
             return self.spacecraft[name]
         return None
@@ -232,6 +272,7 @@ class SolarSystemScene:
     def select_body(self, body: CelestialBody):
         self.selected_body = body
         self.renderer.selected_body = body
+        self._mark_immersion_task("select_body")
 
     def plan_trajectory(
         self,
@@ -321,10 +362,10 @@ class SolarSystemScene:
         elif key == K_SPACE:
             self.time_manager.toggle_pause()
 
-        elif key == K_EQUALS or key == K_PLUS or key == K_KP_PLUS:
+        elif key in (K_EQUALS, K_PLUS, K_KP_PLUS):
             self.time_manager.increase_time_warp()
 
-        elif key == K_MINUS or key == K_KP_MINUS:
+        elif key in (K_MINUS, K_KP_MINUS):
             self.time_manager.decrease_time_warp()
 
         elif key == K_r:
@@ -336,32 +377,38 @@ class SolarSystemScene:
                 self.date_picker.toggle()
                 if self.date_picker.visible:
                     self.date_picker.set_date(self.time_manager.current_time.datetime_utc)
+                    self._mark_immersion_task("navigate_time")
 
         elif key == K_n:
             # Toggle time navigation panel
             if self.time_nav_panel:
                 self.time_nav_panel.toggle()
+                self._mark_immersion_task("navigate_time")
 
         elif key == K_e:
             # Toggle historical events panel
             if self.historical_events:
                 self.historical_events.toggle()
+                if self.historical_events.visible:
+                    self._mark_immersion_task("historical_events")
 
         elif key == K_LEFTBRACKET:
             # Jump backward 1 day
             self.time_manager.advance_days(-1)
             self._update_ui_date()
+            self._mark_immersion_task("navigate_time")
 
         elif key == K_RIGHTBRACKET:
             # Jump forward 1 day
             self.time_manager.advance_days(1)
             self._update_ui_date()
+            self._mark_immersion_task("navigate_time")
 
         elif key == K_LEFTBRACE:
             # Jump backward 1 month, preserving day of month when possible
             current_dt = self.time_manager.current_time.datetime_utc
             target_day = current_dt.day
-            
+
             # Calculate previous month
             if current_dt.month == 1:
                 prev_month = 12
@@ -369,20 +416,21 @@ class SolarSystemScene:
             else:
                 prev_month = current_dt.month - 1
                 prev_year = current_dt.year
-            
+
             # Ensure day exists in previous month (handle cases like Jan 31 -> Dec 31)
             max_days_in_prev = monthrange(prev_year, prev_month)[1]
             actual_day = min(target_day, max_days_in_prev)
-            
+
             prev_date = current_dt.replace(year=prev_year, month=prev_month, day=actual_day)
             self.time_manager.set_datetime(prev_date)
             self._update_ui_date()
+            self._mark_immersion_task("navigate_time")
 
         elif key == K_RIGHTBRACE:
             # Jump forward 1 month, preserving day of month when possible
             current_dt = self.time_manager.current_time.datetime_utc
             target_day = current_dt.day
-            
+
             # Calculate next month
             if current_dt.month == 12:
                 next_month = 1
@@ -390,14 +438,15 @@ class SolarSystemScene:
             else:
                 next_month = current_dt.month + 1
                 next_year = current_dt.year
-            
+
             # Ensure day exists in next month (handle cases like Jan 31 -> Feb 28/29)
             max_days_in_next = monthrange(next_year, next_month)[1]
             actual_day = min(target_day, max_days_in_next)
-            
+
             next_date = current_dt.replace(year=next_year, month=next_month, day=actual_day)
             self.time_manager.set_datetime(next_date)
             self._update_ui_date()
+            self._mark_immersion_task("navigate_time")
 
         elif key == K_HOME:
             self.renderer.camera.reset()
@@ -406,19 +455,25 @@ class SolarSystemScene:
         elif key == K_o:
             self.view_state.show_orbits = not self.view_state.show_orbits
             self.renderer.settings.show_orbits = self.view_state.show_orbits
+            self._mark_immersion_task("toggle_overlays")
 
         elif key == K_l:
             self.view_state.show_labels = not self.view_state.show_labels
             self.renderer.settings.show_labels = self.view_state.show_labels
+            self._mark_immersion_task("toggle_overlays")
 
         elif key == K_i:
             self.view_state.show_info_panel = not self.view_state.show_info_panel
 
         elif key == K_g:
             self.renderer.settings.show_grid = not self.renderer.settings.show_grid
+            self._mark_immersion_task("toggle_overlays")
 
         elif key == K_h:
             self.view_state.show_help = not self.view_state.show_help
+
+        elif key == K_v:
+            self.settings.stereo_view = not self.settings.stereo_view
 
         elif key == K_c:
             self._cycle_camera_mode()
@@ -428,20 +483,21 @@ class SolarSystemScene:
 
         elif key == K_t:
             # Plan trajectory to Mars from Earth
-            print("\n" + "="*60)
-            print("Planning trajectory from Earth to Mars...")
             trajectory = self.plan_trajectory("Earth", "Mars")
             if trajectory:
-                print(f"✓ Trajectory created successfully!")
-                print(f"  Departure: {trajectory.departure_time:.1f}")
-                print(f"  Arrival: {trajectory.arrival_time:.1f}")
-                print(f"  Flight time: {trajectory.time_of_flight:.1f} days")
-                print(f"  Total ΔV: {trajectory.total_delta_v/1000:.2f} km/s")
-                print("  Spacecraft visible on trajectory (green rocket icon)")
-                print("="*60 + "\n")
+                self._mark_immersion_task("plan_transfer")
+                self._action_message = (
+                    "Earth→Mars transfer: ΔV "
+                    f"{trajectory.total_delta_v/1000:.2f} km/s, "
+                    f"flight {trajectory.time_of_flight:.1f} days"
+                )
             else:
-                print("✗ Failed to create trajectory")
-                print("="*60 + "\n")
+                self._action_message = "Earth→Mars transfer could not be created"
+
+        elif key == K_m:
+            if self.immersion_checklist:
+                self.immersion_checklist.toggle()
+            self.view_state.show_immersion_checklist = not self.view_state.show_immersion_checklist
 
         # Period/comma for cycling fun facts
         elif key == K_PERIOD:
@@ -493,6 +549,13 @@ class SolarSystemScene:
 
             self.educational_panel.set_body(body_name, properties, fun_facts)
 
+        self._mark_immersion_task("select_body")
+
+    def _mark_immersion_task(self, task_id: str):
+        """Mark an immersion checklist task as complete if available."""
+        if self.immersion_checklist:
+            self.immersion_checklist.mark_complete(task_id)
+
     def _handle_time_nav_action(self, action: str):
         """
         Handle time navigation panel button actions.
@@ -520,9 +583,22 @@ class SolarSystemScene:
             self.time_manager.set_to_now()
         elif action == "goto_j2000":
             self.time_manager.set_to_j2000()
+        elif action == "goto_j2030":
+            self.time_manager.set_datetime(self.time_manager.J2030)
+        elif action == "reset":
+            self.time_manager.set_to_now()
+        elif action == "faster":
+            self.time_manager.increase_time_warp()
+        elif action == "slower":
+            self.time_manager.decrease_time_warp()
+        elif action == "reverse":
+            self.time_manager.reverse_time()
+        elif action == "toggle_pause":
+            self.time_manager.toggle_pause()
 
         # Update UI after time change
         self._update_ui_date()
+        self._mark_immersion_task("navigate_time")
 
     def _handle_mouse_button(self, button: int, pressed: bool):
         """Handle mouse button events."""
@@ -588,12 +664,14 @@ class SolarSystemScene:
 
         current_jd = self.time_manager.julian_date
 
-        if delta_jd or self._last_ui_sync_jd is None:
-            if self._last_ui_sync_jd is None or not math.isclose(
-                current_jd, self._last_ui_sync_jd
-            ):
-                self._update_ui_date()
-                self._last_ui_sync_jd = current_jd
+        if (
+            delta_jd or self._last_ui_sync_jd is None
+        ) and (
+            self._last_ui_sync_jd is None
+            or not math.isclose(current_jd, self._last_ui_sync_jd)
+        ):
+            self._update_ui_date()
+            self._last_ui_sync_jd = current_jd
 
         # Update camera
         self.renderer.camera.update(
@@ -605,94 +683,118 @@ class SolarSystemScene:
         renderer = self.renderer
         jd = self.time_manager.julian_date
 
-        # Begin frame
+        if self.settings.stereo_view:
+            from OpenGL.GL import GL_DEPTH_BUFFER_BIT, glClear, glViewport
+
+            left_eye, right_eye = renderer.camera.stereo_states()
+            half_width = renderer.settings.window_width // 2
+
+            glViewport(0, 0, half_width, renderer.settings.window_height)
+            renderer.begin_frame(camera_state=left_eye)
+            self._render_view_contents(jd)
+
+            glViewport(half_width, 0, half_width, renderer.settings.window_height)
+            renderer.begin_frame(camera_state=right_eye, clear=False)
+            glClear(GL_DEPTH_BUFFER_BIT)
+            self._render_view_contents(jd)
+
+            glViewport(0, 0, renderer.settings.window_width, renderer.settings.window_height)
+            renderer.begin_frame(clear=False)
+            self._render_overlays(jd)
+            renderer.end_frame()
+            return
+
         renderer.begin_frame()
+        self._render_view_contents(jd)
+        self._render_overlays(jd)
+        renderer.end_frame()
 
-        # Render star background
+    def _render_view_contents(self, julian_date: float):
+        renderer = self.renderer
+
         renderer.render_stars()
-
-        # Render grid if enabled
         renderer.render_grid()
-
-        # Render axes if enabled
         renderer.render_axes()
 
-        # Render orbits
         if self.view_state.show_orbits:
             for planet in self.planets.values():
                 if self._should_render_body(planet):
-                    renderer.render_orbit(planet, jd)
+                    renderer.render_orbit(planet, julian_date)
 
-        # Render celestial bodies
-        # Sun first
-        renderer.render_body(self.sun, jd, self.selected_body == self.sun)
+        renderer.render_body(self.sun, julian_date, self.selected_body == self.sun)
 
-        # Render sun label
         if self.view_state.show_labels:
             sun_pos = np.array([0, 0, 0])
             renderer.render_label("Sun", sun_pos)
 
-        # Planets
         for planet in self.planets.values():
             if self._should_render_body(planet):
                 is_selected = self.selected_body == planet
-                renderer.render_body(planet, jd, is_selected)
+                renderer.render_body(planet, julian_date, is_selected)
 
-                # Label
                 if self.view_state.show_labels:
-                    state = planet.get_state_at_time(jd)
+                    state = planet.get_state_at_time(julian_date)
                     pos = state.position * renderer.distance_scale
                     renderer.render_label(planet.name, pos)
 
-        # Moons (scaled differently)
-        for moon in self.moons.values():
-            # Only render if close to parent
-            pass  # Skip for now - moons are too small at this scale
+        if self.view_state.show_minor_bodies:
+            renderer.render_asteroid_belt(self.asteroid_belt_points)
+            for asteroid in self.asteroids.values():
+                renderer.render_body(asteroid, julian_date, self.selected_body == asteroid)
+                if self.view_state.show_labels:
+                    state = asteroid.get_state_at_time(julian_date)
+                    renderer.render_label(asteroid.name, state.position * renderer.distance_scale)
 
-        # Render trajectories
+            for comet in self.comets.values():
+                renderer.render_body(comet, julian_date, self.selected_body == comet)
+                if self.view_state.show_orbits:
+                    renderer.render_orbit(comet, julian_date, color=(0.6, 0.8, 1.0, 0.7))
+                if self.view_state.show_labels:
+                    state = comet.get_state_at_time(julian_date)
+                    renderer.render_label(comet.name, state.position * renderer.distance_scale)
+
+        for moon in self.moons.values():
+            renderer.render_body(moon, julian_date, self.selected_body == moon)
+            if self.view_state.show_labels:
+                state = moon.get_state_at_time(julian_date)
+                renderer.render_label(moon.name, state.position * renderer.distance_scale)
+
         if self.view_state.show_trajectories:
             for trajectory in self.trajectories:
                 renderer.render_trajectory(trajectory.trajectory_points)
 
-        # Render spacecraft
         for spacecraft in self.spacecraft.values():
-            # Only render if within trajectory time
             if spacecraft.trajectory and len(spacecraft.trajectory) >= 2:
                 start_time = spacecraft.trajectory[0].time
                 end_time = spacecraft.trajectory[-1].time
-                if start_time <= jd <= end_time:
-                    state = spacecraft.get_state_at_time(jd)
+                if start_time <= julian_date <= end_time:
+                    state = spacecraft.get_state_at_time(julian_date)
                     pos = state.position * renderer.distance_scale
-                    # Draw as bright point
                     renderer.render_label("🚀 " + spacecraft.name, pos, (0, 255, 128))
 
-        # UI overlays
-        # Status bar
+    def _render_overlays(self, julian_date: float):
+        renderer = self.renderer
+
         status = self.time_manager.get_status_string()
         status += f"  |  FPS: {renderer.get_fps():.0f}"
         if self.selected_body:
             status += f"  |  Selected: {self.selected_body.name}"
+        if self._action_message:
+            status += f"  |  {self._action_message}"
         renderer.render_status_bar(status)
 
-        # Info panel
         if self.view_state.show_info_panel and self.selected_body:
             info = self.selected_body.get_info_dict()
-
-            # Add current position info
-            state = self.selected_body.get_state_at_time(jd)
+            state = self.selected_body.get_state_at_time(julian_date)
             distance_au = np.linalg.norm(state.position) / AU
             speed_kms = np.linalg.norm(state.velocity) / 1000
-
             info["Distance from Sun"] = f"{distance_au:.3f} AU"
             info["Orbital Speed"] = f"{speed_kms:.1f} km/s"
-
             renderer.render_info_panel(info)
 
-        # Help overlay
         if self.view_state.show_help:
             renderer.render_help_overlay(self.controls)
 
-        # Enhanced UI widgets
         if self.date_picker:
             renderer.render_date_picker(self.date_picker.get_render_data())
 
@@ -705,8 +807,8 @@ class SolarSystemScene:
         if self.historical_events:
             renderer.render_historical_events(self.historical_events.get_render_data())
 
-        # End frame
-        renderer.end_frame()
+        if self.view_state.show_immersion_checklist and self.immersion_checklist:
+            renderer.render_immersion_checklist(self.immersion_checklist.get_render_data())
 
     def _should_render_body(self, body: CelestialBody) -> bool:
         if body.name in INNER_PLANETS:
@@ -715,6 +817,8 @@ class SolarSystemScene:
             return self.view_state.show_outer_planets
         elif body.name in DWARF_PLANETS:
             return self.view_state.show_dwarf_planets
+        elif body.body_type in {BodyType.ASTEROID, BodyType.COMET}:
+            return self.view_state.show_minor_bodies
         return True
 
     def get_transfer_summary(

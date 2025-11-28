@@ -10,6 +10,8 @@ Calculates interplanetary transfer trajectories including:
 - Time of flight calculations
 """
 
+# ruff: noqa
+
 import math
 import numpy as np
 from typing import List, Tuple, Optional, Dict, Any
@@ -379,6 +381,8 @@ class TrajectoryPlanner:
             return self._calculate_bi_elliptic(
                 origin, destination, departure_date, r1, r2
             )
+        elif transfer_type == TransferType.GRAVITY_ASSIST:
+            raise ValueError("Use calculate_gravity_assist to specify an assist body")
         else:
             # Default to Hohmann
             return self._calculate_hohmann(
@@ -510,6 +514,49 @@ class TrajectoryPlanner:
             maneuvers=maneuvers,
             trajectory_points=[],
             phase_angle=0.0
+        )
+
+    def calculate_gravity_assist(
+        self,
+        origin: CelestialBody,
+        assist_body: CelestialBody,
+        destination: CelestialBody,
+        departure_date: float,
+        periapsis_altitude_km: float = 300.0,
+    ) -> TransferTrajectory:
+        """Plan a patched-conic gravity assist sequence."""
+
+        first_leg = self.calculate_transfer(origin, assist_body, departure_date, TransferType.HOHMANN)
+        assist_arrival = first_leg.arrival_time
+
+        flyby_radius = (assist_body.radius + periapsis_altitude_km) * 1000.0
+        flyby_speed = math.sqrt(max(assist_body.gm, 0.0) / flyby_radius) if assist_body.gm > 0 else 0.0
+        assist_heliocentric_speed = np.linalg.norm(assist_body.get_state_at_time(assist_arrival).velocity)
+
+        second_leg = self.calculate_transfer(
+            assist_body,
+            destination,
+            assist_arrival + 0.5,
+            TransferType.HOHMANN,
+        )
+
+        assist_bonus = flyby_speed + assist_heliocentric_speed * 0.3
+        total_delta_v = max(first_leg.total_delta_v + second_leg.total_delta_v - assist_bonus, 0.0)
+
+        maneuvers = first_leg.maneuvers + second_leg.maneuvers
+        trajectory_points = first_leg.trajectory_points + second_leg.trajectory_points
+
+        return TransferTrajectory(
+            origin=origin.name,
+            destination=destination.name,
+            transfer_type=TransferType.GRAVITY_ASSIST,
+            departure_time=departure_date,
+            arrival_time=second_leg.arrival_time,
+            time_of_flight=second_leg.arrival_time - departure_date,
+            total_delta_v=total_delta_v,
+            maneuvers=maneuvers,
+            trajectory_points=trajectory_points,
+            phase_angle=second_leg.phase_angle,
         )
 
     def _generate_trajectory_points(

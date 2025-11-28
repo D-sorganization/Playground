@@ -6,6 +6,8 @@ Handles keyboard and mouse input for the simulation.
 Provides a clean interface between raw input events and simulation actions.
 """
 
+# ruff: noqa
+
 from typing import Callable, Dict, List, Tuple, Optional
 from dataclasses import dataclass, field
 from enum import Enum

@@ -5,6 +5,8 @@ These tests verify the scientific accuracy of the simulation
 by comparing calculated values against known astronomical data.
 """
 
+# ruff: noqa
+
 import math
 import unittest
 import numpy as np

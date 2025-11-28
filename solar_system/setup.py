@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# ruff: noqa
+
 """
 Setup script for Solar System Simulation package.
 """

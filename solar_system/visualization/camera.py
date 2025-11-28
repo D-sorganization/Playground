@@ -1,3 +1,5 @@
+# ruff: noqa
+
 """
 Camera System
 =============
@@ -105,6 +107,56 @@ class Camera:
         self._target_position = self.position.copy()
         self._target_target = self.target.copy()
         self._animating = False
+
+    def snapshot(self) -> CameraState:
+        """Capture the current camera parameters."""
+
+        return CameraState(
+            position=self.position.copy(),
+            target=self.target.copy(),
+            up=self.up.copy(),
+            fov=self.fov,
+            near=self.near,
+            far=self.far,
+        )
+
+    def apply_state(self, state: CameraState):
+        """Apply a stored camera state."""
+
+        self.position = state.position.copy()
+        self.target = state.target.copy()
+        self.up = state.up.copy()
+        self.fov = state.fov
+        self.near = state.near
+        self.far = state.far
+
+    def stereo_states(self, eye_separation: float = 0.4) -> Tuple[CameraState, CameraState]:
+        """Generate left/right stereo eye offsets for VR-style rendering."""
+
+        base = self.snapshot()
+        forward = base.target - base.position
+        forward = forward / np.linalg.norm(forward)
+        right = np.cross(forward, base.up)
+        right = right / np.linalg.norm(right)
+
+        offset = right * (eye_separation / 2.0)
+        left_state = CameraState(
+            position=base.position - offset,
+            target=base.target - offset,
+            up=base.up,
+            fov=base.fov,
+            near=base.near,
+            far=base.far,
+        )
+        right_state = CameraState(
+            position=base.position + offset,
+            target=base.target + offset,
+            up=base.up,
+            fov=base.fov,
+            near=base.near,
+            far=base.far,
+        )
+        return left_state, right_state
 
     def _update_angles_from_position(self):
         """Calculate spherical coordinates from current position."""

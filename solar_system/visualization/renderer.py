@@ -1,20 +1,28 @@
-"""
-3D Renderer
-===========
+"""3D Renderer
+===============
 
 OpenGL-based renderer for the solar system visualization.
 Provides high-quality rendering of planets, orbits, trajectories,
 and UI elements.
 """
 
+from __future__ import annotations
+
 import math
-import numpy as np
-from typing import List, Tuple, Optional, Dict, Any
+import pathlib
 from dataclasses import dataclass
+from typing import Any
+
+import numpy as np
+
+# ruff: noqa: F403, F405
+
+
 
 try:
     import pygame
     from pygame.locals import *
+
     PYGAME_AVAILABLE = True
 except ImportError:
     PYGAME_AVAILABLE = False
@@ -23,18 +31,23 @@ try:
     from OpenGL.GL import *
     from OpenGL.GLU import *
     from OpenGL.GLUT import *
+
     OPENGL_AVAILABLE = True
 except ImportError:
     OPENGL_AVAILABLE = False
 
-from ..core.constants import AU, PLANET_ORDER
-from ..core.celestial_body import CelestialBody, StateVector, BodyType
-from .camera import Camera
+from ..core.celestial_body import BodyType, CelestialBody, StateVector
+from ..core.constants import AU
+from ..data.star_catalog import iter_catalog
+from .camera import Camera, CameraState
+from .starfield import build_star_vertices, point_size_from_magnitude
+from .textures import TextureManager
 
 
 @dataclass
 class RenderSettings:
     """Settings for the renderer."""
+
     window_width: int = 1600
     window_height: int = 900
     fullscreen: bool = False
@@ -44,9 +57,12 @@ class RenderSettings:
     show_labels: bool = True
     show_grid: bool = False
     show_axes: bool = False
+    use_textures: bool = True
+    use_shaders: bool = True
+    stereo_view: bool = False
     orbit_segments: int = 360
     planet_segments: int = 32
-    background_color: Tuple[float, float, float, float] = (0.02, 0.02, 0.05, 1.0)
+    background_color: tuple[float, float, float, float] = (0.02, 0.02, 0.05, 1.0)
 
 
 class Renderer:
@@ -61,7 +77,7 @@ class Renderer:
     - UI overlays
     """
 
-    def __init__(self, settings: RenderSettings = None):
+    def __init__(self, settings: RenderSettings | None = None):
         """
         Initialize the renderer.
 
@@ -78,15 +94,16 @@ class Renderer:
         self.camera = Camera()
 
         # Display state
-        self.display: Optional[pygame.Surface] = None
-        self.clock: Optional[pygame.time.Clock] = None
+        self.display: pygame.Surface | None = None
+        self.clock: pygame.time.Clock | None = None
         self.running = False
 
         # Rendering data
-        self._sphere_list: Optional[int] = None
-        self._ring_list: Optional[int] = None
-        self._circle_list: Optional[int] = None
-        self._star_list: Optional[int] = None
+        self._sphere_list: int | None = None
+        self._ring_list: int | None = None
+        self._circle_list: int | None = None
+        self._star_list: int | None = None
+        self.star_vertices = []
 
         # Scale factor for visualization
         self.distance_scale = 1e-9  # Convert meters to viewable units
@@ -96,12 +113,18 @@ class Renderer:
         self.sun_size = 1.0
 
         # UI state
-        self.selected_body: Optional[CelestialBody] = None
-        self.hovered_body: Optional[CelestialBody] = None
+        self.selected_body: CelestialBody | None = None
+        self.hovered_body: CelestialBody | None = None
+
+        # Textures and shaders
+        assets_root = pathlib.Path(__file__).resolve().parent.parent
+        self.texture_manager = TextureManager(assets_root, auto_download=True)
+        self._shaders_enabled = False
+        self._shader_program: int | None = None
 
         # Fonts
-        self._font: Optional[pygame.font.Font] = None
-        self._small_font: Optional[pygame.font.Font] = None
+        self._font: pygame.font.Font | None = None
+        self._small_font: pygame.font.Font | None = None
 
     def initialize(self) -> bool:
         """
@@ -124,8 +147,7 @@ class Renderer:
             pygame.display.gl_set_attribute(GL_MULTISAMPLESAMPLES, 4)
 
         self.display = pygame.display.set_mode(
-            (self.settings.window_width, self.settings.window_height),
-            flags
+            (self.settings.window_width, self.settings.window_height), flags
         )
         pygame.display.set_caption("Solar System Simulation")
 
@@ -133,8 +155,8 @@ class Renderer:
 
         # Initialize fonts
         try:
-            self._font = pygame.font.SysFont('Arial', 16)
-            self._small_font = pygame.font.SysFont('Arial', 12)
+            self._font = pygame.font.SysFont("Arial", 16)
+            self._small_font = pygame.font.SysFont("Arial", 12)
         except Exception:
             self._font = pygame.font.Font(None, 16)
             self._small_font = pygame.font.Font(None, 12)
@@ -145,8 +167,8 @@ class Renderer:
         # Create display lists for common objects
         self._create_display_lists()
 
-        # Generate star field
-        self._generate_stars(3000)
+        # Generate star field from catalog
+        self._generate_stars()
 
         self.running = True
         return True
@@ -190,6 +212,9 @@ class Renderer:
         # Set up viewport
         glViewport(0, 0, self.settings.window_width, self.settings.window_height)
 
+        # Modern shading pipeline
+        self._setup_shaders()
+
     def _create_display_lists(self):
         """Create OpenGL display lists for common objects."""
         # Sphere for planets
@@ -203,6 +228,57 @@ class Renderer:
         glNewList(self._circle_list, GL_COMPILE)
         self._draw_circle(1.0, self.settings.orbit_segments)
         glEndList()
+
+    def _setup_shaders(self):
+        """Compile a minimal Lambert shader for per-pixel lighting."""
+
+        if not self.settings.use_shaders:
+            return
+
+        try:
+            vertex_shader = glCreateShader(GL_VERTEX_SHADER)
+            fragment_shader = glCreateShader(GL_FRAGMENT_SHADER)
+
+            vertex_src = """
+            varying vec3 vNormal;
+            varying vec3 vPosition;
+            void main() {
+                vNormal = normalize(gl_NormalMatrix * gl_Normal);
+                vPosition = vec3(gl_ModelViewMatrix * gl_Vertex);
+                gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
+                gl_TexCoord[0] = gl_MultiTexCoord0;
+            }
+            """
+
+            fragment_src = """
+            varying vec3 vNormal;
+            varying vec3 vPosition;
+            void main() {
+                vec3 lightDir = normalize(vec3(0.0, 0.0, 0.0) - vPosition);
+                float diffuse = max(dot(vNormal, lightDir), 0.2);
+                vec4 baseColor = gl_Color;
+                if (gl_TexCoord[0].s > 0.0) {
+                    baseColor *= texture2D(gl_Texture_2D, gl_TexCoord[0].st);
+                }
+                gl_FragColor = vec4(baseColor.rgb * diffuse, baseColor.a);
+            }
+            """
+
+            glShaderSource(vertex_shader, vertex_src)
+            glCompileShader(vertex_shader)
+            glShaderSource(fragment_shader, fragment_src)
+            glCompileShader(fragment_shader)
+
+            program = glCreateProgram()
+            glAttachShader(program, vertex_shader)
+            glAttachShader(program, fragment_shader)
+            glLinkProgram(program)
+            glUseProgram(program)
+            self._shader_program = program
+            self._shaders_enabled = True
+        except Exception:
+            self._shader_program = None
+            self._shaders_enabled = False
 
     def _draw_sphere(self, radius: float, segments: int):
         """Draw a unit sphere using immediate mode."""
@@ -221,9 +297,15 @@ class Renderer:
                 x = math.cos(lng)
                 y = math.sin(lng)
 
+                u = float(j) / segments
+                v0 = 0.5 + (lat0 / math.pi)
+                v1 = 0.5 + (lat1 / math.pi)
+
+                glTexCoord2f(u, v0)
                 glNormal3f(x * zr0, y * zr0, z0)
                 glVertex3f(radius * x * zr0, radius * y * zr0, radius * z0)
 
+                glTexCoord2f(u, v1)
                 glNormal3f(x * zr1, y * zr1, z1)
                 glVertex3f(radius * x * zr1, radius * y * zr1, radius * z1)
             glEnd()
@@ -236,63 +318,46 @@ class Renderer:
             glVertex3f(radius * math.cos(angle), 0, radius * math.sin(angle))
         glEnd()
 
-    def _generate_stars(self, num_stars: int):
-        """Generate a random star field."""
+    def _generate_stars(self):
+        """Build a star field from the curated catalog for accurate sky matches."""
+
+        self.star_vertices = build_star_vertices(iter_catalog())
         self._star_list = glGenLists(1)
         glNewList(self._star_list, GL_COMPILE)
 
         glDisable(GL_LIGHTING)
-        glPointSize(1.5)
         glBegin(GL_POINTS)
 
-        np.random.seed(42)  # Consistent star field
-        for _ in range(num_stars):
-            # Random direction on sphere
-            theta = np.random.uniform(0, 2 * math.pi)
-            phi = np.arccos(2 * np.random.uniform() - 1)
-
-            # Large distance
-            r = 500
-
-            x = r * math.sin(phi) * math.cos(theta)
-            y = r * math.sin(phi) * math.sin(theta)
-            z = r * math.cos(phi)
-
-            # Random brightness
-            brightness = np.random.uniform(0.3, 1.0)
-            # Slight color variation
-            r_color = brightness * np.random.uniform(0.9, 1.0)
-            g_color = brightness * np.random.uniform(0.9, 1.0)
-            b_color = brightness
-
-            glColor3f(r_color, g_color, b_color)
-            glVertex3f(x, y, z)
+        for star in self.star_vertices:
+            glPointSize(point_size_from_magnitude(star.magnitude))
+            glColor3f(*star.color)
+            glVertex3f(*star.position)
 
         glEnd()
         glEnable(GL_LIGHTING)
         glEndList()
 
-    def begin_frame(self):
+    def begin_frame(
+        self, camera_state: CameraState | None = None, clear: bool = True
+    ):
         """Begin a new frame."""
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+        if clear:
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
         # Set up projection
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
 
+        active_camera = camera_state or self.camera
         aspect = self.settings.window_width / self.settings.window_height
-        gluPerspective(self.camera.fov, aspect, self.camera.near, self.camera.far)
+        gluPerspective(active_camera.fov, aspect, active_camera.near, active_camera.far)
 
         # Set up view
         glMatrixMode(GL_MODELVIEW)
         glLoadIdentity()
 
         # Apply camera
-        gluLookAt(
-            *self.camera.position,
-            *self.camera.target,
-            *self.camera.up
-        )
+        gluLookAt(*active_camera.position, *active_camera.target, *active_camera.up)
 
     def end_frame(self):
         """End current frame and swap buffers."""
@@ -305,10 +370,7 @@ class Renderer:
             glCallList(self._star_list)
 
     def render_body(
-        self,
-        body: CelestialBody,
-        julian_date: float,
-        highlight: bool = False
+        self, body: CelestialBody, julian_date: float, highlight: bool = False
     ):
         """
         Render a celestial body.
@@ -352,8 +414,14 @@ class Renderer:
             glColor3f(
                 min(color[0] + 0.3, 1.0),
                 min(color[1] + 0.3, 1.0),
-                min(color[2] + 0.3, 1.0)
+                min(color[2] + 0.3, 1.0),
             )
+
+        texturing_active = False
+        if self.settings.use_textures:
+            texturing_active = self.texture_manager.bind(body.name)
+            if texturing_active:
+                glEnable(GL_TEXTURE_2D)
 
         # Draw sphere
         glPushMatrix()
@@ -362,13 +430,15 @@ class Renderer:
         glPopMatrix()
 
         # Draw rings for Saturn, etc.
-        if hasattr(body, 'has_rings') and body.has_rings:
+        if hasattr(body, "has_rings") and body.has_rings:
             self._render_rings(body, size)
 
         glPopMatrix()
 
         # Re-enable lighting
         glEnable(GL_LIGHTING)
+        if texturing_active:
+            glDisable(GL_TEXTURE_2D)
 
     def _render_rings(self, body: CelestialBody, body_size: float):
         """Render planetary rings."""
@@ -399,7 +469,7 @@ class Renderer:
         self,
         body: CelestialBody,
         julian_date: float,
-        color: Tuple[float, float, float, float] = None
+        color: tuple[float, float, float, float] | None = None,
     ):
         """
         Render the orbital path of a body.
@@ -422,7 +492,9 @@ class Renderer:
         if color is None:
             # Use body color with reduced alpha
             body_color = body.color
-            glColor4f(body_color[0] * 0.6, body_color[1] * 0.6, body_color[2] * 0.6, 0.4)
+            glColor4f(
+                body_color[0] * 0.6, body_color[1] * 0.6, body_color[2] * 0.6, 0.4
+            )
         else:
             glColor4f(*color)
 
@@ -435,9 +507,9 @@ class Renderer:
 
     def render_trajectory(
         self,
-        points: List[StateVector],
-        color: Tuple[float, float, float, float] = (0.0, 1.0, 0.5, 0.8),
-        line_width: float = 2.0
+        points: list[StateVector],
+        color: tuple[float, float, float, float] = (0.0, 1.0, 0.5, 0.8),
+        line_width: float = 2.0,
     ):
         """
         Render a spacecraft trajectory.
@@ -460,6 +532,23 @@ class Renderer:
             glVertex3f(*pos)
         glEnd()
 
+        glEnable(GL_LIGHTING)
+
+    def render_asteroid_belt(self, belt_points_au: np.ndarray):
+        """Render a faint asteroid belt based on pre-generated particle positions."""
+
+        if belt_points_au.size == 0:
+            return
+
+        glDisable(GL_LIGHTING)
+        glPointSize(1.2)
+        glColor4f(0.7, 0.7, 0.7, 0.35)
+
+        glBegin(GL_POINTS)
+        for point in belt_points_au:
+            scaled = point * AU * self.distance_scale
+            glVertex3f(*scaled)
+        glEnd()
         glEnable(GL_LIGHTING)
 
     def render_grid(self, size: float = 10.0, divisions: int = 20):
@@ -517,8 +606,8 @@ class Renderer:
         self,
         text: str,
         position_3d: np.ndarray,
-        color: Tuple[int, int, int] = (255, 255, 255),
-        offset: Tuple[int, int] = (10, -10)
+        color: tuple[int, int, int] = (255, 255, 255),
+        offset: tuple[int, int] = (10, -10),
     ):
         """
         Render a text label at a 3D position.
@@ -545,7 +634,7 @@ class Renderer:
         # Render text
         self._render_text_2d(text, (x, y), color)
 
-    def _project_to_screen(self, position_3d: np.ndarray) -> Optional[Tuple[int, int]]:
+    def _project_to_screen(self, position_3d: np.ndarray) -> tuple[int, int] | None:
         """Project 3D position to 2D screen coordinates."""
         modelview = glGetDoublev(GL_MODELVIEW_MATRIX)
         projection = glGetDoublev(GL_PROJECTION_MATRIX)
@@ -553,8 +642,12 @@ class Renderer:
 
         try:
             x, y, z = gluProject(
-                position_3d[0], position_3d[1], position_3d[2],
-                modelview, projection, viewport
+                position_3d[0],
+                position_3d[1],
+                position_3d[2],
+                modelview,
+                projection,
+                viewport,
             )
 
             # Check if in front of camera
@@ -569,8 +662,8 @@ class Renderer:
     def _render_text_2d(
         self,
         text: str,
-        position: Tuple[int, int],
-        color: Tuple[int, int, int] = (255, 255, 255)
+        position: tuple[int, int],
+        color: tuple[int, int, int] = (255, 255, 255),
     ):
         """Render 2D text overlay."""
         # Switch to orthographic projection for 2D
@@ -604,9 +697,7 @@ class Renderer:
         glPopMatrix()
 
     def render_info_panel(
-        self,
-        info: Dict[str, Any],
-        position: Tuple[int, int] = (20, 20)
+        self, info: dict[str, Any], position: tuple[int, int] = (20, 20)
     ):
         """Render an information panel overlay."""
         x, y = position
@@ -702,7 +793,7 @@ class Renderer:
         glMatrixMode(GL_MODELVIEW)
         glPopMatrix()
 
-    def render_help_overlay(self, controls: List[Tuple[str, str]]):
+    def render_help_overlay(self, controls: list[tuple[str, str]]):
         """Render help overlay with control instructions."""
         x = self.settings.window_width - 350
         y = 20
@@ -743,7 +834,9 @@ class Renderer:
         glEnd()
 
         # Title
-        title_surface = self._font.render("CONTROLS (Press H to hide)", True, (100, 200, 255))
+        title_surface = self._font.render(
+            "CONTROLS (Press H to hide)", True, (100, 200, 255)
+        )
         title_data = pygame.image.tostring(title_surface, "RGBA", True)
         w, h = title_surface.get_size()
         glRasterPos2i(x, y + h)
@@ -764,7 +857,9 @@ class Renderer:
                     text = f"{key}: {action}"
                     text_surface = self._small_font.render(text, True, (220, 220, 220))
                 else:  # No key, just action
-                    text_surface = self._small_font.render(action, True, (180, 180, 180))
+                    text_surface = self._small_font.render(
+                        action, True, (180, 180, 180)
+                    )
 
             text_data = pygame.image.tostring(text_surface, "RGBA", True)
             w, h = text_surface.get_size()
@@ -781,7 +876,7 @@ class Renderer:
         glMatrixMode(GL_MODELVIEW)
         glPopMatrix()
 
-    def render_date_picker(self, picker_data: Dict[str, Any]):
+    def render_date_picker(self, picker_data: dict[str, Any]):
         """
         Render interactive date picker widget.
 
@@ -793,8 +888,6 @@ class Renderer:
 
         x, y = picker_data.get("position", (20, 100))
         date = picker_data.get("date")
-        editing_field = picker_data.get("editing_field")
-        input_buffer = picker_data.get("input_buffer", "")
 
         if not date:
             return
@@ -859,7 +952,7 @@ class Renderer:
         glMatrixMode(GL_MODELVIEW)
         glPopMatrix()
 
-    def render_time_navigation_panel(self, nav_data: Dict[str, Any]):
+    def render_time_navigation_panel(self, nav_data: dict[str, Any]):
         """
         Render time navigation buttons panel.
 
@@ -914,7 +1007,7 @@ class Renderer:
         glMatrixMode(GL_MODELVIEW)
         glPopMatrix()
 
-    def render_educational_panel(self, edu_data: Dict[str, Any]):
+    def render_educational_panel(self, edu_data: dict[str, Any]):
         """
         Render educational information panel about selected body.
 
@@ -1035,7 +1128,7 @@ class Renderer:
         glMatrixMode(GL_MODELVIEW)
         glPopMatrix()
 
-    def render_historical_events(self, events_data: Dict[str, Any]):
+    def render_historical_events(self, events_data: dict[str, Any]):
         """
         Render historical events panel.
 
@@ -1114,7 +1207,7 @@ class Renderer:
             current_y += line_height
 
             # Description (wrapped)
-            description = event.get('description', '')
+            description = event.get("description", "")
             if len(description) > 55:
                 description = description[:52] + "..."
 
@@ -1124,6 +1217,91 @@ class Renderer:
             glRasterPos2i(x + 10, current_y + h)
             glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, desc_data)
             current_y += line_height + 3
+
+        glEnable(GL_DEPTH_TEST)
+        glEnable(GL_LIGHTING)
+
+        glMatrixMode(GL_PROJECTION)
+        glPopMatrix()
+        glMatrixMode(GL_MODELVIEW)
+        glPopMatrix()
+
+    def render_immersion_checklist(self, checklist_data: dict[str, Any]):
+        """Render the immersive learning checklist."""
+        if not checklist_data.get("visible", False):
+            return
+
+        tasks = checklist_data.get("tasks", [])
+        if not tasks:
+            return
+
+        x, y = checklist_data.get("position", (20, 240))
+        width = checklist_data.get("width", 360)
+        completed, total = checklist_data.get("progress", (0, len(tasks)))
+        line_height = 18
+
+        glMatrixMode(GL_PROJECTION)
+        glPushMatrix()
+        glLoadIdentity()
+        glOrtho(0, self.settings.window_width, self.settings.window_height, 0, -1, 1)
+
+        glMatrixMode(GL_MODELVIEW)
+        glPushMatrix()
+        glLoadIdentity()
+
+        glDisable(GL_LIGHTING)
+        glDisable(GL_DEPTH_TEST)
+        glEnable(GL_BLEND)
+
+        num_lines = 2 + len(tasks) * 2
+        height = num_lines * line_height + 20
+
+        glColor4f(0.08, 0.12, 0.16, 0.88)
+        glBegin(GL_QUADS)
+        glVertex2f(x - 5, y - 5)
+        glVertex2f(x + width, y - 5)
+        glVertex2f(x + width, y + height)
+        glVertex2f(x - 5, y + height)
+        glEnd()
+
+        glColor4f(0.35, 0.55, 0.75, 0.65)
+        glLineWidth(2)
+        glBegin(GL_LINE_LOOP)
+        glVertex2f(x - 5, y - 5)
+        glVertex2f(x + width, y - 5)
+        glVertex2f(x + width, y + height)
+        glVertex2f(x - 5, y + height)
+        glEnd()
+
+        current_y = y
+        title = f"Immersion Guide ({completed}/{total})"
+        title_surface = self._font.render(title, True, (160, 230, 255))
+        title_data = pygame.image.tostring(title_surface, "RGBA", True)
+        w, h = title_surface.get_size()
+        glRasterPos2i(x, current_y + h)
+        glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, title_data)
+        current_y += line_height + 4
+
+        for task in tasks:
+            marker = "✓" if task.get("completed") else "•"
+            marker_color = (140, 220, 170) if task.get("completed") else (240, 210, 160)
+            text_color = (200, 220, 240) if task.get("completed") else (230, 230, 230)
+
+            title_text = f"{marker} {task.get('title', '')}"
+            title_surface = self._small_font.render(title_text, True, marker_color)
+            title_data = pygame.image.tostring(title_surface, "RGBA", True)
+            w, h = title_surface.get_size()
+            glRasterPos2i(x, current_y + h)
+            glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, title_data)
+            current_y += line_height
+
+            description = task.get("description", "")
+            desc_surface = self._small_font.render(description, True, text_color)
+            desc_data = pygame.image.tostring(desc_surface, "RGBA", True)
+            w, h = desc_surface.get_size()
+            glRasterPos2i(x + 14, current_y + h)
+            glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, desc_data)
+            current_y += line_height
 
         glEnable(GL_DEPTH_TEST)
         glEnable(GL_LIGHTING)
