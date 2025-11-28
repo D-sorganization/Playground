@@ -4,7 +4,6 @@ import numpy as np
 
 from double_pendulum_model.physics.triple_pendulum import (
     TriplePendulumDynamics,
-    TriplePendulumParameters,
     TriplePendulumState,
 )
 

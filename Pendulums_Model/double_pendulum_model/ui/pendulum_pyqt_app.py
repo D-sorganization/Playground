@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
-from typing import Callable, Dict, Tuple
 
 import numpy as np
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
@@ -31,8 +30,8 @@ class SimulationConfig:
     gravity_enabled: bool
     constrained_to_plane: bool
     forward_mode: bool
-    torque_expressions: Tuple[str, str, str]
-    velocity_polynomials: Tuple[str, str, str]
+    torque_expressions: tuple[str, str, str]
+    velocity_polynomials: tuple[str, str, str]
 
 
 class PendulumCanvas(FigureCanvasQTAgg):
@@ -108,7 +107,7 @@ class PendulumController(QtWidgets.QWidget):
             ["Forward dynamics (torques)", "Inverse dynamics (velocity polynomials)"]
         )
 
-        self.torque_inputs: Dict[str, QtWidgets.QLineEdit] = {}
+        self.torque_inputs: dict[str, QtWidgets.QLineEdit] = {}
         for label, default in (
             ("Shoulder torque (N·m)", "0"),
             ("Wrist torque (N·m)", "0"),
@@ -118,7 +117,7 @@ class PendulumController(QtWidgets.QWidget):
             self.torque_inputs[label] = entry
             form_layout.addRow(label, entry)
 
-        self.velocity_inputs: Dict[str, QtWidgets.QLineEdit] = {}
+        self.velocity_inputs: dict[str, QtWidgets.QLineEdit] = {}
         for label, default in (
             ("Shoulder ω polynomial", "0"),
             ("Wrist ω polynomial", "0"),
@@ -243,8 +242,8 @@ class PendulumController(QtWidgets.QWidget):
             return 0.0
 
     def _polynomial_profiles(
-        self, expressions: Tuple[str, ...]
-    ) -> Tuple[PolynomialProfile, ...]:
+        self, expressions: tuple[str, ...]
+    ) -> tuple[PolynomialProfile, ...]:
         profiles = []
         for expr in expressions:
             cleaned = expr.replace(" ", "")
@@ -261,7 +260,7 @@ class PendulumController(QtWidgets.QWidget):
     def _apply_inverse_profile_double(
         self,
         state: DoublePendulumState,
-        profiles: Tuple[PolynomialProfile, PolynomialProfile],
+        profiles: tuple[PolynomialProfile, PolynomialProfile],
     ) -> DoublePendulumState:
         omega1 = profiles[0].omega(self.time)
         omega2 = profiles[1].omega(self.time)
@@ -288,7 +287,7 @@ class PendulumController(QtWidgets.QWidget):
     def _apply_inverse_profile_triple(
         self,
         state: TriplePendulumState,
-        profiles: Tuple[PolynomialProfile, PolynomialProfile, PolynomialProfile],
+        profiles: tuple[PolynomialProfile, PolynomialProfile, PolynomialProfile],
     ) -> TriplePendulumState:
         omega = [profile.omega(self.time) for profile in profiles]
         alpha = [profile.alpha(self.time) for profile in profiles]
@@ -301,7 +300,9 @@ class PendulumController(QtWidgets.QWidget):
             omega2=omega[1],
             omega3=omega[2],
         )
-        torques = self.triple_dynamics.inverse_dynamics(state_with_profile, accelerations)
+        torques = self.triple_dynamics.inverse_dynamics(
+            state_with_profile, accelerations
+        )
         return self.triple_dynamics.step(
             self.time, state_with_profile, TIME_STEP, torques
         )

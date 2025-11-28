@@ -8,9 +8,7 @@ Data sources: NASA JPL, IAU 2015 resolutions, and planetary fact sheets.
 Orbital elements are given for J2000.0 epoch (January 1, 2000, 12:00 TT)
 """
 
-import math
 from dataclasses import dataclass
-from typing import Dict, Any
 
 # ==============================================================================
 # FUNDAMENTAL CONSTANTS
@@ -57,6 +55,7 @@ SUN_TEMPERATURE = 5778  # K (effective)
 # PLANETARY DATA
 # ==============================================================================
 
+
 @dataclass
 class OrbitalElements:
     """
@@ -65,13 +64,14 @@ class OrbitalElements:
     All angles are in degrees, distances in AU, and rates in per century.
     These are mean elements at J2000.0 with secular variations.
     """
+
     # Mean elements at J2000.0
-    semi_major_axis: float      # a - AU
-    eccentricity: float         # e - dimensionless
-    inclination: float          # i - degrees
+    semi_major_axis: float  # a - AU
+    eccentricity: float  # e - dimensionless
+    inclination: float  # i - degrees
     longitude_ascending: float  # Ω (Omega) - degrees
-    longitude_perihelion: float # ϖ (omega bar) - degrees
-    mean_longitude: float       # L - degrees
+    longitude_perihelion: float  # ϖ (omega bar) - degrees
+    mean_longitude: float  # L - degrees
 
     # Secular rates (per Julian century)
     semi_major_axis_rate: float = 0.0
@@ -85,23 +85,24 @@ class OrbitalElements:
 @dataclass
 class PhysicalProperties:
     """Physical properties of a celestial body."""
-    mass: float              # kg
-    radius: float            # km (mean radius)
-    density: float           # kg/m³
-    surface_gravity: float   # m/s²
-    escape_velocity: float   # km/s
-    rotation_period: float   # hours (sidereal)
-    axial_tilt: float        # degrees
-    albedo: float            # geometric albedo
-    temperature: float       # K (mean surface or cloud-top)
-    color: tuple             # RGB color for visualization (0-1 range)
+
+    mass: float  # kg
+    radius: float  # km (mean radius)
+    density: float  # kg/m³
+    surface_gravity: float  # m/s²
+    escape_velocity: float  # km/s
+    rotation_period: float  # hours (sidereal)
+    axial_tilt: float  # degrees
+    albedo: float  # geometric albedo
+    temperature: float  # K (mean surface or cloud-top)
+    color: tuple  # RGB color for visualization (0-1 range)
 
 
 # Orbital elements from NASA JPL - Keplerian Elements for Approximate Positions
 # Source: https://ssd.jpl.nasa.gov/planets/approx_pos.html
 # Valid for 1800 AD - 2050 AD
 
-ORBITAL_ELEMENTS: Dict[str, OrbitalElements] = {
+ORBITAL_ELEMENTS: dict[str, OrbitalElements] = {
     "Mercury": OrbitalElements(
         semi_major_axis=0.38709927,
         eccentricity=0.20563593,
@@ -114,7 +115,7 @@ ORBITAL_ELEMENTS: Dict[str, OrbitalElements] = {
         inclination_rate=-0.00594749,
         longitude_ascending_rate=-0.12534081,
         longitude_perihelion_rate=0.16047689,
-        mean_longitude_rate=149472.67411175
+        mean_longitude_rate=149472.67411175,
     ),
     "Venus": OrbitalElements(
         semi_major_axis=0.72333566,
@@ -128,7 +129,7 @@ ORBITAL_ELEMENTS: Dict[str, OrbitalElements] = {
         inclination_rate=-0.00078890,
         longitude_ascending_rate=-0.27769418,
         longitude_perihelion_rate=0.00268329,
-        mean_longitude_rate=58517.81538729
+        mean_longitude_rate=58517.81538729,
     ),
     "Earth": OrbitalElements(
         semi_major_axis=1.00000261,
@@ -142,7 +143,7 @@ ORBITAL_ELEMENTS: Dict[str, OrbitalElements] = {
         inclination_rate=-0.01294668,
         longitude_ascending_rate=0.0,
         longitude_perihelion_rate=0.32327364,
-        mean_longitude_rate=35999.37244981
+        mean_longitude_rate=35999.37244981,
     ),
     "Mars": OrbitalElements(
         semi_major_axis=1.52371034,
@@ -156,7 +157,7 @@ ORBITAL_ELEMENTS: Dict[str, OrbitalElements] = {
         inclination_rate=-0.00813131,
         longitude_ascending_rate=-0.29257343,
         longitude_perihelion_rate=0.44441088,
-        mean_longitude_rate=19140.30268499
+        mean_longitude_rate=19140.30268499,
     ),
     "Jupiter": OrbitalElements(
         semi_major_axis=5.20288700,
@@ -170,7 +171,7 @@ ORBITAL_ELEMENTS: Dict[str, OrbitalElements] = {
         inclination_rate=-0.00183714,
         longitude_ascending_rate=0.20469106,
         longitude_perihelion_rate=0.21252668,
-        mean_longitude_rate=3034.74612775
+        mean_longitude_rate=3034.74612775,
     ),
     "Saturn": OrbitalElements(
         semi_major_axis=9.53667594,
@@ -184,7 +185,7 @@ ORBITAL_ELEMENTS: Dict[str, OrbitalElements] = {
         inclination_rate=0.00193609,
         longitude_ascending_rate=-0.28867794,
         longitude_perihelion_rate=-0.41897216,
-        mean_longitude_rate=1222.49362201
+        mean_longitude_rate=1222.49362201,
     ),
     "Uranus": OrbitalElements(
         semi_major_axis=19.18916464,
@@ -198,7 +199,7 @@ ORBITAL_ELEMENTS: Dict[str, OrbitalElements] = {
         inclination_rate=-0.00242939,
         longitude_ascending_rate=0.04240589,
         longitude_perihelion_rate=0.40805281,
-        mean_longitude_rate=428.48202785
+        mean_longitude_rate=428.48202785,
     ),
     "Neptune": OrbitalElements(
         semi_major_axis=30.06992276,
@@ -212,7 +213,7 @@ ORBITAL_ELEMENTS: Dict[str, OrbitalElements] = {
         inclination_rate=0.00035372,
         longitude_ascending_rate=-0.00508664,
         longitude_perihelion_rate=-0.32241464,
-        mean_longitude_rate=218.45945325
+        mean_longitude_rate=218.45945325,
     ),
     "Pluto": OrbitalElements(
         semi_major_axis=39.48211675,
@@ -226,12 +227,12 @@ ORBITAL_ELEMENTS: Dict[str, OrbitalElements] = {
         inclination_rate=0.00004818,
         longitude_ascending_rate=-0.01183482,
         longitude_perihelion_rate=-0.04062942,
-        mean_longitude_rate=145.20780515
-    )
+        mean_longitude_rate=145.20780515,
+    ),
 }
 
 # Physical properties from NASA Planetary Fact Sheets
-PHYSICAL_PROPERTIES: Dict[str, PhysicalProperties] = {
+PHYSICAL_PROPERTIES: dict[str, PhysicalProperties] = {
     "Sun": PhysicalProperties(
         mass=SUN_MASS,
         radius=SUN_RADIUS,
@@ -242,7 +243,7 @@ PHYSICAL_PROPERTIES: Dict[str, PhysicalProperties] = {
         axial_tilt=7.25,
         albedo=0.0,
         temperature=5778,
-        color=(1.0, 0.95, 0.8)
+        color=(1.0, 0.95, 0.8),
     ),
     "Mercury": PhysicalProperties(
         mass=3.3011e23,
@@ -254,7 +255,7 @@ PHYSICAL_PROPERTIES: Dict[str, PhysicalProperties] = {
         axial_tilt=0.034,
         albedo=0.142,
         temperature=440,
-        color=(0.7, 0.6, 0.5)
+        color=(0.7, 0.6, 0.5),
     ),
     "Venus": PhysicalProperties(
         mass=4.8675e24,
@@ -266,7 +267,7 @@ PHYSICAL_PROPERTIES: Dict[str, PhysicalProperties] = {
         axial_tilt=177.36,
         albedo=0.689,
         temperature=737,
-        color=(0.9, 0.75, 0.5)
+        color=(0.9, 0.75, 0.5),
     ),
     "Earth": PhysicalProperties(
         mass=5.97237e24,
@@ -278,7 +279,7 @@ PHYSICAL_PROPERTIES: Dict[str, PhysicalProperties] = {
         axial_tilt=23.4393,
         albedo=0.367,
         temperature=288,
-        color=(0.2, 0.5, 0.9)
+        color=(0.2, 0.5, 0.9),
     ),
     "Mars": PhysicalProperties(
         mass=6.4171e23,
@@ -290,7 +291,7 @@ PHYSICAL_PROPERTIES: Dict[str, PhysicalProperties] = {
         axial_tilt=25.19,
         albedo=0.170,
         temperature=210,
-        color=(0.9, 0.4, 0.2)
+        color=(0.9, 0.4, 0.2),
     ),
     "Jupiter": PhysicalProperties(
         mass=1.8982e27,
@@ -302,7 +303,7 @@ PHYSICAL_PROPERTIES: Dict[str, PhysicalProperties] = {
         axial_tilt=3.13,
         albedo=0.538,
         temperature=165,
-        color=(0.9, 0.8, 0.6)
+        color=(0.9, 0.8, 0.6),
     ),
     "Saturn": PhysicalProperties(
         mass=5.6834e26,
@@ -314,7 +315,7 @@ PHYSICAL_PROPERTIES: Dict[str, PhysicalProperties] = {
         axial_tilt=26.73,
         albedo=0.499,
         temperature=134,
-        color=(0.9, 0.85, 0.6)
+        color=(0.9, 0.85, 0.6),
     ),
     "Uranus": PhysicalProperties(
         mass=8.6810e25,
@@ -326,7 +327,7 @@ PHYSICAL_PROPERTIES: Dict[str, PhysicalProperties] = {
         axial_tilt=97.77,
         albedo=0.488,
         temperature=76,
-        color=(0.6, 0.85, 0.9)
+        color=(0.6, 0.85, 0.9),
     ),
     "Neptune": PhysicalProperties(
         mass=1.02413e26,
@@ -338,7 +339,7 @@ PHYSICAL_PROPERTIES: Dict[str, PhysicalProperties] = {
         axial_tilt=28.32,
         albedo=0.442,
         temperature=72,
-        color=(0.3, 0.5, 0.9)
+        color=(0.3, 0.5, 0.9),
     ),
     "Pluto": PhysicalProperties(
         mass=1.303e22,
@@ -350,7 +351,7 @@ PHYSICAL_PROPERTIES: Dict[str, PhysicalProperties] = {
         axial_tilt=122.53,
         albedo=0.72,
         temperature=44,
-        color=(0.8, 0.75, 0.7)
+        color=(0.8, 0.75, 0.7),
     ),
     "Moon": PhysicalProperties(
         mass=7.342e22,
@@ -362,12 +363,12 @@ PHYSICAL_PROPERTIES: Dict[str, PhysicalProperties] = {
         axial_tilt=6.687,
         albedo=0.136,
         temperature=250,
-        color=(0.7, 0.7, 0.7)
-    )
+        color=(0.7, 0.7, 0.7),
+    ),
 }
 
 # Standard gravitational parameters (GM) in m³/s²
-GM: Dict[str, float] = {
+GM: dict[str, float] = {
     "Sun": 1.32712440018e20,
     "Mercury": 2.2032e13,
     "Venus": 3.24859e14,
@@ -378,11 +379,11 @@ GM: Dict[str, float] = {
     "Uranus": 5.793939e15,
     "Neptune": 6.836529e15,
     "Pluto": 8.71e11,
-    "Moon": 4.9048695e12
+    "Moon": 4.9048695e12,
 }
 
 # Orbital periods in Earth days
-ORBITAL_PERIODS: Dict[str, float] = {
+ORBITAL_PERIODS: dict[str, float] = {
     "Mercury": 87.969,
     "Venus": 224.701,
     "Earth": 365.256,
@@ -391,11 +392,21 @@ ORBITAL_PERIODS: Dict[str, float] = {
     "Saturn": 10759.22,
     "Uranus": 30688.5,
     "Neptune": 60182.0,
-    "Pluto": 90560.0
+    "Pluto": 90560.0,
 }
 
 # Planet display order (inner to outer)
-PLANET_ORDER = ["Mercury", "Venus", "Earth", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune", "Pluto"]
+PLANET_ORDER = [
+    "Mercury",
+    "Venus",
+    "Earth",
+    "Mars",
+    "Jupiter",
+    "Saturn",
+    "Uranus",
+    "Neptune",
+    "Pluto",
+]
 
 # Inner and outer planet classifications
 INNER_PLANETS = ["Mercury", "Venus", "Earth", "Mars"]

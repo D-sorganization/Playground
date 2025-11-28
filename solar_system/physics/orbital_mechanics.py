@@ -12,25 +12,24 @@ Provides calculations for orbital mechanics including:
 """
 
 import math
-import numpy as np
-from typing import Tuple, Optional
 from dataclasses import dataclass
 
-from ..core.constants import AU, G, GM, SECONDS_PER_DAY, DAYS_PER_YEAR
+import numpy as np
 
 
 @dataclass
 class OrbitalParameters:
     """Computed orbital parameters for a body or transfer."""
-    semi_major_axis: float      # meters
+
+    semi_major_axis: float  # meters
     eccentricity: float
-    periapsis: float            # meters
-    apoapsis: float             # meters
-    period: float               # seconds
-    specific_energy: float      # J/kg
-    angular_momentum: float     # m²/s
-    velocity_periapsis: float   # m/s
-    velocity_apoapsis: float    # m/s
+    periapsis: float  # meters
+    apoapsis: float  # meters
+    period: float  # seconds
+    specific_energy: float  # J/kg
+    angular_momentum: float  # m²/s
+    velocity_periapsis: float  # m/s
+    velocity_apoapsis: float  # m/s
 
 
 class OrbitalMechanics:
@@ -75,20 +74,20 @@ class OrbitalMechanics:
         return 2 * math.pi * math.sqrt(a**3 / mu)
 
     @staticmethod
-    def semi_major_axis_from_period(T: float, mu: float) -> float:
+    def semi_major_axis_from_period(period_seconds: float, mu: float) -> float:
         """
         Calculate semi-major axis from orbital period.
 
         a = (μT²/4π²)^(1/3)
 
         Args:
-            T: Orbital period (seconds)
+            period_seconds: Orbital period (seconds)
             mu: Standard gravitational parameter (m³/s²)
 
         Returns:
             Semi-major axis in meters
         """
-        return (mu * T**2 / (4 * math.pi**2)) ** (1/3)
+        return (mu * period_seconds**2 / (4 * math.pi**2)) ** (1 / 3)
 
     @staticmethod
     def specific_orbital_energy(a: float, mu: float) -> float:
@@ -156,7 +155,7 @@ class OrbitalMechanics:
         return math.sqrt(mu / r)
 
     @staticmethod
-    def periapsis_apoapsis(a: float, e: float) -> Tuple[float, float]:
+    def periapsis_apoapsis(a: float, e: float) -> tuple[float, float]:
         """
         Calculate periapsis and apoapsis distances.
 
@@ -221,28 +220,26 @@ class OrbitalMechanics:
         return a * (m_body / m_central) ** 0.4
 
     @staticmethod
-    def synodic_period(T1: float, T2: float) -> float:
+    def synodic_period(period_one: float, period_two: float) -> float:
         """
         Calculate synodic period between two bodies.
 
         1/P_syn = |1/T1 - 1/T2|
 
         Args:
-            T1: Orbital period of first body (any time unit)
-            T2: Orbital period of second body (same time unit)
+            period_one: Orbital period of first body (any time unit)
+            period_two: Orbital period of second body (same time unit)
 
         Returns:
             Synodic period in the same time unit
         """
-        if T1 == T2:
-            return float('inf')
-        return abs(1 / (1/T1 - 1/T2))
+        if period_one == period_two:
+            return float("inf")
+        return abs(1 / (1 / period_one - 1 / period_two))
 
     @staticmethod
     def phase_angle(
-        r1: np.ndarray,
-        r2: np.ndarray,
-        reference_up: np.ndarray = None
+        r1: np.ndarray, r2: np.ndarray, reference_up: np.ndarray = None
     ) -> float:
         """
         Calculate the phase angle between two bodies as seen from the Sun.
@@ -274,22 +271,22 @@ class OrbitalMechanics:
         return angle
 
     @staticmethod
-    def true_anomaly_from_eccentric(E: float, e: float) -> float:
+    def true_anomaly_from_eccentric(eccentric_anomaly: float, e: float) -> float:
         """
         Convert eccentric anomaly to true anomaly.
 
         tan(ν/2) = √((1+e)/(1-e)) * tan(E/2)
 
         Args:
-            E: Eccentric anomaly (radians)
+            eccentric_anomaly: Eccentric anomaly (radians)
             e: Eccentricity
 
         Returns:
             True anomaly in radians
         """
         return 2 * math.atan2(
-            math.sqrt(1 + e) * math.sin(E / 2),
-            math.sqrt(1 - e) * math.cos(E / 2)
+            math.sqrt(1 + e) * math.sin(eccentric_anomaly / 2),
+            math.sqrt(1 - e) * math.cos(eccentric_anomaly / 2),
         )
 
     @staticmethod
@@ -307,34 +304,27 @@ class OrbitalMechanics:
             Eccentric anomaly in radians
         """
         return 2 * math.atan2(
-            math.sqrt(1 - e) * math.sin(nu / 2),
-            math.sqrt(1 + e) * math.cos(nu / 2)
+            math.sqrt(1 - e) * math.sin(nu / 2), math.sqrt(1 + e) * math.cos(nu / 2)
         )
 
     @staticmethod
-    def mean_anomaly_from_eccentric(E: float, e: float) -> float:
+    def mean_anomaly_from_eccentric(eccentric_anomaly: float, e: float) -> float:
         """
         Convert eccentric anomaly to mean anomaly (Kepler's equation).
 
         M = E - e*sin(E)
 
         Args:
-            E: Eccentric anomaly (radians)
+            eccentric_anomaly: Eccentric anomaly (radians)
             e: Eccentricity
 
         Returns:
             Mean anomaly in radians
         """
-        return E - e * math.sin(E)
+        return eccentric_anomaly - e * math.sin(eccentric_anomaly)
 
     @staticmethod
-    def time_of_flight(
-        nu1: float,
-        nu2: float,
-        a: float,
-        e: float,
-        mu: float
-    ) -> float:
+    def time_of_flight(nu1: float, nu2: float, a: float, e: float, mu: float) -> float:
         """
         Calculate time of flight between two true anomalies.
 
@@ -349,22 +339,26 @@ class OrbitalMechanics:
             Time of flight in seconds
         """
         # Convert to eccentric anomalies
-        E1 = OrbitalMechanics.eccentric_anomaly_from_true(nu1, e)
-        E2 = OrbitalMechanics.eccentric_anomaly_from_true(nu2, e)
+        eccentric_anomaly_start = OrbitalMechanics.eccentric_anomaly_from_true(nu1, e)
+        eccentric_anomaly_end = OrbitalMechanics.eccentric_anomaly_from_true(nu2, e)
 
         # Convert to mean anomalies
-        M1 = OrbitalMechanics.mean_anomaly_from_eccentric(E1, e)
-        M2 = OrbitalMechanics.mean_anomaly_from_eccentric(E2, e)
+        mean_anomaly_start = OrbitalMechanics.mean_anomaly_from_eccentric(
+            eccentric_anomaly_start, e
+        )
+        mean_anomaly_end = OrbitalMechanics.mean_anomaly_from_eccentric(
+            eccentric_anomaly_end, e
+        )
 
         # Handle wrap-around
-        delta_M = M2 - M1
-        if delta_M < 0:
-            delta_M += 2 * math.pi
+        delta_mean_anomaly = mean_anomaly_end - mean_anomaly_start
+        if delta_mean_anomaly < 0:
+            delta_mean_anomaly += 2 * math.pi
 
         # Mean motion
         n = math.sqrt(mu / a**3)
 
-        return delta_M / n
+        return delta_mean_anomaly / n
 
     @staticmethod
     def radius_at_true_anomaly(a: float, e: float, nu: float) -> float:
@@ -385,11 +379,8 @@ class OrbitalMechanics:
 
     @staticmethod
     def velocity_at_true_anomaly(
-        a: float,
-        e: float,
-        nu: float,
-        mu: float
-    ) -> Tuple[float, float]:
+        a: float, e: float, nu: float, mu: float
+    ) -> tuple[float, float]:
         """
         Calculate radial and tangential velocity components at true anomaly.
 
@@ -411,11 +402,7 @@ class OrbitalMechanics:
         return v_r, v_t
 
     @staticmethod
-    def orbital_parameters(
-        a: float,
-        e: float,
-        mu: float
-    ) -> OrbitalParameters:
+    def orbital_parameters(a: float, e: float, mu: float) -> OrbitalParameters:
         """
         Calculate comprehensive orbital parameters.
 
@@ -438,14 +425,12 @@ class OrbitalMechanics:
             specific_energy=OrbitalMechanics.specific_orbital_energy(a, mu),
             angular_momentum=OrbitalMechanics.specific_angular_momentum(a, e, mu),
             velocity_periapsis=OrbitalMechanics.vis_viva(periapsis, a, mu),
-            velocity_apoapsis=OrbitalMechanics.vis_viva(apoapsis, a, mu)
+            velocity_apoapsis=OrbitalMechanics.vis_viva(apoapsis, a, mu),
         )
 
     @staticmethod
     def state_to_elements(
-        position: np.ndarray,
-        velocity: np.ndarray,
-        mu: float
+        position: np.ndarray, velocity: np.ndarray, mu: float
     ) -> dict:
         """
         Convert state vectors to orbital elements.
@@ -470,28 +455,27 @@ class OrbitalMechanics:
         n = np.linalg.norm(n_vec)
 
         # Eccentricity vector
-        e_vec = ((v**2 - mu/r) * position - np.dot(position, velocity) * velocity) / mu
+        e_vec = (
+            (v**2 - mu / r) * position - np.dot(position, velocity) * velocity
+        ) / mu
         e = np.linalg.norm(e_vec)
 
         # Specific energy
         energy = v**2 / 2 - mu / r
 
         # Semi-major axis
-        if abs(e - 1.0) < 1e-10:  # Parabolic
-            a = float('inf')
-        else:
-            a = -mu / (2 * energy)
+        a = float("inf") if abs(e - 1.0) < 1e-10 else -mu / (2 * energy)
 
         # Inclination
         i = math.acos(h_vec[2] / h)
 
         # Right ascension of ascending node
         if n > 1e-10:
-            Omega = math.acos(n_vec[0] / n)
+            ascending_node = math.acos(n_vec[0] / n)
             if n_vec[1] < 0:
-                Omega = 2 * math.pi - Omega
+                ascending_node = 2 * math.pi - ascending_node
         else:
-            Omega = 0.0
+            ascending_node = 0.0
 
         # Argument of periapsis
         if n > 1e-10 and e > 1e-10:
@@ -510,14 +494,14 @@ class OrbitalMechanics:
             nu = 0.0
 
         return {
-            'semi_major_axis': a,
-            'eccentricity': e,
-            'inclination': math.degrees(i),
-            'longitude_ascending': math.degrees(Omega),
-            'argument_periapsis': math.degrees(omega),
-            'true_anomaly': math.degrees(nu),
-            'specific_energy': energy,
-            'angular_momentum': h
+            "semi_major_axis": a,
+            "eccentricity": e,
+            "inclination": math.degrees(i),
+            "longitude_ascending": math.degrees(ascending_node),
+            "argument_periapsis": math.degrees(omega),
+            "true_anomaly": math.degrees(nu),
+            "specific_energy": energy,
+            "angular_momentum": h,
         }
 
     @staticmethod
@@ -525,11 +509,11 @@ class OrbitalMechanics:
         a: float,
         e: float,
         i: float,
-        Omega: float,
+        ascending_node: float,
         omega: float,
         nu: float,
-        mu: float
-    ) -> Tuple[np.ndarray, np.ndarray]:
+        mu: float,
+    ) -> tuple[np.ndarray, np.ndarray]:
         """
         Convert orbital elements to state vectors.
 
@@ -537,7 +521,7 @@ class OrbitalMechanics:
             a: Semi-major axis (meters)
             e: Eccentricity
             i: Inclination (radians)
-            Omega: Longitude of ascending node (radians)
+            ascending_node: Longitude of ascending node (radians)
             omega: Argument of periapsis (radians)
             nu: True anomaly (radians)
             mu: Standard gravitational parameter (m³/s²)
@@ -560,22 +544,30 @@ class OrbitalMechanics:
         # Rotation matrices
         cos_omega = math.cos(omega)
         sin_omega = math.sin(omega)
-        cos_Omega = math.cos(Omega)
-        sin_Omega = math.sin(Omega)
+        cos_ascending = math.cos(ascending_node)
+        sin_ascending = math.sin(ascending_node)
         cos_i = math.cos(i)
         sin_i = math.sin(i)
 
         # Transform to inertial frame
-        x = (cos_omega * cos_Omega - sin_omega * sin_Omega * cos_i) * x_orb + \
-            (-sin_omega * cos_Omega - cos_omega * sin_Omega * cos_i) * y_orb
-        y = (cos_omega * sin_Omega + sin_omega * cos_Omega * cos_i) * x_orb + \
-            (-sin_omega * sin_Omega + cos_omega * cos_Omega * cos_i) * y_orb
+        x = (cos_omega * cos_ascending - sin_omega * sin_ascending * cos_i) * x_orb + (
+            -sin_omega * cos_ascending - cos_omega * sin_ascending * cos_i
+        ) * y_orb
+        y = (cos_omega * sin_ascending + sin_omega * cos_ascending * cos_i) * x_orb + (
+            -sin_omega * sin_ascending + cos_omega * cos_ascending * cos_i
+        ) * y_orb
         z = (sin_omega * sin_i) * x_orb + (cos_omega * sin_i) * y_orb
 
-        vx = (cos_omega * cos_Omega - sin_omega * sin_Omega * cos_i) * vx_orb + \
-             (-sin_omega * cos_Omega - cos_omega * sin_Omega * cos_i) * vy_orb
-        vy = (cos_omega * sin_Omega + sin_omega * cos_Omega * cos_i) * vx_orb + \
-             (-sin_omega * sin_Omega + cos_omega * cos_Omega * cos_i) * vy_orb
+        vx = (
+            cos_omega * cos_ascending - sin_omega * sin_ascending * cos_i
+        ) * vx_orb + (
+            -sin_omega * cos_ascending - cos_omega * sin_ascending * cos_i
+        ) * vy_orb
+        vy = (
+            cos_omega * sin_ascending + sin_omega * cos_ascending * cos_i
+        ) * vx_orb + (
+            -sin_omega * sin_ascending + cos_omega * cos_ascending * cos_i
+        ) * vy_orb
         vz = (sin_omega * sin_i) * vx_orb + (cos_omega * sin_i) * vy_orb
 
         return np.array([x, y, z]), np.array([vx, vy, vz])

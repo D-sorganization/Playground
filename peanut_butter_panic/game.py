@@ -1,13 +1,12 @@
 from __future__ import annotations
 
 import os
-from typing import Tuple
 
 import pygame
 
 from .core import GameConfig, GameWorld, InputState
 
-Color = Tuple[int, int, int]
+Color = tuple[int, int, int]
 
 
 def _draw_circle(

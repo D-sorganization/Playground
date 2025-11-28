@@ -14,17 +14,16 @@ Features:
 
 from __future__ import annotations
 
+import contextlib
 import csv
 import math
 import tkinter as tk
 from dataclasses import dataclass
 from datetime import datetime
-from pathlib import Path
-from typing import Optional
 
+import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
-import numpy as np
 
 from double_pendulum_model.physics.double_pendulum import (
     DEFAULT_PLANE_INCLINATION_DEG,
@@ -65,8 +64,8 @@ class DoublePendulumApp:
         self.root.geometry("1400x900")
 
         # State variables
-        self.state: Optional[DoublePendulumState] = None
-        self.dynamics: Optional[DoublePendulumDynamics] = None
+        self.state: DoublePendulumState | None = None
+        self.dynamics: DoublePendulumDynamics | None = None
         self.time = 0.0
         self.running = False
 
@@ -74,8 +73,9 @@ class DoublePendulumApp:
         self.data_logging_enabled = False
         self.data_granularity = 1  # Log every N steps
         self.data_step_counter = 0
-        self.data_file: Optional[csv.Writer] = None
-        self.data_file_handle: Optional[object] = None
+        self.data_file: csv.Writer | None = None
+        self.data_file_handle: object | None = None
+        self.data_file_stack: contextlib.ExitStack | None = None
 
         # Build UI
         self._build_ui()
@@ -500,7 +500,10 @@ class DoublePendulumApp:
 
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = f"pendulum_data_{timestamp}.csv"
-        self.data_file_handle = open(filename, "w", newline="")
+        self.data_file_stack = contextlib.ExitStack()
+        self.data_file_handle = self.data_file_stack.enter_context(
+            open(filename, "w", newline="")  # noqa: SIM115
+        )
         self.data_file = csv.writer(self.data_file_handle)
         self.data_file.writerow(
             [
@@ -525,8 +528,9 @@ class DoublePendulumApp:
 
     def _stop_data_logging(self) -> None:
         """Stop logging data and close file."""
-        if self.data_file_handle is not None:
-            self.data_file_handle.close()
+        if self.data_file_stack is not None:
+            self.data_file_stack.close()
+            self.data_file_stack = None
             self.data_file_handle = None
             self.data_file = None
 
@@ -621,9 +625,10 @@ class DoublePendulumApp:
             )
 
             # Update state with new parameters
-            # If simulation is running and angles change, pause to avoid physically inconsistent states
-            # (changing angles while preserving velocities would create discontinuities)
-            # However, non-angle parameters (mass, damping, etc.) can change without resetting motion
+            # If simulation is running and angles change, pause to avoid physically
+            # inconsistent states. Changing angles while preserving velocities would
+            # create discontinuities. Non-angle parameters can change without resetting
+            # motion.
             was_running = self.running
             angles_changed = False
 
@@ -673,33 +678,21 @@ class DoublePendulumApp:
                 )
 
             self._draw_pendulum_3d()
-        except Exception as e:
-            # Log errors for debugging
-            import traceback
-
-            print(f"Error updating pendulum: {e}")
-            traceback.print_exc()
+        except Exception as error:  # noqa: BLE001
             # Still try to draw something even if there's an error
             if self.state is None or self.dynamics is None:
                 # Initialize with defaults if not set
-                try:
-                    from double_pendulum_model.physics.double_pendulum import (
-                        DoublePendulumParameters,
-                        DoublePendulumState,
-                    )
-
-                    self.dynamics = DoublePendulumDynamics()
-                    self.state = DoublePendulumState(
-                        theta1=math.radians(-45),
-                        theta2=math.radians(-90),
-                        omega1=0.0,
-                        omega2=0.0,
-                        phi=0.0,
-                        omega_phi=0.0,
-                    )
-                    self._draw_pendulum_3d()
-                except:
-                    pass
+                self.dynamics = DoublePendulumDynamics()
+                self.state = DoublePendulumState(
+                    theta1=math.radians(-45),
+                    theta2=math.radians(-90),
+                    omega1=0.0,
+                    omega2=0.0,
+                    phi=0.0,
+                    omega_phi=0.0,
+                )
+                self._draw_pendulum_3d()
+            raise RuntimeError(f"Error updating pendulum: {error}") from error
 
     def start(self) -> None:
         """Start or resume simulation."""
@@ -820,11 +813,6 @@ class DoublePendulumApp:
             elbow = rotate_out_of_plane(elbow)
             wrist = rotate_out_of_plane(wrist)
 
-        # Store original positions before plane rotation for gravity vector
-        pivot_original = pivot.copy()
-        elbow_original = elbow.copy()
-        wrist_original = wrist.copy()
-
         # Apply plane rotation if constrained
         if self.dynamics.parameters.constrained_to_plane:
             plane_angle = self.dynamics.parameters.plane_inclination_rad
@@ -918,13 +906,13 @@ class DoublePendulumApp:
             fontsize=16,
             color="#00AA00",
             weight="bold",
-            bbox=dict(
-                boxstyle="round,pad=0.5",
-                facecolor="#E8F5E9",
-                alpha=0.95,
-                edgecolor="#00AA00",
-                linewidth=3,
-            ),
+            bbox={
+                "boxstyle": "round,pad=0.5",
+                "facecolor": "#E8F5E9",
+                "alpha": 0.95,
+                "edgecolor": "#00AA00",
+                "linewidth": 3,
+            },
         )
 
         # Draw a reference line showing true vertical (world vertical) from pivot
@@ -1012,12 +1000,12 @@ class DoublePendulumApp:
             fontsize=9,
             color="#2E86AB",
             weight="bold",
-            bbox=dict(
-                boxstyle="round,pad=0.2",
-                facecolor="white",
-                alpha=0.8,
-                edgecolor="#2E86AB",
-            ),
+            bbox={
+                "boxstyle": "round,pad=0.2",
+                "facecolor": "white",
+                "alpha": 0.8,
+                "edgecolor": "#2E86AB",
+            },
             ha="center",
         )
 
@@ -1031,12 +1019,12 @@ class DoublePendulumApp:
             fontsize=9,
             color="#A23B72",
             weight="bold",
-            bbox=dict(
-                boxstyle="round,pad=0.2",
-                facecolor="white",
-                alpha=0.8,
-                edgecolor="#A23B72",
-            ),
+            bbox={
+                "boxstyle": "round,pad=0.2",
+                "facecolor": "white",
+                "alpha": 0.8,
+                "edgecolor": "#A23B72",
+            },
             ha="center",
         )
 
@@ -1046,18 +1034,18 @@ class DoublePendulumApp:
             plane_size = (upper.length_m + lower.length_m) * 1.2
             x_plane = np.linspace(-plane_size, plane_size, 15)
             y_plane = np.linspace(-plane_size, plane_size, 15)
-            X_plane, Y_plane = np.meshgrid(x_plane, y_plane)
+            x_plane_grid, y_plane_grid = np.meshgrid(x_plane, y_plane)
 
             plane_angle = self.dynamics.parameters.plane_inclination_rad
             # Rotate around X axis: Y becomes Y*cos - Z*sin, Z becomes Y*sin + Z*cos
             # For the plane surface, we start with Z=0, so:
-            Z_plane = Y_plane * math.sin(plane_angle)
-            Y_plane_rotated = Y_plane * math.cos(plane_angle)
+            z_plane = y_plane_grid * math.sin(plane_angle)
+            y_plane_rotated = y_plane_grid * math.cos(plane_angle)
 
             self.ax.plot_surface(
-                X_plane,
-                Y_plane_rotated,
-                Z_plane,
+                x_plane_grid,
+                y_plane_rotated,
+                z_plane,
                 alpha=0.15,
                 color="gray",
                 edgecolor="none",
@@ -1088,7 +1076,7 @@ class DoublePendulumApp:
 
 def run_app() -> None:
     root = tk.Tk()
-    app = DoublePendulumApp(root)
+    DoublePendulumApp(root)
     root.mainloop()
 
 

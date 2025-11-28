@@ -3,6 +3,16 @@
 
 target-version = "py311"
 line-length = 100
+exclude = [
+    "archive/",
+    "legacy/",
+    "experimental/",
+    "*/migrations/",
+    "*_pb2.py",
+    "__pycache__/",
+    ".git/",
+    "node_modules/",
+]
 
 [lint]
 # Enable common rules but be lenient for playground projects
@@ -17,7 +27,6 @@ select = [
     "C4",  # flake8-comprehensions
     "SIM", # flake8-simplify
 ]
-
 ignore = [
     "D",      # Docstring checks (optional for playground)
     "ANN",    # Type annotation checks (optional for playground)
@@ -33,18 +42,6 @@ ignore = [
 fixable = ["ALL"]
 unfixable = []
 
-# Exclude common directories
-exclude = [
-    "archive/",
-    "legacy/",
-    "experimental/",
-    "*/migrations/",
-    "*_pb2.py",
-    "__pycache__/",
-    ".git/",
-    "node_modules/",
-]
-
 [lint.per-file-ignores]
 # Tests can be more relaxed
 "test_*.py" = [
@@ -53,9 +50,8 @@ exclude = [
 ]
 "**/tests/*.py" = [
     "S101",
-    "PLR2004", 
+    "PLR2004",
 ]
 
 [lint.mccabe]
 max-complexity = 15  # More lenient for playground projects
-

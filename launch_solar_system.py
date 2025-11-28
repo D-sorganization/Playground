@@ -8,6 +8,5 @@ command-line flags on ``solar_system.main`` if you want deeper customization.
 
 from solar_system.launcher import launch_quickstart
 
-
 if __name__ == "__main__":
     raise SystemExit(launch_quickstart())
