@@ -41,14 +41,42 @@ class TI89Calculator:
         cleaned_variables = variables or {}
         expression_symbols = self._build_symbol_map(cleaned_variables.keys())
         parsed_expression = self._parse_expression(expression, expression_symbols)
-        substituted = parsed_expression.subs(
-            {expression_symbols[key]: value for key, value in cleaned_variables.items()}
+        substitutions = {
+            expression_symbols[key]: value for key, value in cleaned_variables.items()
+        }
+        substituted = (
+            parsed_expression.subs(substitutions)
+            if hasattr(parsed_expression, "subs")
+            else parsed_expression
         )
-        simplified = sp.simplify(substituted)
+        simplified = (
+            sp.simplify(substituted)
+            if isinstance(substituted, sp.Basic)
+            else substituted
+        )
         return CalculatorResult(expression, simplified)
 
+    def matrix_exponential(
+        self, matrix: Iterable[Iterable[object]]
+    ) -> CalculatorResult:
+        """Compute the matrix exponential for a square matrix."""
+
+        result = self._matrix_exp(matrix)
+        return CalculatorResult("matrix_exp", result)
+
+    def matrix_logarithm(self, matrix: Iterable[Iterable[object]]) -> CalculatorResult:
+        """Compute the principal matrix logarithm when defined."""
+
+        result = self._matrix_log(matrix)
+        return CalculatorResult("matrix_log", result)
+
     def simplify_expression(self, expression: str) -> CalculatorResult:
-        """Simplify an algebraic expression."""
+        """Simplify an algebraic expression or balance an equation."""
+
+        if "=" in expression:
+            equation = self._parse_equation(expression, {})
+            balanced = sp.simplify(equation.lhs - equation.rhs)
+            return CalculatorResult(expression, sp.Eq(balanced, 0))
 
         parsed_expression = self._parse_expression(expression, {})
         return CalculatorResult(expression, sp.simplify(parsed_expression))
@@ -191,22 +219,204 @@ class TI89Calculator:
             raise ValueError("Direction must be 'two-sided', 'left', or 'right'")
         return direction_map[direction]
 
+    def _hat(self, vector: Iterable[object]) -> sp.Matrix:
+        matrix = sp.Matrix(vector)
+        elements = list(matrix)
+        if len(elements) != 3:
+            raise ValueError("hat expects a 3-element vector")
+        x, y, z = [sp.sympify(value) for value in elements]
+        return sp.Matrix([[0, -z, y], [z, 0, -x], [-y, x, 0]])
+
+    def _vee(self, matrix: Iterable[Iterable[object]]) -> sp.Matrix:
+        skew = sp.Matrix(matrix)
+        if skew.shape != (3, 3):
+            raise ValueError("vee expects a 3x3 skew-symmetric matrix")
+        return sp.Matrix([skew[2, 1], skew[0, 2], skew[1, 0]])
+
+    def _se3_hat(self, screw: Iterable[object]) -> sp.Matrix:
+        vector = sp.Matrix(screw)
+        elements = list(vector)
+        if len(elements) != 6:
+            raise ValueError("se3_hat expects a 6-element screw axis")
+        angular = sp.Matrix(elements[:3])
+        linear = sp.Matrix(elements[3:])
+        angular_skew = self._hat(angular)
+        upper = sp.Matrix.hstack(angular_skew, linear)
+        return sp.Matrix.vstack(upper, sp.Matrix([[0, 0, 0, 0]]))
+
+    def _se3_vee(self, matrix: Iterable[Iterable[object]]) -> sp.Matrix:
+        transform = sp.Matrix(matrix)
+        if transform.shape != (4, 4):
+            raise ValueError("se3_vee expects a 4x4 matrix")
+        angular = self._vee(transform[:3, :3])
+        linear = transform[:3, 3]
+        return sp.Matrix.vstack(angular, linear)
+
+    def _screw_axis(
+        self,
+        omega: Iterable[object],
+        point: Iterable[object],
+        pitch: object | None = None,
+    ) -> sp.Matrix:
+        angular_vector = sp.Matrix(omega)
+        angular_elements = list(angular_vector)
+        if len(angular_elements) != 3:
+            raise ValueError("screw_axis expects a 3-element angular vector")
+        angular = sp.Matrix(angular_elements)
+        origin_vector = sp.Matrix(point)
+        origin_elements = list(origin_vector)
+        if len(origin_elements) != 3:
+            raise ValueError("screw_axis expects a 3-element reference point")
+        origin = sp.Matrix(origin_elements)
+        twist_pitch = sp.sympify(pitch if pitch is not None else 0)
+        linear = -self._hat(angular) * origin + twist_pitch * angular
+        return sp.Matrix.vstack(angular, linear)
+
+    def _matrix_exp(self, matrix: Iterable[Iterable[object]]) -> sp.Matrix:
+        return sp.Matrix(matrix).exp()
+
+    def _matrix_log(self, matrix: Iterable[Iterable[object]]) -> sp.Matrix:
+        return sp.Matrix(matrix).log()
+
+    def _matrix_power(
+        self, matrix: Iterable[Iterable[object]], power: object
+    ) -> sp.Matrix:
+        return sp.Matrix(matrix) ** sp.sympify(power)
+
+    def _twist_exponential(
+        self, screw: Iterable[object], theta: object = 1
+    ) -> sp.Matrix:
+        hat_matrix = self._se3_hat(screw)
+        return sp.exp(hat_matrix * sp.sympify(theta))
+
+    def _adjoint_transform(self, transform: Iterable[Iterable[object]]) -> sp.Matrix:
+        matrix = sp.Matrix(transform)
+        if matrix.shape != (4, 4):
+            raise ValueError("adjoint expects a 4x4 homogeneous transform")
+        rotation = matrix[:3, :3]
+        translation = matrix[:3, 3]
+        translation_hat = self._hat(translation)
+        upper = sp.Matrix.hstack(rotation, sp.zeros(3))
+        lower = sp.Matrix.hstack(translation_hat * rotation, rotation)
+        return sp.Matrix.vstack(upper, lower)
+
+    def _block_diag(self, *blocks: Iterable[Iterable[object]]) -> sp.Matrix:
+        matrices = [sp.Matrix(block) for block in blocks]
+        return sp.diag(*matrices)
+
     def _build_allowed_functions(self) -> Mapping[str, object]:
         return {
+            "I": sp.I,
+            "i": sp.I,
             "sin": sp.sin,
             "cos": sp.cos,
             "tan": sp.tan,
+            "csc": sp.csc,
+            "sec": sp.sec,
+            "cot": sp.cot,
             "asin": sp.asin,
             "acos": sp.acos,
             "atan": sp.atan,
+            "acsc": sp.acsc,
+            "asec": sp.asec,
+            "acot": sp.acot,
             "sinh": sp.sinh,
             "cosh": sp.cosh,
             "tanh": sp.tanh,
+            "asinh": sp.asinh,
+            "acosh": sp.acosh,
+            "atanh": sp.atanh,
+            "csch": sp.csch,
+            "sech": sp.sech,
+            "coth": sp.coth,
+            "re": sp.re,
+            "im": sp.im,
+            "real": sp.re,
+            "imag": sp.im,
+            "arg": sp.arg,
+            "conj": sp.conjugate,
+            "conjugate": sp.conjugate,
+            "abs": sp.Abs,
+            "norm": lambda vector: sp.Matrix(vector).norm(),
             "exp": sp.exp,
             "log": sp.log,
             "ln": sp.log,
             "sqrt": sp.sqrt,
-            "abs": sp.Abs,
+            "cbrt": lambda value: sp.root(value, 3),
+            "floor": sp.floor,
+            "ceiling": sp.ceiling,
+            "round": lambda value, ndigits=0: round(value, ndigits),
+            "cis": lambda theta: sp.exp(sp.I * theta),
+            "rect": lambda radius, theta: radius * sp.exp(sp.I * theta),
+            "polar": lambda complex_value: sp.Tuple(
+                sp.Abs(complex_value), sp.arg(complex_value)
+            ),
+            "gcd": sp.gcd,
+            "lcm": sp.lcm,
+            "factor": sp.factor,
+            "factor_terms": sp.factor_terms,
+            "expand": sp.expand,
+            "cancel": sp.cancel,
+            "collect": sp.collect,
+            "together": sp.together,
+            "ratsimp": sp.ratsimp,
+            "trigsimp": sp.trigsimp,
+            "apart": sp.apart,
+            "simplify": sp.simplify,
+            "factorial": sp.factorial,
+            "nCr": sp.binomial,
+            "nPr": lambda n, r: sp.factorial(n) / sp.factorial(n - r),
+            "sum": sp.summation,
+            "product": sp.product,
+            "Matrix": sp.Matrix,
+            "dot": lambda vector_a, vector_b: sp.Matrix(vector_a).dot(
+                sp.Matrix(vector_b)
+            ),
+            "cross": lambda vector_a, vector_b: sp.Matrix(vector_a).cross(
+                sp.Matrix(vector_b)
+            ),
+            "det": lambda matrix: sp.Matrix(matrix).det(),
+            "transpose": lambda matrix: sp.Matrix(matrix).T,
+            "inv": lambda matrix: sp.Matrix(matrix).inv(),
+            "pinv": lambda matrix: sp.Matrix(matrix).pinv(),
+            "trace": lambda matrix: sp.Matrix(matrix).trace(),
+            "rref": lambda matrix: sp.Matrix(matrix).rref()[0],
+            "row_reduce": lambda matrix: sp.Matrix(matrix).rref()[0],
+            "rank": lambda matrix: sp.Matrix(matrix).rank(),
+            "diag": sp.diag,
+            "block_diag": self._block_diag,
+            "eye": sp.eye,
+            "ones": sp.ones,
+            "zeros": sp.zeros,
+            "matrix_exp": self._matrix_exp,
+            "expm": self._matrix_exp,
+            "matrix_log": self._matrix_log,
+            "logm": self._matrix_log,
+            "matrix_power": self._matrix_power,
+            "eigenvals": lambda matrix: sp.Matrix(matrix).eigenvals(),
+            "eigenvects": lambda matrix: sp.Matrix(matrix).eigenvects(),
+            "charpoly": lambda matrix, symbol="λ": sp.Matrix(matrix)
+            .charpoly(sp.Symbol(symbol))
+            .as_expr(),
+            "nullspace": lambda matrix: sp.Matrix(matrix).nullspace(),
+            "colspace": lambda matrix: sp.Matrix(matrix).columnspace(),
+            "rowspace": lambda matrix: sp.Matrix(matrix).rowspace(),
+            "qr": lambda matrix: sp.Matrix(matrix).QRdecomposition(),
+            "lu": lambda matrix: sp.Matrix(matrix).LUdecomposition(),
+            "svd": lambda matrix: sp.Matrix(matrix).SVD(),
+            "solve_linear": lambda matrix, rhs: sp.Matrix(matrix).LUsolve(
+                sp.Matrix(rhs)
+            ),
+            "linsolve": sp.linsolve,
+            "hat": self._hat,
+            "vee": self._vee,
+            "skew": self._hat,
+            "unskew": self._vee,
+            "se3_hat": self._se3_hat,
+            "se3_vee": self._se3_vee,
+            "screw_axis": self._screw_axis,
+            "twist_exp": self._twist_exponential,
+            "adjoint": self._adjoint_transform,
             "pi": sp.pi,
             "E": sp.E,
             "e": sp.E,
