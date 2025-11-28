@@ -10,20 +10,38 @@ from typing import Any
 
 import numpy as np
 
-from ..core.celestial_body import (BodyType, CelestialBody, Moon, Planet,
-                                   Spacecraft, Star)
-from ..core.constants import (AU, DWARF_PLANETS, INNER_PLANETS, OUTER_PLANETS,
-                              PLANET_ORDER)
+from ..core.celestial_body import (
+    BodyType,
+    CelestialBody,
+    Moon,
+    Planet,
+    Spacecraft,
+    Star,
+)
+from ..core.constants import (
+    AU,
+    DWARF_PLANETS,
+    INNER_PLANETS,
+    OUTER_PLANETS,
+    PLANET_ORDER,
+)
 from ..core.time_manager import TimeManager
 from ..data.asteroids import MAJOR_ASTEROIDS, generate_belt_particles
 from ..data.comets import COMETS
 from ..data.moon_systems import moons_by_parent
 from ..data.planet_info import PLANET_DESCRIPTIONS
-from ..physics.trajectory_planner import (TrajectoryPlanner,
-                                          TransferTrajectory, TransferType)
-from ..ui.widgets import (DateTimePicker, EducationalInfoPanel,
-                          HistoricalEventsPanel, ImmersionChecklistPanel,
-                          TimeNavigationPanel)
+from ..physics.trajectory_planner import (
+    TrajectoryPlanner,
+    TransferTrajectory,
+    TransferType,
+)
+from ..ui.widgets import (
+    DateTimePicker,
+    EducationalInfoPanel,
+    HistoricalEventsPanel,
+    ImmersionChecklistPanel,
+    TimeNavigationPanel,
+)
 from .camera import CameraMode
 from .renderer import Renderer, RenderSettings
 
@@ -116,7 +134,7 @@ class SolarSystemScene:
             ("  G", "Toggle reference grid"),
             ("  V", "Toggle stereo/VR view"),
             ("  H", "Toggle this help"),
-            ("  ESC", "Quit simulation")
+            ("  ESC", "Quit simulation"),
         ]
 
         # Enhanced UI widgets
@@ -151,26 +169,25 @@ class SolarSystemScene:
         """Initialize enhanced UI widgets for educational features."""
         # Date picker for manual time navigation
         self.date_picker = DateTimePicker(
-            position=(20, 100),
-            on_date_change=self._on_date_picker_change
+            position=(20, 100), on_date_change=self._on_date_picker_change
         )
         self.date_picker.set_date(self.time_manager.current_time.datetime_utc)
 
         # Time navigation panel with quick jump buttons
-        self.time_nav_panel = TimeNavigationPanel(
-            position=(20, 60)
-        )
+        self.time_nav_panel = TimeNavigationPanel(position=(20, 60))
 
         # Educational info panel
         self.educational_panel = EducationalInfoPanel(
-            position=(self.settings.window_width - 370, 20),
-            width=350
+            position=(self.settings.window_width - 370, 20), width=350
         )
 
         # Historical events panel
         self.historical_events = HistoricalEventsPanel(
-            position=(self.settings.window_width - 420, self.settings.window_height - 200),
-            width=400
+            position=(
+                self.settings.window_width - 420,
+                self.settings.window_height - 200,
+            ),
+            width=400,
         )
         self.historical_events.set_date(self.time_manager.current_time.datetime_utc)
 
@@ -204,11 +221,7 @@ class SolarSystemScene:
         # Create planets
         for planet_name in PLANET_ORDER:
             is_dwarf = planet_name in DWARF_PLANETS
-            planet = Planet(
-                name=planet_name,
-                parent=self.sun,
-                is_dwarf=is_dwarf
-            )
+            planet = Planet(name=planet_name, parent=self.sun, is_dwarf=is_dwarf)
             self.planets[planet_name] = planet
 
         # Create Earth's Moon
@@ -231,7 +244,7 @@ class SolarSystemScene:
                 body_type=BodyType.ASTEROID,
                 orbital_elements=asteroid.elements,
                 physical_properties=asteroid.properties,
-                parent=self.sun
+                parent=self.sun,
             )
             self.asteroids[asteroid.name] = asteroid_body
 
@@ -241,7 +254,7 @@ class SolarSystemScene:
                 body_type=BodyType.COMET,
                 orbital_elements=comet.elements,
                 physical_properties=comet.properties,
-                parent=self.sun
+                parent=self.sun,
             )
             self.comets[comet.name] = comet_body
 
@@ -278,7 +291,7 @@ class SolarSystemScene:
         self,
         origin_name: str,
         destination_name: str,
-        departure_date: Optional[float] = None
+        departure_date: Optional[float] = None,
     ) -> Optional[TransferTrajectory]:
         origin = self.get_body_by_name(origin_name)
         destination = self.get_body_by_name(destination_name)
@@ -293,13 +306,12 @@ class SolarSystemScene:
             origin=origin,
             destination=destination,
             departure_date=departure_date,
-            transfer_type=TransferType.HOHMANN
+            transfer_type=TransferType.HOHMANN,
         )
 
         # Create spacecraft for the trajectory
         spacecraft = self.trajectory_planner.create_spacecraft_from_transfer(
-            trajectory,
-            name=f"{origin_name}-{destination_name} Transfer"
+            trajectory, name=f"{origin_name}-{destination_name} Transfer"
         )
 
         self.spacecraft[spacecraft.name] = spacecraft
@@ -376,7 +388,9 @@ class SolarSystemScene:
             if self.date_picker:
                 self.date_picker.toggle()
                 if self.date_picker.visible:
-                    self.date_picker.set_date(self.time_manager.current_time.datetime_utc)
+                    self.date_picker.set_date(
+                        self.time_manager.current_time.datetime_utc
+                    )
                     self._mark_immersion_task("navigate_time")
 
         elif key == K_n:
@@ -421,7 +435,9 @@ class SolarSystemScene:
             max_days_in_prev = monthrange(prev_year, prev_month)[1]
             actual_day = min(target_day, max_days_in_prev)
 
-            prev_date = current_dt.replace(year=prev_year, month=prev_month, day=actual_day)
+            prev_date = current_dt.replace(
+                year=prev_year, month=prev_month, day=actual_day
+            )
             self.time_manager.set_datetime(prev_date)
             self._update_ui_date()
             self._mark_immersion_task("navigate_time")
@@ -443,7 +459,9 @@ class SolarSystemScene:
             max_days_in_next = monthrange(next_year, next_month)[1]
             actual_day = min(target_day, max_days_in_next)
 
-            next_date = current_dt.replace(year=next_year, month=next_month, day=actual_day)
+            next_date = current_dt.replace(
+                year=next_year, month=next_month, day=actual_day
+            )
             self.time_manager.set_datetime(next_date)
             self._update_ui_date()
             self._mark_immersion_task("navigate_time")
@@ -497,7 +515,9 @@ class SolarSystemScene:
         elif key == K_m:
             if self.immersion_checklist:
                 self.immersion_checklist.toggle()
-            self.view_state.show_immersion_checklist = not self.view_state.show_immersion_checklist
+            self.view_state.show_immersion_checklist = (
+                not self.view_state.show_immersion_checklist
+            )
 
         # Period/comma for cycling fun facts
         elif key == K_PERIOD:
@@ -541,11 +561,11 @@ class SolarSystemScene:
             # Build properties dict
             properties = {}
             for key, value in info.items():
-                if key != 'fun_facts':
-                    properties[key.replace('_', ' ').title()] = value
+                if key != "fun_facts":
+                    properties[key.replace("_", " ").title()] = value
 
             # Get fun facts
-            fun_facts = info.get('fun_facts', [])
+            fun_facts = info.get("fun_facts", [])
 
             self.educational_panel.set_body(body_name, properties, fun_facts)
 
@@ -664,9 +684,7 @@ class SolarSystemScene:
 
         current_jd = self.time_manager.julian_date
 
-        if (
-            delta_jd or self._last_ui_sync_jd is None
-        ) and (
+        if (delta_jd or self._last_ui_sync_jd is None) and (
             self._last_ui_sync_jd is None
             or not math.isclose(current_jd, self._last_ui_sync_jd)
         ):
@@ -675,8 +693,7 @@ class SolarSystemScene:
 
         # Update camera
         self.renderer.camera.update(
-            self.time_manager.julian_date,
-            self.renderer.distance_scale
+            self.time_manager.julian_date, self.renderer.distance_scale
         )
 
     def _render(self):
@@ -698,7 +715,9 @@ class SolarSystemScene:
             glClear(GL_DEPTH_BUFFER_BIT)
             self._render_view_contents(jd)
 
-            glViewport(0, 0, renderer.settings.window_width, renderer.settings.window_height)
+            glViewport(
+                0, 0, renderer.settings.window_width, renderer.settings.window_height
+            )
             renderer.begin_frame(clear=False)
             self._render_overlays(jd)
             renderer.end_frame()
@@ -740,24 +759,34 @@ class SolarSystemScene:
         if self.view_state.show_minor_bodies:
             renderer.render_asteroid_belt(self.asteroid_belt_points)
             for asteroid in self.asteroids.values():
-                renderer.render_body(asteroid, julian_date, self.selected_body == asteroid)
+                renderer.render_body(
+                    asteroid, julian_date, self.selected_body == asteroid
+                )
                 if self.view_state.show_labels:
                     state = asteroid.get_state_at_time(julian_date)
-                    renderer.render_label(asteroid.name, state.position * renderer.distance_scale)
+                    renderer.render_label(
+                        asteroid.name, state.position * renderer.distance_scale
+                    )
 
             for comet in self.comets.values():
                 renderer.render_body(comet, julian_date, self.selected_body == comet)
                 if self.view_state.show_orbits:
-                    renderer.render_orbit(comet, julian_date, color=(0.6, 0.8, 1.0, 0.7))
+                    renderer.render_orbit(
+                        comet, julian_date, color=(0.6, 0.8, 1.0, 0.7)
+                    )
                 if self.view_state.show_labels:
                     state = comet.get_state_at_time(julian_date)
-                    renderer.render_label(comet.name, state.position * renderer.distance_scale)
+                    renderer.render_label(
+                        comet.name, state.position * renderer.distance_scale
+                    )
 
         for moon in self.moons.values():
             renderer.render_body(moon, julian_date, self.selected_body == moon)
             if self.view_state.show_labels:
                 state = moon.get_state_at_time(julian_date)
-                renderer.render_label(moon.name, state.position * renderer.distance_scale)
+                renderer.render_label(
+                    moon.name, state.position * renderer.distance_scale
+                )
 
         if self.view_state.show_trajectories:
             for trajectory in self.trajectories:
@@ -808,7 +837,9 @@ class SolarSystemScene:
             renderer.render_historical_events(self.historical_events.get_render_data())
 
         if self.view_state.show_immersion_checklist and self.immersion_checklist:
-            renderer.render_immersion_checklist(self.immersion_checklist.get_render_data())
+            renderer.render_immersion_checklist(
+                self.immersion_checklist.get_render_data()
+            )
 
     def _should_render_body(self, body: CelestialBody) -> bool:
         if body.name in INNER_PLANETS:
@@ -822,9 +853,7 @@ class SolarSystemScene:
         return True
 
     def get_transfer_summary(
-        self,
-        origin_name: str,
-        destination_name: str
+        self, origin_name: str, destination_name: str
     ) -> Optional[Dict[str, Any]]:
         origin = self.get_body_by_name(origin_name)
         destination = self.get_body_by_name(destination_name)

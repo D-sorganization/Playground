@@ -8,20 +8,27 @@ positions and velocities at any given time.
 """
 
 import math
-import numpy as np
-from dataclasses import dataclass, field
-from typing import Optional, Tuple, List, Dict, Any
+from dataclasses import dataclass
 from enum import Enum
+from typing import Any, Optional
+
+import numpy as np
 
 from .constants import (
-    AU, AU_KM, G, J2000, SECONDS_PER_DAY, DAYS_PER_YEAR,
-    ORBITAL_ELEMENTS, PHYSICAL_PROPERTIES, GM,
-    OrbitalElements, PhysicalProperties
+    AU,
+    GM,
+    J2000,
+    ORBITAL_ELEMENTS,
+    PHYSICAL_PROPERTIES,
+    SECONDS_PER_DAY,
+    OrbitalElements,
+    PhysicalProperties,
 )
 
 
 class BodyType(Enum):
     """Classification of celestial body types."""
+
     STAR = "star"
     PLANET = "planet"
     DWARF_PLANET = "dwarf_planet"
@@ -41,6 +48,7 @@ class StateVector:
         velocity: Velocity vector [vx, vy, vz] in m/s
         time: Julian date of this state
     """
+
     position: np.ndarray
     velocity: np.ndarray
     time: float
@@ -69,12 +77,10 @@ class StateVector:
         """Position in kilometers."""
         return self.position / 1000
 
-    def copy(self) -> 'StateVector':
+    def copy(self) -> "StateVector":
         """Create a copy of this state vector."""
         return StateVector(
-            position=self.position.copy(),
-            velocity=self.velocity.copy(),
-            time=self.time
+            position=self.position.copy(), velocity=self.velocity.copy(), time=self.time
         )
 
 
@@ -90,9 +96,9 @@ class CelestialBody:
         self,
         name: str,
         body_type: BodyType,
-        orbital_elements: Optional[OrbitalElements] = None,
-        physical_properties: Optional[PhysicalProperties] = None,
-        parent: Optional['CelestialBody'] = None
+        orbital_elements: OrbitalElements | None = None,
+        physical_properties: PhysicalProperties | None = None,
+        parent: Optional["CelestialBody"] = None,
     ):
         """
         Initialize a celestial body.
@@ -109,11 +115,11 @@ class CelestialBody:
         self.orbital_elements = orbital_elements
         self.physical_properties = physical_properties
         self.parent = parent
-        self.children: List['CelestialBody'] = []
+        self.children: list[CelestialBody] = []
 
         # State cache
-        self._state_cache: Dict[float, StateVector] = {}
-        self._orbit_points: Optional[np.ndarray] = None
+        self._state_cache: dict[float, StateVector] = {}
+        self._orbit_points: np.ndarray | None = None
 
         # Add self as child of parent
         if parent is not None:
@@ -139,7 +145,7 @@ class CelestialBody:
         return 0.0
 
     @property
-    def color(self) -> Tuple[float, float, float]:
+    def color(self) -> tuple[float, float, float]:
         """RGB color tuple for visualization."""
         if self.physical_properties:
             return self.physical_properties.color
@@ -182,17 +188,20 @@ class CelestialBody:
             raise ValueError(f"{self.name} has no orbital elements")
 
         # Time in Julian centuries from J2000.0
-        T = (julian_date - J2000) / 36525.0
+        t_centuries = (julian_date - J2000) / 36525.0
 
         elem = self.orbital_elements
 
         return OrbitalElements(
-            semi_major_axis=elem.semi_major_axis + elem.semi_major_axis_rate * T,
-            eccentricity=elem.eccentricity + elem.eccentricity_rate * T,
-            inclination=elem.inclination + elem.inclination_rate * T,
-            longitude_ascending=elem.longitude_ascending + elem.longitude_ascending_rate * T,
-            longitude_perihelion=elem.longitude_perihelion + elem.longitude_perihelion_rate * T,
-            mean_longitude=elem.mean_longitude + elem.mean_longitude_rate * T
+            semi_major_axis=elem.semi_major_axis
+            + elem.semi_major_axis_rate * t_centuries,
+            eccentricity=elem.eccentricity + elem.eccentricity_rate * t_centuries,
+            inclination=elem.inclination + elem.inclination_rate * t_centuries,
+            longitude_ascending=elem.longitude_ascending
+            + elem.longitude_ascending_rate * t_centuries,
+            longitude_perihelion=elem.longitude_perihelion
+            + elem.longitude_perihelion_rate * t_centuries,
+            mean_longitude=elem.mean_longitude + elem.mean_longitude_rate * t_centuries,
         )
 
     def get_state_at_time(self, julian_date: float) -> StateVector:
@@ -217,7 +226,7 @@ class CelestialBody:
             state = StateVector(
                 position=np.array([0.0, 0.0, 0.0]),
                 velocity=np.array([0.0, 0.0, 0.0]),
-                time=julian_date
+                time=julian_date,
             )
             return state
 
@@ -227,49 +236,51 @@ class CelestialBody:
         # Convert to radians
         i = math.radians(elem.inclination)
         omega_bar = math.radians(elem.longitude_perihelion)
-        Omega = math.radians(elem.longitude_ascending)
-        L = math.radians(elem.mean_longitude)
+        ascending_longitude = math.radians(elem.longitude_ascending)
+        mean_longitude = math.radians(elem.mean_longitude)
 
         # Argument of perihelion
-        omega = omega_bar - Omega
+        omega = omega_bar - ascending_longitude
 
         # Mean anomaly
-        M = L - omega_bar
-        M = M % (2 * math.pi)
+        mean_anomaly = mean_longitude - omega_bar
+        mean_anomaly = mean_anomaly % (2 * math.pi)
 
         # Solve Kepler's equation for eccentric anomaly E
         # M = E - e*sin(E)
-        E = self._solve_kepler(M, elem.eccentricity)
+        eccentric_anomaly = self._solve_kepler(mean_anomaly, elem.eccentricity)
 
         # True anomaly
         e = elem.eccentricity
         nu = 2 * math.atan2(
-            math.sqrt(1 + e) * math.sin(E / 2),
-            math.sqrt(1 - e) * math.cos(E / 2)
+            math.sqrt(1 + e) * math.sin(eccentric_anomaly / 2),
+            math.sqrt(1 - e) * math.cos(eccentric_anomaly / 2),
         )
 
         # Distance from focus
         a = elem.semi_major_axis * AU  # Convert to meters
-        r = a * (1 - e * math.cos(E))
+        r = a * (1 - e * math.cos(eccentric_anomaly))
 
         # Position in orbital plane
         x_orb = r * math.cos(nu)
         y_orb = r * math.sin(nu)
 
         # Rotation matrices
-        # R_z(-Omega) * R_x(-i) * R_z(-omega)
+        # R_z(-ascending_longitude) * R_x(-i) * R_z(-omega)
         cos_omega = math.cos(omega)
         sin_omega = math.sin(omega)
-        cos_Omega = math.cos(Omega)
-        sin_Omega = math.sin(Omega)
+        cos_ascending = math.cos(ascending_longitude)
+        sin_ascending = math.sin(ascending_longitude)
         cos_i = math.cos(i)
         sin_i = math.sin(i)
 
         # Transform to heliocentric ecliptic coordinates
-        x = (cos_omega * cos_Omega - sin_omega * sin_Omega * cos_i) * x_orb + \
-            (-sin_omega * cos_Omega - cos_omega * sin_Omega * cos_i) * y_orb
-        y = (cos_omega * sin_Omega + sin_omega * cos_Omega * cos_i) * x_orb + \
-            (-sin_omega * sin_Omega + cos_omega * cos_Omega * cos_i) * y_orb
+        x = (cos_omega * cos_ascending - sin_omega * sin_ascending * cos_i) * x_orb + (
+            -sin_omega * cos_ascending - cos_omega * sin_ascending * cos_i
+        ) * y_orb
+        y = (cos_omega * sin_ascending + sin_omega * cos_ascending * cos_i) * x_orb + (
+            -sin_omega * sin_ascending + cos_omega * cos_ascending * cos_i
+        ) * y_orb
         z = (sin_omega * sin_i) * x_orb + (cos_omega * sin_i) * y_orb
 
         # Velocity calculation
@@ -284,16 +295,22 @@ class CelestialBody:
         vy_orb = parent_gm / h * (e + math.cos(nu))
 
         # Transform velocity to heliocentric ecliptic coordinates
-        vx = (cos_omega * cos_Omega - sin_omega * sin_Omega * cos_i) * vx_orb + \
-             (-sin_omega * cos_Omega - cos_omega * sin_Omega * cos_i) * vy_orb
-        vy = (cos_omega * sin_Omega + sin_omega * cos_Omega * cos_i) * vx_orb + \
-             (-sin_omega * sin_Omega + cos_omega * cos_Omega * cos_i) * vy_orb
+        vx = (
+            cos_omega * cos_ascending - sin_omega * sin_ascending * cos_i
+        ) * vx_orb + (
+            -sin_omega * cos_ascending - cos_omega * sin_ascending * cos_i
+        ) * vy_orb
+        vy = (
+            cos_omega * sin_ascending + sin_omega * cos_ascending * cos_i
+        ) * vx_orb + (
+            -sin_omega * sin_ascending + cos_omega * cos_ascending * cos_i
+        ) * vy_orb
         vz = (sin_omega * sin_i) * vx_orb + (cos_omega * sin_i) * vy_orb
 
         state = StateVector(
             position=np.array([x, y, z]),
             velocity=np.array([vx, vy, vz]),
-            time=julian_date
+            time=julian_date,
         )
 
         # Cache the result
@@ -308,38 +325,41 @@ class CelestialBody:
 
         return state
 
-    def _solve_kepler(self, M: float, e: float, tolerance: float = 1e-10) -> float:
+    def _solve_kepler(
+        self, mean_anomaly: float, eccentricity: float, tolerance: float = 1e-10
+    ) -> float:
         """
         Solve Kepler's equation M = E - e*sin(E) for eccentric anomaly E.
 
         Uses Newton-Raphson iteration.
 
         Args:
-            M: Mean anomaly in radians
-            e: Eccentricity
+            mean_anomaly: Mean anomaly in radians
+            eccentricity: Eccentricity
             tolerance: Convergence tolerance
 
         Returns:
             Eccentric anomaly in radians
         """
         # Initial guess
-        if e < 0.8:
-            E = M
-        else:
-            E = math.pi
+        eccentric_anomaly = mean_anomaly if eccentricity < 0.8 else math.pi
 
         # Newton-Raphson iteration
         for _ in range(50):
-            f = E - e * math.sin(E) - M
-            f_prime = 1 - e * math.cos(E)
+            f_val = (
+                eccentric_anomaly
+                - eccentricity * math.sin(eccentric_anomaly)
+                - mean_anomaly
+            )
+            f_prime = 1 - eccentricity * math.cos(eccentric_anomaly)
 
-            delta = f / f_prime
-            E = E - delta
+            delta = f_val / f_prime
+            eccentric_anomaly = eccentric_anomaly - delta
 
             if abs(delta) < tolerance:
                 break
 
-        return E
+        return eccentric_anomaly
 
     def get_orbit_points(self, julian_date: float, num_points: int = 360) -> np.ndarray:
         """
@@ -361,8 +381,8 @@ class CelestialBody:
         # Convert angles to radians
         i = math.radians(elem.inclination)
         omega_bar = math.radians(elem.longitude_perihelion)
-        Omega = math.radians(elem.longitude_ascending)
-        omega = omega_bar - Omega
+        ascending_longitude = math.radians(elem.longitude_ascending)
+        omega = omega_bar - ascending_longitude
 
         a = elem.semi_major_axis * AU
         e = elem.eccentricity
@@ -370,8 +390,8 @@ class CelestialBody:
         # Pre-calculate rotation matrix components
         cos_omega = math.cos(omega)
         sin_omega = math.sin(omega)
-        cos_Omega = math.cos(Omega)
-        sin_Omega = math.sin(Omega)
+        cos_ascending = math.cos(ascending_longitude)
+        sin_ascending = math.sin(ascending_longitude)
         cos_i = math.cos(i)
         sin_i = math.sin(i)
 
@@ -388,10 +408,16 @@ class CelestialBody:
             y_orb = r * math.sin(nu)
 
             # Transform to heliocentric ecliptic coordinates
-            x = (cos_omega * cos_Omega - sin_omega * sin_Omega * cos_i) * x_orb + \
-                (-sin_omega * cos_Omega - cos_omega * sin_Omega * cos_i) * y_orb
-            y = (cos_omega * sin_Omega + sin_omega * cos_Omega * cos_i) * x_orb + \
-                (-sin_omega * sin_Omega + cos_omega * cos_Omega * cos_i) * y_orb
+            x = (
+                cos_omega * cos_ascending - sin_omega * sin_ascending * cos_i
+            ) * x_orb + (
+                -sin_omega * cos_ascending - cos_omega * sin_ascending * cos_i
+            ) * y_orb
+            y = (
+                cos_omega * sin_ascending + sin_omega * cos_ascending * cos_i
+            ) * x_orb + (
+                -sin_omega * sin_ascending + cos_omega * cos_ascending * cos_i
+            ) * y_orb
             z = (sin_omega * sin_i) * x_orb + (cos_omega * sin_i) * y_orb
 
             points.append([x, y, z])
@@ -403,40 +429,41 @@ class CelestialBody:
         self._state_cache.clear()
         self._orbit_points = None
 
-    def get_info_dict(self) -> Dict[str, Any]:
+    def get_info_dict(self) -> dict[str, Any]:
         """
         Get a dictionary of information about this body for display.
 
         Returns:
             Dictionary with formatted information
         """
-        info = {
-            "Name": self.name,
-            "Type": self.body_type.value.title()
-        }
+        info = {"Name": self.name, "Type": self.body_type.value.title()}
 
         if self.physical_properties:
             pp = self.physical_properties
-            info.update({
-                "Mass": f"{pp.mass:.3e} kg",
-                "Radius": f"{pp.radius:,.0f} km",
-                "Density": f"{pp.density:,.0f} kg/m³",
-                "Surface Gravity": f"{pp.surface_gravity:.2f} m/s²",
-                "Escape Velocity": f"{pp.escape_velocity:.2f} km/s",
-                "Rotation Period": f"{abs(pp.rotation_period):.2f} hours" +
-                                  (" (retrograde)" if pp.rotation_period < 0 else ""),
-                "Axial Tilt": f"{pp.axial_tilt:.2f}°",
-                "Temperature": f"{pp.temperature} K"
-            })
+            info.update(
+                {
+                    "Mass": f"{pp.mass:.3e} kg",
+                    "Radius": f"{pp.radius:,.0f} km",
+                    "Density": f"{pp.density:,.0f} kg/m³",
+                    "Surface Gravity": f"{pp.surface_gravity:.2f} m/s²",
+                    "Escape Velocity": f"{pp.escape_velocity:.2f} km/s",
+                    "Rotation Period": f"{abs(pp.rotation_period):.2f} hours"
+                    + (" (retrograde)" if pp.rotation_period < 0 else ""),
+                    "Axial Tilt": f"{pp.axial_tilt:.2f}°",
+                    "Temperature": f"{pp.temperature} K",
+                }
+            )
 
         if self.orbital_elements:
             oe = self.orbital_elements
-            info.update({
-                "Semi-major Axis": f"{oe.semi_major_axis:.4f} AU",
-                "Eccentricity": f"{oe.eccentricity:.6f}",
-                "Inclination": f"{oe.inclination:.4f}°",
-                "Orbital Period": f"{self.get_orbital_period_days():.2f} days"
-            })
+            info.update(
+                {
+                    "Semi-major Axis": f"{oe.semi_major_axis:.4f} AU",
+                    "Eccentricity": f"{oe.eccentricity:.6f}",
+                    "Inclination": f"{oe.inclination:.4f}°",
+                    "Orbital Period": f"{self.get_orbital_period_days():.2f} days",
+                }
+            )
 
         return info
 
@@ -448,9 +475,7 @@ class Star(CelestialBody):
     """Specialized class for stars (primarily the Sun)."""
 
     def __init__(
-        self,
-        name: str = "Sun",
-        physical_properties: Optional[PhysicalProperties] = None
+        self, name: str = "Sun", physical_properties: PhysicalProperties | None = None
     ):
         if physical_properties is None:
             physical_properties = PHYSICAL_PROPERTIES.get(name)
@@ -460,7 +485,7 @@ class Star(CelestialBody):
             body_type=BodyType.STAR,
             orbital_elements=None,
             physical_properties=physical_properties,
-            parent=None
+            parent=None,
         )
 
         self.luminosity = 3.828e26  # Watts (for the Sun)
@@ -474,9 +499,9 @@ class Planet(CelestialBody):
         self,
         name: str,
         parent: CelestialBody,
-        orbital_elements: Optional[OrbitalElements] = None,
-        physical_properties: Optional[PhysicalProperties] = None,
-        is_dwarf: bool = False
+        orbital_elements: OrbitalElements | None = None,
+        physical_properties: PhysicalProperties | None = None,
+        is_dwarf: bool = False,
     ):
         if orbital_elements is None:
             orbital_elements = ORBITAL_ELEMENTS.get(name)
@@ -490,7 +515,7 @@ class Planet(CelestialBody):
             body_type=body_type,
             orbital_elements=orbital_elements,
             physical_properties=physical_properties,
-            parent=parent
+            parent=parent,
         )
 
         # Planet-specific attributes
@@ -520,7 +545,7 @@ class Moon(CelestialBody):
         name: str,
         parent: CelestialBody,
         orbital_elements: OrbitalElements,
-        physical_properties: Optional[PhysicalProperties] = None
+        physical_properties: PhysicalProperties | None = None,
     ):
         if physical_properties is None:
             physical_properties = PHYSICAL_PROPERTIES.get(name)
@@ -530,7 +555,7 @@ class Moon(CelestialBody):
             body_type=BodyType.MOON,
             orbital_elements=orbital_elements,
             physical_properties=physical_properties,
-            parent=parent
+            parent=parent,
         )
 
     def get_state_at_time(self, julian_date: float) -> StateVector:
@@ -550,7 +575,7 @@ class Moon(CelestialBody):
             return StateVector(
                 position=relative_state.position + parent_state.position,
                 velocity=relative_state.velocity + parent_state.velocity,
-                time=julian_date
+                time=julian_date,
             )
 
         return relative_state
@@ -564,23 +589,19 @@ class Spacecraft(CelestialBody):
     trajectory rather than orbital elements.
     """
 
-    def __init__(
-        self,
-        name: str,
-        trajectory: Optional[List[StateVector]] = None
-    ):
+    def __init__(self, name: str, trajectory: list[StateVector] | None = None):
         super().__init__(
             name=name,
             body_type=BodyType.SPACECRAFT,
             orbital_elements=None,
             physical_properties=None,
-            parent=None
+            parent=None,
         )
 
         self.trajectory = trajectory or []
-        self._trajectory_times: Optional[np.ndarray] = None
-        self._trajectory_positions: Optional[np.ndarray] = None
-        self._trajectory_velocities: Optional[np.ndarray] = None
+        self._trajectory_times: np.ndarray | None = None
+        self._trajectory_positions: np.ndarray | None = None
+        self._trajectory_velocities: np.ndarray | None = None
 
         if trajectory:
             self._build_trajectory_arrays()
@@ -594,7 +615,7 @@ class Spacecraft(CelestialBody):
         self._trajectory_positions = np.array([s.position for s in self.trajectory])
         self._trajectory_velocities = np.array([s.velocity for s in self.trajectory])
 
-    def set_trajectory(self, trajectory: List[StateVector]):
+    def set_trajectory(self, trajectory: list[StateVector]):
         """Set or update the spacecraft trajectory."""
         self.trajectory = trajectory
         self._build_trajectory_arrays()
@@ -613,7 +634,7 @@ class Spacecraft(CelestialBody):
             return StateVector(
                 position=np.array([0.0, 0.0, 0.0]),
                 velocity=np.array([0.0, 0.0, 0.0]),
-                time=julian_date
+                time=julian_date,
             )
 
         times = self._trajectory_times
@@ -629,10 +650,14 @@ class Spacecraft(CelestialBody):
         t0, t1 = times[idx - 1], times[idx]
         frac = (julian_date - t0) / (t1 - t0)
 
-        pos = self._trajectory_positions[idx - 1] * (1 - frac) + \
-              self._trajectory_positions[idx] * frac
-        vel = self._trajectory_velocities[idx - 1] * (1 - frac) + \
-              self._trajectory_velocities[idx] * frac
+        pos = (
+            self._trajectory_positions[idx - 1] * (1 - frac)
+            + self._trajectory_positions[idx] * frac
+        )
+        vel = (
+            self._trajectory_velocities[idx - 1] * (1 - frac)
+            + self._trajectory_velocities[idx] * frac
+        )
 
         return StateVector(position=pos, velocity=vel, time=julian_date)
 
@@ -643,6 +668,6 @@ class Spacecraft(CelestialBody):
         return self.trajectory[-1].time - self.trajectory[0].time
 
     @property
-    def color(self) -> Tuple[float, float, float]:
+    def color(self) -> tuple[float, float, float]:
         """Spacecraft color for visualization."""
         return (0.0, 1.0, 0.5)  # Bright green

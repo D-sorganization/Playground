@@ -1,7 +1,6 @@
 import math
 import sys
 from pathlib import Path
-from typing import Tuple
 
 import pytest
 
@@ -35,12 +34,12 @@ def test_control_affine_matches_explicit_dynamics() -> None:
         forcing_functions=(lambda t, s: control[0], lambda t, s: control[1]),
     )
     state = DoublePendulumState(theta1=0.3, theta2=-0.4, omega1=0.2, omega2=-0.1)
-    f, G = dynamics.control_affine(state)
+    f, control_matrix = dynamics.control_affine(state)
     combined = (
-        f[0] + G[0][0] * control[0] + G[0][1] * control[1],
-        f[1] + G[1][0] * control[0] + G[1][1] * control[1],
-        f[2] + G[2][0] * control[0] + G[2][1] * control[1],
-        f[3] + G[3][0] * control[0] + G[3][1] * control[1],
+        f[0] + control_matrix[0][0] * control[0] + control_matrix[0][1] * control[1],
+        f[1] + control_matrix[1][0] * control[0] + control_matrix[1][1] * control[1],
+        f[2] + control_matrix[2][0] * control[0] + control_matrix[2][1] * control[1],
+        f[3] + control_matrix[3][0] * control[0] + control_matrix[3][1] * control[1],
     )
     derivatives = dynamics.derivatives(0.0, state)
     assert all(
@@ -52,7 +51,7 @@ def test_joint_torque_breakdown_reports_components() -> None:
     parameters = DoublePendulumParameters.default()
     dynamics = DoublePendulumDynamics(parameters)
     state = DoublePendulumState(theta1=0.1, theta2=0.2, omega1=0.5, omega2=-0.3)
-    torques: Tuple[float, float] = (0.0, 0.0)
+    torques: tuple[float, float] = (0.0, 0.0)
     breakdown = dynamics.joint_torque_breakdown(state, torques)
     assert breakdown.applied == torques
     assert breakdown.coriolis_centripetal != (0.0, 0.0)

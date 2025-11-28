@@ -11,8 +11,8 @@ from __future__ import annotations
 
 import ast
 import math
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass
-from typing import Callable, Dict, Iterable, Tuple
 
 # Physical constants with documented units and references
 # International gravity standard at 45 degrees latitude (m/s^2)
@@ -92,8 +92,8 @@ class ExpressionFunction:
         self._validate_ast(parsed)
         self._code = compile(parsed, filename="<ExpressionFunction>", mode="eval")
 
-    def __call__(self, t: float, state: "DoublePendulumState") -> float:
-        context: Dict[str, float] = {
+    def __call__(self, t: float, state: DoublePendulumState) -> float:
+        context: dict[str, float] = {
             "t": t,
             "theta1": state.theta1,
             "theta2": state.theta2,
@@ -203,7 +203,7 @@ class DoublePendulumParameters:
     constrained_to_plane: bool = True
 
     @classmethod
-    def default(cls) -> "DoublePendulumParameters":
+    def default(cls) -> DoublePendulumParameters:
         upper_inertia = (
             DEFAULT_ARM_INERTIA_SCALING * DEFAULT_ARM_MASS_KG * DEFAULT_ARM_LENGTH_M**2
         )
@@ -250,10 +250,10 @@ class DoublePendulumState:
 class JointTorques:
     """Torque decomposition at the joints."""
 
-    applied: Tuple[float, float]
-    gravitational: Tuple[float, float]
-    damping: Tuple[float, float]
-    coriolis_centripetal: Tuple[float, float]
+    applied: tuple[float, float]
+    gravitational: tuple[float, float]
+    damping: tuple[float, float]
+    coriolis_centripetal: tuple[float, float]
 
 
 class DoublePendulumDynamics:
@@ -263,34 +263,37 @@ class DoublePendulumDynamics:
         self,
         parameters: DoublePendulumParameters | None = None,
         forcing_functions: (
-            Tuple[Callable[[float, DoublePendulumState], float], ...] | None
+            tuple[Callable[[float, DoublePendulumState], float], ...] | None
         ) = None,
     ) -> None:
         self.parameters = parameters or DoublePendulumParameters.default()
-        zero_input: Callable[[float, DoublePendulumState], float] = lambda t, s: 0.0
+
+        def zero_input(_: float, __: DoublePendulumState) -> float:
+            return 0.0
+
         self.forcing_functions = forcing_functions or (zero_input, zero_input)
 
     def mass_matrix(
         self, theta2: float
-    ) -> Tuple[Tuple[float, float], Tuple[float, float]]:
+    ) -> tuple[tuple[float, float], tuple[float, float]]:
         p = self.parameters
         m1 = p.upper_segment.mass_kg
         m2 = p.lower_segment.total_mass
         l1 = p.upper_segment.length_m
         lc1 = p.upper_segment.center_of_mass_distance
         lc2 = p.lower_segment.center_of_mass_distance
-        I1 = p.upper_segment.inertia_about_proximal_joint
-        I2 = p.lower_segment.inertia_about_proximal_joint
+        i1 = p.upper_segment.inertia_about_proximal_joint
+        i2 = p.lower_segment.inertia_about_proximal_joint
         cos_theta2 = math.cos(theta2)
 
-        m11 = I1 + I2 + m1 * lc1**2 + m2 * (l1**2 + lc2**2 + 2 * l1 * lc2 * cos_theta2)
-        m12 = I2 + m2 * (lc2**2 + l1 * lc2 * cos_theta2)
-        m22 = I2 + m2 * lc2**2
+        m11 = i1 + i2 + m1 * lc1**2 + m2 * (l1**2 + lc2**2 + 2 * l1 * lc2 * cos_theta2)
+        m12 = i2 + m2 * (lc2**2 + l1 * lc2 * cos_theta2)
+        m22 = i2 + m2 * lc2**2
         return ((m11, m12), (m12, m22))
 
     def coriolis_vector(
         self, theta2: float, omega1: float, omega2: float
-    ) -> Tuple[float, float]:
+    ) -> tuple[float, float]:
         p = self.parameters
         m2 = p.lower_segment.total_mass
         l1 = p.upper_segment.length_m
@@ -301,7 +304,7 @@ class DoublePendulumDynamics:
         c2 = h * omega1**2
         return c1, c2
 
-    def gravity_vector(self, theta1: float, theta2: float) -> Tuple[float, float]:
+    def gravity_vector(self, theta1: float, theta2: float) -> tuple[float, float]:
         p = self.parameters
         m1 = p.upper_segment.mass_kg
         m2 = p.lower_segment.total_mass
@@ -315,7 +318,7 @@ class DoublePendulumDynamics:
         g2 = m2 * lc2 * g * math.sin(theta1 + theta2)
         return g1, g2
 
-    def damping_vector(self, omega1: float, omega2: float) -> Tuple[float, float]:
+    def damping_vector(self, omega1: float, omega2: float) -> tuple[float, float]:
         p = self.parameters
         d1 = p.damping_shoulder * omega1
         d2 = p.damping_wrist * omega2
@@ -323,7 +326,7 @@ class DoublePendulumDynamics:
 
     def _invert_mass_matrix(
         self, theta2: float
-    ) -> Tuple[Tuple[float, float], Tuple[float, float]]:
+    ) -> tuple[tuple[float, float], tuple[float, float]]:
         mass = self.mass_matrix(theta2)
         determinant = mass[0][0] * mass[1][1] - mass[0][1] * mass[1][0]
         if abs(determinant) <= MASS_MATRIX_SINGULAR_TOLERANCE:
@@ -338,7 +341,7 @@ class DoublePendulumDynamics:
 
     def control_affine(
         self, state: DoublePendulumState
-    ) -> Tuple[Tuple[float, ...], Tuple[Tuple[float, ...], ...]]:
+    ) -> tuple[tuple[float, ...], tuple[tuple[float, ...], ...]]:
         c1, c2 = self.coriolis_vector(state.theta2, state.omega1, state.omega2)
         g1, g2 = self.gravity_vector(state.theta1, state.theta2)
         d1, d2 = self.damping_vector(state.omega1, state.omega2)
@@ -352,24 +355,24 @@ class DoublePendulumDynamics:
             (inv_m[0][0], inv_m[0][1]),
             (inv_m[1][0], inv_m[1][1]),
         )
-        G = (
+        control_matrix = (
             (0.0, 0.0),
             (0.0, 0.0),
             g_matrix[0],
             g_matrix[1],
         )
-        return f, G
+        return f, control_matrix
 
     def applied_torques(
         self, t: float, state: DoublePendulumState
-    ) -> Tuple[float, float]:
+    ) -> tuple[float, float]:
         tau1 = self.forcing_functions[0](t, state)
         tau2 = self.forcing_functions[1](t, state)
         return tau1, tau2
 
     def inverse_dynamics(
-        self, state: DoublePendulumState, accelerations: Tuple[float, float]
-    ) -> Tuple[float, float]:
+        self, state: DoublePendulumState, accelerations: tuple[float, float]
+    ) -> tuple[float, float]:
         """Compute joint torques required to realize the provided accelerations."""
 
         c1, c2 = self.coriolis_vector(state.theta2, state.omega1, state.omega2)
@@ -383,7 +386,7 @@ class DoublePendulumDynamics:
         return tau1, tau2
 
     def joint_torque_breakdown(
-        self, state: DoublePendulumState, control: Tuple[float, float]
+        self, state: DoublePendulumState, control: tuple[float, float]
     ) -> JointTorques:
         c1, c2 = self.coriolis_vector(state.theta2, state.omega1, state.omega2)
         g1, g2 = self.gravity_vector(state.theta1, state.theta2)
@@ -397,7 +400,7 @@ class DoublePendulumDynamics:
 
     def derivatives(
         self, t: float, state: DoublePendulumState
-    ) -> Tuple[float, float, float, float]:
+    ) -> tuple[float, float, float, float]:
         tau1, tau2 = self.applied_torques(t, state)
         c1, c2 = self.coriolis_vector(state.theta2, state.omega1, state.omega2)
         g1, g2 = self.gravity_vector(state.theta1, state.theta2)
@@ -450,7 +453,7 @@ class DoublePendulumDynamics:
         )
 
 
-def compile_forcing_functions(shoulder_expression: str, wrist_expression: str) -> Tuple[
+def compile_forcing_functions(shoulder_expression: str, wrist_expression: str) -> tuple[
     Callable[[float, DoublePendulumState], float],
     Callable[[float, DoublePendulumState], float],
 ]:

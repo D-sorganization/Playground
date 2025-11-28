@@ -9,8 +9,8 @@ J2000.0 epoch.
 from __future__ import annotations
 
 import math
+from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import Iterable, List
 
 
 @dataclass(frozen=True)
@@ -25,7 +25,7 @@ class StarEntry:
     bv_index: float
 
 
-STAR_CATALOG: List[StarEntry] = [
+STAR_CATALOG: list[StarEntry] = [
     StarEntry("Sirius", "Canis Major", 6.752481, -16.716116, -1.46, 0.00),
     StarEntry("Canopus", "Carina", 6.399203, -52.695661, -0.72, 0.15),
     StarEntry("Arcturus", "Boötes", 14.261208, 19.182417, -0.05, 1.23),
@@ -121,7 +121,7 @@ def iter_catalog() -> Iterable[StarEntry]:
     return iter(STAR_CATALOG)
 
 
-def equatorial_to_cartesian(ra_hours: float, dec_degrees: float) -> List[float]:
+def equatorial_to_cartesian(ra_hours: float, dec_degrees: float) -> list[float]:
     """Convert right ascension/declination to a unit vector in J2000 frame."""
 
     ra_radians = math.radians(ra_hours * 15.0)

@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Dict, List
 
 from ..core.constants import OrbitalElements, PhysicalProperties
 
@@ -16,7 +15,7 @@ class MoonDescriptor:
     properties: PhysicalProperties
 
 
-MOONS: List[MoonDescriptor] = [
+MOONS: list[MoonDescriptor] = [
     MoonDescriptor(
         "Moon",
         "Earth",
@@ -220,11 +219,10 @@ MOONS: List[MoonDescriptor] = [
 ]
 
 
-def moons_by_parent() -> Dict[str, List[MoonDescriptor]]:
+def moons_by_parent() -> dict[str, list[MoonDescriptor]]:
     """Return a mapping of parent body name to moon descriptors."""
 
-    grouped: Dict[str, List[MoonDescriptor]] = {}
+    grouped: dict[str, list[MoonDescriptor]] = {}
     for moon in MOONS:
         grouped.setdefault(moon.parent, []).append(moon)
     return grouped
-

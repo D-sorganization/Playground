@@ -25,6 +25,7 @@ from .orbital_mechanics import OrbitalMechanics
 
 class TransferType(Enum):
     """Types of orbital transfers."""
+
     HOHMANN = "hohmann"
     BI_ELLIPTIC = "bi_elliptic"
     FAST_TRANSFER = "fast"
@@ -43,6 +44,7 @@ class ManeuverNode:
         delta_v_magnitude: Magnitude of delta-v (m/s)
         description: Human-readable description
     """
+
     time: float
     position: np.ndarray
     delta_v: np.ndarray
@@ -71,6 +73,7 @@ class TransferTrajectory:
         trajectory_points: List of state vectors along the path
         phase_angle: Required phase angle at departure (degrees)
     """
+
     origin: str
     destination: str
     transfer_type: TransferType
@@ -86,11 +89,11 @@ class TransferTrajectory:
         """Get formatted information about the transfer."""
         return {
             "Route": f"{self.origin} → {self.destination}",
-            "Transfer Type": self.transfer_type.value.replace('_', ' ').title(),
+            "Transfer Type": self.transfer_type.value.replace("_", " ").title(),
             "Time of Flight": f"{self.time_of_flight:.1f} days ({self.time_of_flight/365.25:.2f} years)",
             "Total Δv": f"{self.total_delta_v:.1f} m/s ({self.total_delta_v/1000:.2f} km/s)",
             "Phase Angle": f"{self.phase_angle:.1f}°",
-            "Maneuvers": len(self.maneuvers)
+            "Maneuvers": len(self.maneuvers),
         }
 
 
@@ -106,6 +109,7 @@ class LaunchWindow:
         delta_v: Total delta-v requirement (m/s)
         time_of_flight: Transfer duration (days)
     """
+
     departure_date: float
     arrival_date: float
     phase_angle: float
@@ -133,9 +137,7 @@ class TrajectoryPlanner:
         self.mu = central_body_mu if central_body_mu is not None else GM["Sun"]
 
     def hohmann_transfer(
-        self,
-        r1: float,
-        r2: float
+        self, r1: float, r2: float
     ) -> Tuple[float, float, float, float]:
         """
         Calculate Hohmann transfer parameters between circular orbits.
@@ -203,10 +205,7 @@ class TrajectoryPlanner:
         return math.degrees(phase_angle)
 
     def bi_elliptic_transfer(
-        self,
-        r1: float,
-        r2: float,
-        r_intermediate: float
+        self, r1: float, r2: float, r_intermediate: float
     ) -> Tuple[float, float, float, float]:
         """
         Calculate bi-elliptic transfer parameters.
@@ -256,9 +255,7 @@ class TrajectoryPlanner:
         return delta_v1, delta_v2, delta_v3, total_tof
 
     def synodic_period_planets(
-        self,
-        origin: CelestialBody,
-        destination: CelestialBody
+        self, origin: CelestialBody, destination: CelestialBody
     ) -> float:
         """
         Calculate the synodic period between two planets.
@@ -281,7 +278,7 @@ class TrajectoryPlanner:
         destination: CelestialBody,
         start_date: float,
         search_duration_days: float = 1000,
-        window_tolerance_deg: float = 5.0
+        window_tolerance_deg: float = 5.0,
     ) -> List[LaunchWindow]:
         """
         Find optimal launch windows between two bodies.
@@ -321,8 +318,7 @@ class TrajectoryPlanner:
 
             # Calculate current phase angle
             phase = OrbitalMechanics.phase_angle(
-                origin_state.position,
-                dest_state.position
+                origin_state.position, dest_state.position
             )
             phase_deg = math.degrees(phase)
 
@@ -333,13 +329,15 @@ class TrajectoryPlanner:
                 angle_diff = 360 - angle_diff
 
             if angle_diff < window_tolerance_deg:
-                windows.append(LaunchWindow(
-                    departure_date=current_date,
-                    arrival_date=current_date + tof_days,
-                    phase_angle=phase_deg,
-                    delta_v=total_dv,
-                    time_of_flight=tof_days
-                ))
+                windows.append(
+                    LaunchWindow(
+                        departure_date=current_date,
+                        arrival_date=current_date + tof_days,
+                        phase_angle=phase_deg,
+                        delta_v=total_dv,
+                        time_of_flight=tof_days,
+                    )
+                )
                 # Skip ahead to avoid duplicate windows
                 current_date += 30
 
@@ -352,7 +350,7 @@ class TrajectoryPlanner:
         origin: CelestialBody,
         destination: CelestialBody,
         departure_date: float,
-        transfer_type: TransferType = TransferType.HOHMANN
+        transfer_type: TransferType = TransferType.HOHMANN,
     ) -> TransferTrajectory:
         """
         Calculate a complete transfer trajectory.
@@ -374,9 +372,7 @@ class TrajectoryPlanner:
         r2 = destination.orbital_elements.semi_major_axis * AU
 
         if transfer_type == TransferType.HOHMANN:
-            return self._calculate_hohmann(
-                origin, destination, departure_date, r1, r2
-            )
+            return self._calculate_hohmann(origin, destination, departure_date, r1, r2)
         elif transfer_type == TransferType.BI_ELLIPTIC:
             return self._calculate_bi_elliptic(
                 origin, destination, departure_date, r1, r2
@@ -385,9 +381,7 @@ class TrajectoryPlanner:
             raise ValueError("Use calculate_gravity_assist to specify an assist body")
         else:
             # Default to Hohmann
-            return self._calculate_hohmann(
-                origin, destination, departure_date, r1, r2
-            )
+            return self._calculate_hohmann(origin, destination, departure_date, r1, r2)
 
     def _calculate_hohmann(
         self,
@@ -395,7 +389,7 @@ class TrajectoryPlanner:
         destination: CelestialBody,
         departure_date: float,
         r1: float,
-        r2: float
+        r2: float,
     ) -> TransferTrajectory:
         """Calculate a Hohmann transfer trajectory."""
         # Get transfer parameters
@@ -410,8 +404,7 @@ class TrajectoryPlanner:
         # Calculate phase angle
         dest_state_at_departure = destination.get_state_at_time(departure_date)
         phase = OrbitalMechanics.phase_angle(
-            origin_state.position,
-            dest_state_at_departure.position
+            origin_state.position, dest_state_at_departure.position
         )
 
         # Calculate delta-v direction (prograde at departure)
@@ -425,15 +418,15 @@ class TrajectoryPlanner:
                 position=origin_state.position,
                 delta_v=delta_v1_vec,
                 delta_v_magnitude=dv1,
-                description=f"Trans-{destination.name} Injection burn"
+                description=f"Trans-{destination.name} Injection burn",
             ),
             ManeuverNode(
                 time=arrival_date,
                 position=dest_state.position,
                 delta_v=-v_unit * dv2,  # Retrograde at arrival
                 delta_v_magnitude=dv2,
-                description=f"{destination.name} Orbit Insertion burn"
-            )
+                description=f"{destination.name} Orbit Insertion burn",
+            ),
         ]
 
         # Generate trajectory points
@@ -451,7 +444,7 @@ class TrajectoryPlanner:
             total_delta_v=dv1 + dv2,
             maneuvers=maneuvers,
             trajectory_points=trajectory_points,
-            phase_angle=math.degrees(phase)
+            phase_angle=math.degrees(phase),
         )
 
     def _calculate_bi_elliptic(
@@ -460,7 +453,7 @@ class TrajectoryPlanner:
         destination: CelestialBody,
         departure_date: float,
         r1: float,
-        r2: float
+        r2: float,
     ) -> TransferTrajectory:
         """Calculate a bi-elliptic transfer trajectory."""
         # Use intermediate radius 1.5x the larger orbit
@@ -474,7 +467,9 @@ class TrajectoryPlanner:
 
         # Calculate intermediate maneuver time
         a1 = (r1 + r_intermediate) / 2
-        t_intermediate = OrbitalMechanics.orbital_period(a1, self.mu) / 2 / SECONDS_PER_DAY
+        t_intermediate = (
+            OrbitalMechanics.orbital_period(a1, self.mu) / 2 / SECONDS_PER_DAY
+        )
         intermediate_date = departure_date + t_intermediate
 
         v_unit = origin_state.velocity / np.linalg.norm(origin_state.velocity)
@@ -485,22 +480,22 @@ class TrajectoryPlanner:
                 position=origin_state.position,
                 delta_v=v_unit * dv1,
                 delta_v_magnitude=dv1,
-                description="First transfer burn"
+                description="First transfer burn",
             ),
             ManeuverNode(
                 time=intermediate_date,
                 position=np.array([r_intermediate, 0, 0]),  # Approximate
                 delta_v=v_unit * dv2,
                 delta_v_magnitude=dv2,
-                description="Intermediate plane change"
+                description="Intermediate plane change",
             ),
             ManeuverNode(
                 time=arrival_date,
                 position=np.array([r2, 0, 0]),  # Approximate
                 delta_v=-v_unit * dv3,
                 delta_v_magnitude=dv3,
-                description="Orbit insertion"
-            )
+                description="Orbit insertion",
+            ),
         ]
 
         return TransferTrajectory(
@@ -513,7 +508,7 @@ class TrajectoryPlanner:
             total_delta_v=dv1 + dv2 + dv3,
             maneuvers=maneuvers,
             trajectory_points=[],
-            phase_angle=0.0
+            phase_angle=0.0,
         )
 
     def calculate_gravity_assist(
@@ -526,12 +521,20 @@ class TrajectoryPlanner:
     ) -> TransferTrajectory:
         """Plan a patched-conic gravity assist sequence."""
 
-        first_leg = self.calculate_transfer(origin, assist_body, departure_date, TransferType.HOHMANN)
+        first_leg = self.calculate_transfer(
+            origin, assist_body, departure_date, TransferType.HOHMANN
+        )
         assist_arrival = first_leg.arrival_time
 
         flyby_radius = (assist_body.radius + periapsis_altitude_km) * 1000.0
-        flyby_speed = math.sqrt(max(assist_body.gm, 0.0) / flyby_radius) if assist_body.gm > 0 else 0.0
-        assist_heliocentric_speed = np.linalg.norm(assist_body.get_state_at_time(assist_arrival).velocity)
+        flyby_speed = (
+            math.sqrt(max(assist_body.gm, 0.0) / flyby_radius)
+            if assist_body.gm > 0
+            else 0.0
+        )
+        assist_heliocentric_speed = np.linalg.norm(
+            assist_body.get_state_at_time(assist_arrival).velocity
+        )
 
         second_leg = self.calculate_transfer(
             assist_body,
@@ -541,7 +544,9 @@ class TrajectoryPlanner:
         )
 
         assist_bonus = flyby_speed + assist_heliocentric_speed * 0.3
-        total_delta_v = max(first_leg.total_delta_v + second_leg.total_delta_v - assist_bonus, 0.0)
+        total_delta_v = max(
+            first_leg.total_delta_v + second_leg.total_delta_v - assist_bonus, 0.0
+        )
 
         maneuvers = first_leg.maneuvers + second_leg.maneuvers
         trajectory_points = first_leg.trajectory_points + second_leg.trajectory_points
@@ -567,7 +572,7 @@ class TrajectoryPlanner:
         r_apoapsis: float,
         start_date: float,
         duration_days: float,
-        num_points: int = 100
+        num_points: int = 100,
     ) -> List[StateVector]:
         """Generate points along a transfer trajectory."""
         points = []
@@ -604,18 +609,18 @@ class TrajectoryPlanner:
             # Time (approximate using Kepler's equation)
             time = start_date + duration_days * fraction
 
-            points.append(StateVector(
-                position=np.array([x, y, z]),
-                velocity=np.array([vx, vy, vz]),
-                time=time
-            ))
+            points.append(
+                StateVector(
+                    position=np.array([x, y, z]),
+                    velocity=np.array([vx, vy, vz]),
+                    time=time,
+                )
+            )
 
         return points
 
     def create_spacecraft_from_transfer(
-        self,
-        trajectory: TransferTrajectory,
-        name: str = "Spacecraft"
+        self, trajectory: TransferTrajectory, name: str = "Spacecraft"
     ) -> Spacecraft:
         """
         Create a Spacecraft object from a transfer trajectory.
@@ -631,9 +636,7 @@ class TrajectoryPlanner:
         return spacecraft
 
     def get_transfer_summary(
-        self,
-        origin: CelestialBody,
-        destination: CelestialBody
+        self, origin: CelestialBody, destination: CelestialBody
     ) -> Dict[str, Any]:
         """
         Get a summary of transfer options between two bodies.
@@ -663,9 +666,9 @@ class TrajectoryPlanner:
                 "Arrival Δv": f"{dv2:.1f} m/s",
                 "Total Δv": f"{dv1+dv2:.1f} m/s",
                 "Time of Flight": f"{tof/SECONDS_PER_DAY:.1f} days",
-                "Phase Angle": f"{phase:.1f}°"
+                "Phase Angle": f"{phase:.1f}°",
             },
-            "Synodic Period": f"{synodic:.1f} days ({synodic/365.25:.2f} years)"
+            "Synodic Period": f"{synodic:.1f} days ({synodic/365.25:.2f} years)",
         }
 
         return summary

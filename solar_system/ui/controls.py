@@ -15,6 +15,7 @@ from enum import Enum
 try:
     import pygame
     from pygame.locals import *
+
     PYGAME_AVAILABLE = True
 except ImportError:
     PYGAME_AVAILABLE = False
@@ -22,6 +23,7 @@ except ImportError:
 
 class InputAction(Enum):
     """Actions that can be triggered by input."""
+
     QUIT = "quit"
     PAUSE = "pause"
     SPEED_UP = "speed_up"
@@ -55,6 +57,7 @@ class InputAction(Enum):
 @dataclass
 class MouseState:
     """Current state of the mouse."""
+
     position: Tuple[int, int] = (0, 0)
     left_pressed: bool = False
     right_pressed: bool = False
@@ -66,6 +69,7 @@ class MouseState:
 @dataclass
 class KeyBinding:
     """A keyboard binding configuration."""
+
     key: int
     action: InputAction
     modifiers: int = 0  # KMOD_* flags
@@ -107,7 +111,9 @@ class InputHandler:
             KeyBinding(K_g, InputAction.TOGGLE_GRID, description="Toggle grid"),
             KeyBinding(K_h, InputAction.TOGGLE_HELP, description="Toggle help"),
             KeyBinding(K_c, InputAction.CYCLE_CAMERA, description="Cycle camera mode"),
-            KeyBinding(K_f, InputAction.FOCUS_SELECTED, description="Focus on selected"),
+            KeyBinding(
+                K_f, InputAction.FOCUS_SELECTED, description="Focus on selected"
+            ),
             KeyBinding(K_t, InputAction.PLAN_TRAJECTORY, description="Plan trajectory"),
             KeyBinding(K_0, InputAction.SELECT_SUN, description="Select Sun"),
             KeyBinding(K_1, InputAction.SELECT_PLANET_1, description="Select Mercury"),

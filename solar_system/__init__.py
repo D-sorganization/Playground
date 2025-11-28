@@ -19,7 +19,18 @@ License: MIT
 __version__ = "1.0.0"
 __author__ = "Solar System Simulation Project"
 
-from .core.constants import *
-from .core.celestial_body import CelestialBody, Planet, Star, Moon
+from .core import constants
+from .core.celestial_body import CelestialBody, Moon, Planet, Star
 from .physics.orbital_mechanics import OrbitalMechanics
-from .physics.trajectory_planner import TrajectoryPlanner
+from .physics.trajectory_planner import TrajectoryPlanner, TransferType
+
+__all__ = [
+    "CelestialBody",
+    "Moon",
+    "Planet",
+    "Star",
+    "OrbitalMechanics",
+    "TrajectoryPlanner",
+    "TransferType",
+    "constants",
+]

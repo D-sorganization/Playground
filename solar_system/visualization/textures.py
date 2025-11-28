@@ -9,12 +9,23 @@ import pathlib
 import urllib.request
 
 try:  # Optional dependency during headless testing
-    from OpenGL.GL import (GL_LINEAR, GL_LINEAR_MIPMAP_LINEAR, GL_REPEAT,
-                           GL_RGBA, GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
-                           GL_TEXTURE_MIN_FILTER, GL_TEXTURE_WRAP_S,
-                           GL_TEXTURE_WRAP_T, GL_UNSIGNED_BYTE, glBindTexture,
-                           glGenerateMipmap, glGenTextures, glTexImage2D,
-                           glTexParameteri)
+    from OpenGL.GL import (
+        GL_LINEAR,
+        GL_LINEAR_MIPMAP_LINEAR,
+        GL_REPEAT,
+        GL_RGBA,
+        GL_TEXTURE_2D,
+        GL_TEXTURE_MAG_FILTER,
+        GL_TEXTURE_MIN_FILTER,
+        GL_TEXTURE_WRAP_S,
+        GL_TEXTURE_WRAP_T,
+        GL_UNSIGNED_BYTE,
+        glBindTexture,
+        glGenerateMipmap,
+        glGenTextures,
+        glTexImage2D,
+        glTexParameteri,
+    )
     import pygame
 
     TEXTURE_BACKEND_AVAILABLE = True
@@ -102,9 +113,7 @@ class TextureManager:
             GL_UNSIGNED_BYTE,
             surface_data,
         )
-        glTexParameteri(
-            GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR
-        )
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
@@ -124,4 +133,3 @@ class TextureManager:
 
         glBindTexture(GL_TEXTURE_2D, handle.gl_id)
         return True
-

@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import List
 
 from ..core.constants import OrbitalElements, PhysicalProperties
 
@@ -16,7 +15,7 @@ class CometDescriptor:
     properties: PhysicalProperties
 
 
-COMETS: List[CometDescriptor] = [
+COMETS: list[CometDescriptor] = [
     CometDescriptor(
         "1P/Halley",
         OrbitalElements(
@@ -90,4 +89,3 @@ COMETS: List[CometDescriptor] = [
         ),
     ),
 ]
-

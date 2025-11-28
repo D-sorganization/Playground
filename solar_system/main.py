@@ -57,13 +57,12 @@ Educational Features:
     - Accurate orbital mechanics visualization
 """
 
-import sys
 import argparse
+import sys
 from datetime import datetime
 
 from .visualization.renderer import RenderSettings
 from .visualization.scene import SolarSystemScene
-from .core.time_manager import SimulationTime
 
 
 def parse_arguments():
@@ -71,46 +70,29 @@ def parse_arguments():
     parser = argparse.ArgumentParser(
         description="Solar System Simulation - A scientifically accurate model",
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog=__doc__
+        epilog=__doc__,
     )
 
     parser.add_argument(
-        '--fullscreen',
-        action='store_true',
-        help='Start in fullscreen mode'
+        "--fullscreen", action="store_true", help="Start in fullscreen mode"
     )
 
     parser.add_argument(
-        '--width',
-        type=int,
-        default=1600,
-        help='Window width (default: 1600)'
+        "--width", type=int, default=1600, help="Window width (default: 1600)"
     )
 
     parser.add_argument(
-        '--height',
-        type=int,
-        default=900,
-        help='Window height (default: 900)'
+        "--height", type=int, default=900, help="Window height (default: 900)"
+    )
+
+    parser.add_argument("--no-vsync", action="store_true", help="Disable vertical sync")
+
+    parser.add_argument(
+        "--start-date", type=str, default=None, help="Start date in YYYY-MM-DD format"
     )
 
     parser.add_argument(
-        '--no-vsync',
-        action='store_true',
-        help='Disable vertical sync'
-    )
-
-    parser.add_argument(
-        '--start-date',
-        type=str,
-        default=None,
-        help='Start date in YYYY-MM-DD format'
-    )
-
-    parser.add_argument(
-        '--no-antialiasing',
-        action='store_true',
-        help='Disable antialiasing'
+        "--no-antialiasing", action="store_true", help="Disable antialiasing"
     )
 
     return parser.parse_args()
@@ -126,7 +108,7 @@ def main():
         window_height=args.height,
         fullscreen=args.fullscreen,
         vsync=not args.no_vsync,
-        antialiasing=not args.no_antialiasing
+        antialiasing=not args.no_antialiasing,
     )
 
     # Create scene
@@ -140,7 +122,9 @@ def main():
     print("\nInitializing...")
 
     if not scene.initialize():
-        print("ERROR: Failed to initialize. Make sure PyGame and PyOpenGL are installed.")
+        print(
+            "ERROR: Failed to initialize. Make sure PyGame and PyOpenGL are installed."
+        )
         print("Install with: pip install pygame PyOpenGL PyOpenGL_accelerate numpy")
         return 1
 
@@ -151,7 +135,9 @@ def main():
             scene.time_manager.set_datetime(dt)
             print(f"Starting at: {args.start_date}")
         except ValueError:
-            print(f"Warning: Invalid date format '{args.start_date}', using current date")
+            print(
+                f"Warning: Invalid date format '{args.start_date}', using current date"
+            )
 
     print("\n✓ Initialization complete!")
     print("\n" + "=" * 70)

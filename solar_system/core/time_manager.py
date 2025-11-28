@@ -7,9 +7,9 @@ time acceleration, and synchronization with real time.
 """
 
 import time
-from datetime import datetime, timezone
-from typing import Optional, Callable, List
+from collections.abc import Callable
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from enum import Enum
 
 from .constants import J2000, SECONDS_PER_DAY
@@ -17,10 +17,11 @@ from .constants import J2000, SECONDS_PER_DAY
 
 class TimeScale(Enum):
     """Time scales used in astronomical calculations."""
-    UTC = "utc"           # Coordinated Universal Time
-    TT = "tt"             # Terrestrial Time
-    TDB = "tdb"           # Barycentric Dynamical Time
-    JD = "julian_date"    # Julian Date
+
+    UTC = "utc"  # Coordinated Universal Time
+    TT = "tt"  # Terrestrial Time
+    TDB = "tdb"  # Barycentric Dynamical Time
+    JD = "julian_date"  # Julian Date
 
 
 @dataclass
@@ -28,19 +29,20 @@ class SimulationTime:
     """
     Represents a point in simulation time with multiple representations.
     """
+
     julian_date: float
     datetime_utc: datetime
     year: float  # Decimal year (e.g., 2024.5)
 
     @classmethod
-    def from_julian_date(cls, jd: float) -> 'SimulationTime':
+    def from_julian_date(cls, jd: float) -> "SimulationTime":
         """Create SimulationTime from Julian date."""
         dt = cls.julian_to_datetime(jd)
         year = cls.julian_to_decimal_year(jd)
         return cls(julian_date=jd, datetime_utc=dt, year=year)
 
     @classmethod
-    def from_datetime(cls, dt: datetime) -> 'SimulationTime':
+    def from_datetime(cls, dt: datetime) -> "SimulationTime":
         """Create SimulationTime from datetime."""
         jd = cls.datetime_to_julian(dt)
         year = cls.julian_to_decimal_year(jd)
@@ -61,10 +63,16 @@ class SimulationTime:
             year -= 1
             month += 12
 
-        A = int(year / 100)
-        B = 2 - A + int(A / 4)
+        century = int(year / 100)
+        correction = 2 - century + int(century / 4)
 
-        jd = int(365.25 * (year + 4716)) + int(30.6001 * (month + 1)) + day + B - 1524.5
+        jd = (
+            int(365.25 * (year + 4716))
+            + int(30.6001 * (month + 1))
+            + day
+            + correction
+            - 1524.5
+        )
 
         return jd
 
@@ -76,33 +84,27 @@ class SimulationTime:
         Algorithm from Meeus, "Astronomical Algorithms", 2nd ed.
         """
         jd = jd + 0.5
-        Z = int(jd)
-        F = jd - Z
+        z_val = int(jd)
+        fractional = jd - z_val
 
-        if Z < 2299161:
-            A = Z
+        if z_val < 2299161:
+            intermediate_a = z_val
         else:
-            alpha = int((Z - 1867216.25) / 36524.25)
-            A = Z + 1 + alpha - int(alpha / 4)
+            alpha = int((z_val - 1867216.25) / 36524.25)
+            intermediate_a = z_val + 1 + alpha - int(alpha / 4)
 
-        B = A + 1524
-        C = int((B - 122.1) / 365.25)
-        D = int(365.25 * C)
-        E = int((B - D) / 30.6001)
+        b_val = intermediate_a + 1524
+        c_val = int((b_val - 122.1) / 365.25)
+        d_val = int(365.25 * c_val)
+        e_val = int((b_val - d_val) / 30.6001)
 
-        day_frac = B - D - int(30.6001 * E) + F
+        day_frac = b_val - d_val - int(30.6001 * e_val) + fractional
         day = int(day_frac)
         frac = day_frac - day
 
-        if E < 14:
-            month = E - 1
-        else:
-            month = E - 13
+        month = e_val - 1 if e_val < 14 else e_val - 13
 
-        if month > 2:
-            year = C - 4716
-        else:
-            year = C - 4715
+        year = c_val - 4716 if month > 2 else c_val - 4715
 
         # Convert fractional day to hours, minutes, seconds
         hours_frac = frac * 24
@@ -112,10 +114,10 @@ class SimulationTime:
         second = int((minutes_frac - minute) * 60)
 
         try:
-            return datetime(year, month, day, hour, minute, second, tzinfo=timezone.utc)
+            return datetime(year, month, day, hour, minute, second, tzinfo=UTC)
         except ValueError:
             # Handle edge cases
-            return datetime(2000, 1, 1, 12, 0, 0, tzinfo=timezone.utc)
+            return datetime(2000, 1, 1, 12, 0, 0, tzinfo=UTC)
 
     @staticmethod
     def julian_to_decimal_year(jd: float) -> float:
@@ -151,10 +153,10 @@ class TimeManager:
         "1 day/sec": SECONDS_PER_DAY,
         "1 week/sec": 7 * SECONDS_PER_DAY,
         "1 month/sec": 30 * SECONDS_PER_DAY,
-        "1 year/sec": 365.25 * SECONDS_PER_DAY
+        "1 year/sec": 365.25 * SECONDS_PER_DAY,
     }
 
-    def __init__(self, start_time: Optional[SimulationTime] = None):
+    def __init__(self, start_time: SimulationTime | None = None):
         """
         Initialize the time manager.
 
@@ -163,7 +165,7 @@ class TimeManager:
         """
         if start_time is None:
             # Start at current real time
-            start_time = SimulationTime.from_datetime(datetime.now(timezone.utc))
+            start_time = SimulationTime.from_datetime(datetime.now(UTC))
 
         self._simulation_time = start_time
         self._time_warp = 1.0  # Time multiplier
@@ -171,7 +173,7 @@ class TimeManager:
         self._last_update = time.time()
 
         # Callbacks for time changes
-        self._on_time_change: List[Callable[[SimulationTime], None]] = []
+        self._on_time_change: list[Callable[[SimulationTime], None]] = []
 
         # Time bounds (for safety)
         self._min_julian_date = 2378497.0  # Year 1800
@@ -195,7 +197,9 @@ class TimeManager:
     @time_warp.setter
     def time_warp(self, value: float):
         """Set time warp factor."""
-        self._time_warp = max(-365.25 * SECONDS_PER_DAY, min(value, 365.25 * SECONDS_PER_DAY))
+        self._time_warp = max(
+            -365.25 * SECONDS_PER_DAY, min(value, 365.25 * SECONDS_PER_DAY)
+        )
 
     @property
     def is_paused(self) -> bool:
@@ -277,7 +281,7 @@ class TimeManager:
 
     def set_to_now(self):
         """Set simulation to current real time."""
-        self.set_datetime(datetime.now(timezone.utc))
+        self.set_datetime(datetime.now(UTC))
 
     def set_to_j2000(self):
         """Set simulation to J2000.0 epoch."""

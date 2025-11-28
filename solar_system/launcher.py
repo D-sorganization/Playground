@@ -10,9 +10,9 @@ from __future__ import annotations
 
 import subprocess
 import sys
+from collections.abc import Callable
 from dataclasses import dataclass
 from importlib.util import find_spec
-from typing import Callable, Dict, List
 
 DEFAULT_WIDTH = 1280
 DEFAULT_HEIGHT = 720
@@ -23,8 +23,8 @@ class DependencyStatus:
     """Represents the result of dependency checks."""
 
     ok: bool
-    missing: List[str]
-    guidance: Dict[str, str]
+    missing: list[str]
+    guidance: dict[str, str]
 
 
 def _has_module(name: str, spec_finder: Callable[[str], object] = find_spec) -> bool:
@@ -64,7 +64,7 @@ def build_launch_command(
     fullscreen: bool = False,
     start_date: str | None = None,
     enable_antialiasing: bool = True,
-) -> List[str]:
+) -> list[str]:
     """Compose the command that will start the simulation."""
 
     command = [

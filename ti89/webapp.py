@@ -70,7 +70,9 @@ def _parse_payload(raw_payload: Mapping[str, object]) -> CalculationPayload:
     variable = _clean_optional(raw_payload.get("variable"))
     variables: Mapping[str, str] | None = None
     if isinstance(raw_payload.get("variables"), Mapping):
-        variables = {str(key): str(value) for key, value in raw_payload["variables"].items()}
+        variables = {
+            str(key): str(value) for key, value in raw_payload["variables"].items()
+        }
 
     return CalculationPayload(
         operation=operation,
@@ -104,9 +106,15 @@ def _dispatch_calculation(
 
     if payload.operation == "solve_system":
         if not payload.variable:
-            raise ValueError("Comma-separated variables are required for solving a system")
-        variables = [part.strip() for part in payload.variable.split(",") if part.strip()]
-        equations = [part.strip() for part in payload.expression.split(";") if part.strip()]
+            raise ValueError(
+                "Comma-separated variables are required for solving a system"
+            )
+        variables = [
+            part.strip() for part in payload.variable.split(",") if part.strip()
+        ]
+        equations = [
+            part.strip() for part in payload.expression.split(";") if part.strip()
+        ]
         if not equations or not variables:
             raise ValueError("Equations and variables are required for system solving")
         return calculator.solve_system(equations, variables)
@@ -124,13 +132,19 @@ def _dispatch_calculation(
             raise ValueError("Variable is required for integrals")
         if payload.lower is not None or payload.upper is not None:
             if payload.lower is None or payload.upper is None:
-                raise ValueError("Both lower and upper bounds are required for definite integrals")
+                raise ValueError(
+                    "Both lower and upper bounds are required for definite integrals"
+                )
             variable_symbol = sp.Symbol(payload.variable)
             lower = _sympify_value(
-                payload.lower, calculator=calculator, symbols={payload.variable: variable_symbol}
+                payload.lower,
+                calculator=calculator,
+                symbols={payload.variable: variable_symbol},
             )
             upper = _sympify_value(
-                payload.upper, calculator=calculator, symbols={payload.variable: variable_symbol}
+                payload.upper,
+                calculator=calculator,
+                symbols={payload.variable: variable_symbol},
             )
             return calculator.integral(
                 payload.expression, payload.variable, lower=lower, upper=upper
@@ -166,8 +180,12 @@ def _dispatch_calculation(
 
     if payload.operation == "solve_ode":
         if not payload.function:
-            raise ValueError("Function name is required for solving differential equations")
-        return calculator.solve_differential_equation(payload.expression, payload.function)
+            raise ValueError(
+                "Function name is required for solving differential equations"
+            )
+        return calculator.solve_differential_equation(
+            payload.expression, payload.function
+        )
 
     raise ValueError("Unsupported operation requested")
 
@@ -237,7 +255,10 @@ def _normalize_variables(
 ) -> Mapping[str, sp.Expr]:
     if not variables:
         return {}
-    return {name: _sympify_value(value, calculator=calculator) for name, value in variables.items()}
+    return {
+        name: _sympify_value(value, calculator=calculator)
+        for name, value in variables.items()
+    }
 
 
 def _sympify_value(

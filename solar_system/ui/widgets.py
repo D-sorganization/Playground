@@ -18,6 +18,7 @@ from datetime import datetime, timedelta
 @dataclass
 class PanelStyle:
     """Styling for UI panels."""
+
     background_color: Tuple[float, float, float, float] = (0.0, 0.0, 0.0, 0.7)
     text_color: Tuple[int, int, int] = (220, 220, 220)
     title_color: Tuple[int, int, int] = (255, 255, 100)
@@ -40,7 +41,7 @@ class InfoPanel:
         self,
         position: Tuple[int, int] = (20, 20),
         width: int = 300,
-        style: PanelStyle = None
+        style: PanelStyle = None,
     ):
         """
         Initialize the info panel.
@@ -90,7 +91,7 @@ class InfoPanel:
             "title": self._title,
             "data": self._data,
             "style": self.style,
-            "visible": self.visible
+            "visible": self.visible,
         }
 
 
@@ -131,18 +132,18 @@ class StatusBar:
         """Get formatted status bar text."""
         parts = []
 
-        if hasattr(self, '_time'):
+        if hasattr(self, "_time"):
             parts.append(self._time)
 
-        if hasattr(self, '_paused') and self._paused:
+        if hasattr(self, "_paused") and self._paused:
             parts.append("[PAUSED]")
-        elif hasattr(self, '_speed'):
+        elif hasattr(self, "_speed"):
             parts.append(f"[{self._speed}]")
 
-        if hasattr(self, '_selected') and self._selected:
+        if hasattr(self, "_selected") and self._selected:
             parts.append(f"Selected: {self._selected}")
 
-        if hasattr(self, '_fps'):
+        if hasattr(self, "_fps"):
             parts.append(f"FPS: {self._fps:.0f}")
 
         return "  |  ".join(parts)
@@ -153,11 +154,7 @@ class HelpOverlay:
     Overlay showing keyboard controls and help information.
     """
 
-    def __init__(
-        self,
-        position: Tuple[int, int] = None,
-        style: PanelStyle = None
-    ):
+    def __init__(self, position: Tuple[int, int] = None, style: PanelStyle = None):
         """
         Initialize the help overlay.
 
@@ -189,7 +186,7 @@ class HelpOverlay:
             "position": self.position,
             "controls": self._controls,
             "style": self.style,
-            "visible": self.visible
+            "visible": self.visible,
         }
 
 
@@ -233,7 +230,7 @@ class TransferPlanner:
             "departure_date": self.departure_date,
             "transfer_info": self._transfer_info,
             "style": self.style,
-            "visible": self.visible
+            "visible": self.visible,
         }
 
 
@@ -249,7 +246,9 @@ class TooltipManager:
         self._hover_time: float = 0.0
         self._show_delay: float = 0.5  # Seconds before showing
 
-    def set_hover(self, body_name: str, position: Tuple[int, int], info: Dict[str, Any]):
+    def set_hover(
+        self, body_name: str, position: Tuple[int, int], info: Dict[str, Any]
+    ):
         """
         Set the currently hovered body.
 
@@ -258,11 +257,7 @@ class TooltipManager:
             position: Screen position
             info: Information to display
         """
-        self._active_tooltip = {
-            "name": body_name,
-            "position": position,
-            "info": info
-        }
+        self._active_tooltip = {"name": body_name, "position": position, "info": info}
 
     def clear_hover(self):
         """Clear the current hover."""
@@ -297,7 +292,7 @@ class DateTimePicker:
         self,
         position: Tuple[int, int] = (20, 100),
         style: PanelStyle = None,
-        on_date_change: Optional[Callable[[datetime], None]] = None
+        on_date_change: Optional[Callable[[datetime], None]] = None,
     ):
         """
         Initialize the date/time picker.
@@ -348,10 +343,10 @@ class DateTimePicker:
         if char.isdigit():
             self._input_buffer += char
             return True
-        elif char == '\r' or char == '\n':  # Enter
+        elif char == "\r" or char == "\n":  # Enter
             self._apply_input()
             return True
-        elif char == '\b':  # Backspace
+        elif char == "\b":  # Backspace
             if self._input_buffer:
                 self._input_buffer = self._input_buffer[:-1]
             return True
@@ -368,23 +363,26 @@ class DateTimePicker:
         try:
             value = int(self._input_buffer)
 
-            if self._editing_field == 'year':
+            if self._editing_field == "year":
                 if 1800 <= value <= 2200:
                     self._current_date = self._current_date.replace(year=value)
-            elif self._editing_field == 'month':
+            elif self._editing_field == "month":
                 if 1 <= value <= 12:
                     self._current_date = self._current_date.replace(month=value)
-            elif self._editing_field == 'day':
+            elif self._editing_field == "day":
                 # Validate that the day exists in the current month/year
                 from calendar import monthrange
-                max_days = monthrange(self._current_date.year, self._current_date.month)[1]
+
+                max_days = monthrange(
+                    self._current_date.year, self._current_date.month
+                )[1]
                 if 1 <= value <= max_days:
                     try:
                         self._current_date = self._current_date.replace(day=value)
                     except ValueError:
                         # Invalid date (e.g., Feb 30), ignore
                         pass
-            elif self._editing_field == 'hour':
+            elif self._editing_field == "hour":
                 if 0 <= value <= 23:
                     self._current_date = self._current_date.replace(hour=value)
 
@@ -415,7 +413,7 @@ class DateTimePicker:
             "editing_field": self._editing_field,
             "input_buffer": self._input_buffer,
             "style": self.style,
-            "visible": self.visible
+            "visible": self.visible,
         }
 
 
@@ -429,11 +427,7 @@ class TimeNavigationPanel:
     - Quick time warp presets
     """
 
-    def __init__(
-        self,
-        position: Tuple[int, int] = (20, 250),
-        style: PanelStyle = None
-    ):
+    def __init__(self, position: Tuple[int, int] = (20, 250), style: PanelStyle = None):
         """
         Initialize the time navigation panel.
 
@@ -451,11 +445,23 @@ class TimeNavigationPanel:
             {"label": "◀ Month", "action": "prev_month", "tooltip": "Go back 1 month"},
             {"label": "◀ Week", "action": "prev_week", "tooltip": "Go back 1 week"},
             {"label": "◀ Day", "action": "prev_day", "tooltip": "Go back 1 day"},
-            {"label": "Today", "action": "goto_today", "tooltip": "Jump to current date"},
-            {"label": "J2000", "action": "goto_j2000", "tooltip": "Jump to J2000 epoch"},
+            {
+                "label": "Today",
+                "action": "goto_today",
+                "tooltip": "Jump to current date",
+            },
+            {
+                "label": "J2000",
+                "action": "goto_j2000",
+                "tooltip": "Jump to J2000 epoch",
+            },
             {"label": "Day ▶", "action": "next_day", "tooltip": "Go forward 1 day"},
             {"label": "Week ▶", "action": "next_week", "tooltip": "Go forward 1 week"},
-            {"label": "Month ▶", "action": "next_month", "tooltip": "Go forward 1 month"},
+            {
+                "label": "Month ▶",
+                "action": "next_month",
+                "tooltip": "Go forward 1 month",
+            },
             {"label": "Year ▶▶", "action": "next_year", "tooltip": "Go forward 1 year"},
         ]
 
@@ -469,7 +475,7 @@ class TimeNavigationPanel:
             "position": self.position,
             "buttons": self.buttons,
             "style": self.style,
-            "visible": self.visible
+            "visible": self.visible,
         }
 
 
@@ -488,7 +494,7 @@ class EducationalInfoPanel:
         self,
         position: Tuple[int, int] = (20, 20),
         width: int = 350,
-        style: PanelStyle = None
+        style: PanelStyle = None,
     ):
         """
         Initialize the educational info panel.
@@ -507,7 +513,9 @@ class EducationalInfoPanel:
         self._fun_facts: List[str] = []
         self._current_fact_index: int = 0
 
-    def set_body(self, name: str, properties: Dict[str, Any], fun_facts: List[str] = None):
+    def set_body(
+        self, name: str, properties: Dict[str, Any], fun_facts: List[str] = None
+    ):
         """
         Set the celestial body to display information about.
 
@@ -524,7 +532,9 @@ class EducationalInfoPanel:
     def cycle_fact(self):
         """Cycle to the next fun fact."""
         if self._fun_facts:
-            self._current_fact_index = (self._current_fact_index + 1) % len(self._fun_facts)
+            self._current_fact_index = (self._current_fact_index + 1) % len(
+                self._fun_facts
+            )
 
     def get_current_fact(self) -> Optional[str]:
         """Get the currently displayed fun fact."""
@@ -547,7 +557,7 @@ class EducationalInfoPanel:
             "fact_count": len(self._fun_facts),
             "fact_index": self._current_fact_index,
             "style": self.style,
-            "visible": self.visible
+            "visible": self.visible,
         }
 
 
@@ -563,7 +573,7 @@ class HistoricalEventsPanel:
         self,
         position: Tuple[int, int] = (20, 450),
         width: int = 400,
-        style: PanelStyle = None
+        style: PanelStyle = None,
     ):
         """
         Initialize the historical events panel.
@@ -602,6 +612,7 @@ class HistoricalEventsPanel:
         """
         try:
             from ..data.historical_events import get_events_for_date
+
             return get_events_for_date(dt, window_days=7)
         except ImportError:
             # Fallback to empty list if module not available
@@ -619,7 +630,7 @@ class HistoricalEventsPanel:
             "date": self._current_date,
             "events": self._events,
             "style": self.style,
-            "visible": self.visible
+            "visible": self.visible,
         }
 
 

@@ -17,8 +17,8 @@ PLANET_DESCRIPTIONS = {
             "Contains 99.86% of the solar system's mass",
             "Light takes 8 minutes to reach Earth",
             "Could fit 1.3 million Earths inside",
-            "Generates energy through nuclear fusion"
-        ]
+            "Generates energy through nuclear fusion",
+        ],
     },
     "Mercury": {
         "type": "Terrestrial Planet",
@@ -30,8 +30,8 @@ PLANET_DESCRIPTIONS = {
             "Smallest planet in the solar system",
             "Has the most eccentric orbit of any planet",
             "Surface temperatures range from -180°C to 430°C",
-            "Named after the Roman messenger god"
-        ]
+            "Named after the Roman messenger god",
+        ],
     },
     "Venus": {
         "type": "Terrestrial Planet",
@@ -43,8 +43,8 @@ PLANET_DESCRIPTIONS = {
             "Hottest planet due to greenhouse effect",
             "Rotates backwards (retrograde)",
             "Day is longer than its year",
-            "Called Earth's 'sister planet' due to similar size"
-        ]
+            "Called Earth's 'sister planet' due to similar size",
+        ],
     },
     "Earth": {
         "type": "Terrestrial Planet",
@@ -56,8 +56,8 @@ PLANET_DESCRIPTIONS = {
             "Only known planet with life",
             "Has plate tectonics",
             "Tilted 23.5° causing seasons",
-            "Moon stabilizes Earth's rotation"
-        ]
+            "Moon stabilizes Earth's rotation",
+        ],
     },
     "Mars": {
         "type": "Terrestrial Planet",
@@ -70,8 +70,8 @@ PLANET_DESCRIPTIONS = {
             "Called the Red Planet due to iron oxide",
             "Has seasons like Earth",
             "Olympus Mons is 3x taller than Everest",
-            "Target for human colonization"
-        ]
+            "Target for human colonization",
+        ],
     },
     "Jupiter": {
         "type": "Gas Giant",
@@ -84,8 +84,8 @@ PLANET_DESCRIPTIONS = {
             "Largest planet - could fit all others inside",
             "Great Red Spot is a 400-year-old storm",
             "Has the strongest magnetic field",
-            "Ganymede is larger than Mercury"
-        ]
+            "Ganymede is larger than Mercury",
+        ],
     },
     "Saturn": {
         "type": "Gas Giant",
@@ -98,8 +98,8 @@ PLANET_DESCRIPTIONS = {
             "Could float in water (if you had a big enough bathtub)",
             "Rings would stretch from Earth to Moon",
             "Titan has lakes of liquid methane",
-            "Hexagonal storm at north pole"
-        ]
+            "Hexagonal storm at north pole",
+        ],
     },
     "Uranus": {
         "type": "Ice Giant",
@@ -112,8 +112,8 @@ PLANET_DESCRIPTIONS = {
             "Rotates on its side",
             "Coldest planetary atmosphere (-224°C)",
             "Methane gives it blue-green color",
-            "First planet discovered with telescope (1781)"
-        ]
+            "First planet discovered with telescope (1781)",
+        ],
     },
     "Neptune": {
         "type": "Ice Giant",
@@ -126,8 +126,8 @@ PLANET_DESCRIPTIONS = {
             "Windiest planet with supersonic storms",
             "Triton orbits backwards - captured moon",
             "Takes 165 years to orbit the Sun",
-            "Predicted mathematically before being seen"
-        ]
+            "Predicted mathematically before being seen",
+        ],
     },
     "Pluto": {
         "type": "Dwarf Planet",
@@ -140,9 +140,9 @@ PLANET_DESCRIPTIONS = {
             "Reclassified as dwarf planet in 2006",
             "Charon is half its size - they orbit each other",
             "Has blue skies and red water ice",
-            "New Horizons flew by in 2015"
-        ]
-    }
+            "New Horizons flew by in 2015",
+        ],
+    },
 }
 
 TRANSFER_INFO = {
@@ -155,8 +155,8 @@ TRANSFER_INFO = {
             "Viking 1 & 2 (1976) - First successful landers",
             "Mars Pathfinder (1997) - First rover",
             "Curiosity (2012) - Ongoing exploration",
-            "Perseverance (2021) - Sample return preparation"
-        ]
+            "Perseverance (2021) - Sample return preparation",
+        ],
     },
     "Earth-Venus": {
         "typical_duration": "4-5 months",
@@ -165,8 +165,8 @@ TRANSFER_INFO = {
         "notable_missions": [
             "Venera 7 (1970) - First successful landing",
             "Magellan (1990) - Radar mapping",
-            "Venus Express (2006) - Atmospheric study"
-        ]
+            "Venus Express (2006) - Atmospheric study",
+        ],
     },
     "Earth-Jupiter": {
         "typical_duration": "2-6 years",
@@ -175,9 +175,9 @@ TRANSFER_INFO = {
             "Pioneer 10 (1973) - First flyby",
             "Voyager 1 & 2 (1979) - Detailed imaging",
             "Galileo (1995) - First orbiter",
-            "Juno (2016) - Ongoing study"
-        ]
-    }
+            "Juno (2016) - Ongoing study",
+        ],
+    },
 }
 
 ORBITAL_MECHANICS_GLOSSARY = {
@@ -196,5 +196,5 @@ ORBITAL_MECHANICS_GLOSSARY = {
     "Hohmann transfer": "Most fuel-efficient transfer between circular orbits",
     "Delta-v": "Change in velocity required for a maneuver",
     "Synodic period": "Time between successive alignments of two bodies",
-    "Sphere of influence": "Region where a body's gravity dominates"
+    "Sphere of influence": "Region where a body's gravity dominates",
 }

@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-import numpy as np
 from dataclasses import dataclass
-from typing import List
+
+import numpy as np
 
 from ..core.constants import OrbitalElements, PhysicalProperties
 
@@ -17,7 +17,7 @@ class AsteroidDescriptor:
     properties: PhysicalProperties
 
 
-MAJOR_ASTEROIDS: List[AsteroidDescriptor] = [
+MAJOR_ASTEROIDS: list[AsteroidDescriptor] = [
     AsteroidDescriptor(
         "Ceres",
         OrbitalElements(
@@ -129,4 +129,3 @@ def generate_belt_particles(count: int = 720) -> np.ndarray:
         positions[idx] = [radius * np.cos(angle), 0.0, radius * np.sin(angle)]
 
     return positions
-

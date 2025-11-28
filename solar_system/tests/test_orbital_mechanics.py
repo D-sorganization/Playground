@@ -13,6 +13,7 @@ import numpy as np
 
 import sys
 import os
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from core.constants import AU, GM, ORBITAL_ELEMENTS, PHYSICAL_PROPERTIES, J2000
@@ -106,7 +107,7 @@ class TestOrbitalMechanics(unittest.TestCase):
     def test_synodic_period_earth_mars(self):
         """Test synodic period calculation for Earth-Mars."""
         T_earth = 365.25  # days
-        T_mars = 687.0    # days
+        T_mars = 687.0  # days
 
         synodic = OrbitalMechanics.synodic_period(T_earth, T_mars)
 
@@ -178,7 +179,7 @@ class TestTrajectoryPlanner(unittest.TestCase):
 
     def test_hohmann_earth_mars(self):
         """Test Hohmann transfer from Earth to Mars."""
-        r1 = 1.0 * AU   # Earth orbit
+        r1 = 1.0 * AU  # Earth orbit
         r2 = 1.524 * AU  # Mars orbit
 
         dv1, dv2, tof, _ = self.planner.hohmann_transfer(r1, r2)
@@ -215,32 +216,20 @@ class TestStateVector(unittest.TestCase):
 
     def test_state_vector_creation(self):
         """Test state vector initialization."""
-        state = StateVector(
-            position=[1e11, 0, 0],
-            velocity=[0, 30000, 0],
-            time=J2000
-        )
+        state = StateVector(position=[1e11, 0, 0], velocity=[0, 30000, 0], time=J2000)
 
         self.assertEqual(state.position[0], 1e11)
         self.assertEqual(state.velocity[1], 30000)
 
     def test_state_vector_distance(self):
         """Test distance calculation."""
-        state = StateVector(
-            position=[3e8, 4e8, 0],
-            velocity=[0, 0, 0],
-            time=J2000
-        )
+        state = StateVector(position=[3e8, 4e8, 0], velocity=[0, 0, 0], time=J2000)
 
         self.assertAlmostEqual(state.distance, 5e8)
 
     def test_state_vector_copy(self):
         """Test state vector copy."""
-        original = StateVector(
-            position=[1, 2, 3],
-            velocity=[4, 5, 6],
-            time=J2000
-        )
+        original = StateVector(position=[1, 2, 3], velocity=[4, 5, 6], time=J2000)
 
         copy = original.copy()
 

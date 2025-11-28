@@ -1,5 +1,14 @@
 """Core module for solar system simulation."""
 
-from .constants import *
-from .celestial_body import CelestialBody, Planet, Star, Moon
+from . import constants
+from .celestial_body import CelestialBody, Moon, Planet, Star
 from .time_manager import TimeManager
+
+__all__ = [
+    "CelestialBody",
+    "Moon",
+    "Planet",
+    "Star",
+    "TimeManager",
+    "constants",
+]

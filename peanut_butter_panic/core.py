@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import math
 import random
+from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import Iterable, List, Tuple
 
-Vec2 = Tuple[float, float]
+Vec2 = tuple[float, float]
 
 
 def _clamp(value: float, minimum: float, maximum: float) -> float:
@@ -164,7 +164,7 @@ class GameWorld:
             speed=self.config.player_speed,
             health=self.config.player_health,
         )
-        self.sandwiches: List[Sandwich] = [
+        self.sandwiches: list[Sandwich] = [
             Sandwich(
                 position=(self.config.width * 0.3, self.config.height / 2),
                 health=self.config.sandwich_health,
@@ -174,9 +174,9 @@ class GameWorld:
                 health=self.config.sandwich_health,
             ),
         ]
-        self.enemies: List[Enemy] = []
-        self.traps: List[Trap] = []
-        self.powerups: List[PowerUp] = []
+        self.enemies: list[Enemy] = []
+        self.traps: list[Trap] = []
+        self.powerups: list[PowerUp] = []
         self.active_effects: dict[str, float] = {}
         self.stats = WorldStats()
         self.stats.sandwiches_saved = len(self.sandwiches)
@@ -239,7 +239,7 @@ class GameWorld:
 
     def _perform_swing(self) -> None:
         radius = self.config.swing_radius
-        defeated: List[Enemy] = []
+        defeated: list[Enemy] = []
         for enemy in list(self.enemies):
             if _distance(self.player.position, enemy.position) <= radius + enemy.radius:
                 defeated.append(enemy)
@@ -257,7 +257,7 @@ class GameWorld:
         )
 
     def _detonate_shockwave(self) -> None:
-        defeated: List[Enemy] = []
+        defeated: list[Enemy] = []
         for enemy in list(self.enemies):
             if (
                 _distance(self.player.position, enemy.position)
@@ -294,7 +294,7 @@ class GameWorld:
         return slowdown
 
     def _resolve_enemy_collisions(self) -> None:
-        surviving_enemies: List[Enemy] = []
+        surviving_enemies: list[Enemy] = []
         for enemy in self.enemies:
             target = self._find_hit_target(enemy)
             if target is None:
@@ -324,7 +324,7 @@ class GameWorld:
         return None
 
     def _collect_powerups(self) -> None:
-        remaining: List[PowerUp] = []
+        remaining: list[PowerUp] = []
         for powerup in self.powerups:
             if (
                 _distance(powerup.position, self.player.position)
@@ -341,7 +341,7 @@ class GameWorld:
         self.traps = [trap for trap in self.traps if not trap.expired]
 
     def _tick_effects(self, dt: float) -> None:
-        expired: List[str] = []
+        expired: list[str] = []
         for name, remaining in list(self.active_effects.items()):
             remaining -= dt
             if remaining <= 0:

@@ -2,8 +2,8 @@ import numpy as np
 
 from solar_system.data.star_catalog import (
     equatorial_to_cartesian,
-    star_count,
     iter_catalog,
+    star_count,
 )
 from solar_system.visualization.starfield import (
     build_star_vertices,

@@ -18,7 +18,6 @@ import numpy as np
 # ruff: noqa: F403, F405
 
 
-
 try:
     import pygame
     from pygame.locals import *
@@ -337,9 +336,7 @@ class Renderer:
         glEnable(GL_LIGHTING)
         glEndList()
 
-    def begin_frame(
-        self, camera_state: CameraState | None = None, clear: bool = True
-    ):
+    def begin_frame(self, camera_state: CameraState | None = None, clear: bool = True):
         """Begin a new frame."""
         if clear:
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
