@@ -5,19 +5,17 @@ These tests verify the scientific accuracy of the simulation
 by comparing calculated values against known astronomical data.
 """
 
-# ruff: noqa
-
 import math
-import unittest
-import numpy as np
-
-import sys
 import os
+import sys
+import unittest
+
+import numpy as np
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from core.constants import AU, GM, ORBITAL_ELEMENTS, PHYSICAL_PROPERTIES, J2000
-from core.celestial_body import Star, Planet, StateVector
+from core.celestial_body import Planet, Star, StateVector
+from core.constants import AU, GM, J2000, PHYSICAL_PROPERTIES
 from physics.orbital_mechanics import OrbitalMechanics
 from physics.trajectory_planner import TrajectoryPlanner
 

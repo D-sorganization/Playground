@@ -15,21 +15,110 @@ from typing import Any
 
 import numpy as np
 
-# ruff: noqa: F403, F405
-
-
 try:
     import pygame
-    from pygame.locals import *
+    from pygame.locals import (
+        DOUBLEBUF,
+        FULLSCREEN,
+        OPENGL,
+    )
 
     PYGAME_AVAILABLE = True
 except ImportError:
     PYGAME_AVAILABLE = False
 
 try:
-    from OpenGL.GL import *
-    from OpenGL.GLU import *
-    from OpenGL.GLUT import *
+    from OpenGL.GL import (
+        GL_AMBIENT,
+        GL_AMBIENT_AND_DIFFUSE,
+        GL_BLEND,
+        GL_COLOR_BUFFER_BIT,
+        GL_COLOR_MATERIAL,
+        GL_COMPILE,
+        GL_DEPTH_BUFFER_BIT,
+        GL_DEPTH_TEST,
+        GL_DIFFUSE,
+        GL_FRAGMENT_SHADER,
+        GL_FRONT_AND_BACK,
+        GL_LEQUAL,
+        GL_LIGHT0,
+        GL_LIGHTING,
+        GL_LINE_LOOP,
+        GL_LINE_SMOOTH,
+        GL_LINE_SMOOTH_HINT,
+        GL_LINE_STRIP,
+        GL_LINES,
+        GL_MODELVIEW,
+        GL_MODELVIEW_MATRIX,
+        GL_MULTISAMPLEBUFFERS,
+        GL_MULTISAMPLESAMPLES,
+        GL_NICEST,
+        GL_NORMALIZE,
+        GL_ONE_MINUS_SRC_ALPHA,
+        GL_POINT_SMOOTH,
+        GL_POINT_SMOOTH_HINT,
+        GL_POINTS,
+        GL_POSITION,
+        GL_PROJECTION,
+        GL_PROJECTION_MATRIX,
+        GL_QUAD_STRIP,
+        GL_QUADS,
+        GL_RGBA,
+        GL_SPECULAR,
+        GL_SRC_ALPHA,
+        GL_TEXTURE_2D,
+        GL_UNSIGNED_BYTE,
+        GL_VERTEX_SHADER,
+        GL_VIEWPORT,
+        glAttachShader,
+        glBegin,
+        glBlendFunc,
+        glCallList,
+        glClear,
+        glClearColor,
+        glColor3f,
+        glColor4f,
+        glColorMaterial,
+        glCompileShader,
+        glCreateProgram,
+        glCreateShader,
+        glDeleteLists,
+        glDepthFunc,
+        glDisable,
+        glDrawPixels,
+        glEnable,
+        glEnd,
+        glEndList,
+        glGenLists,
+        glGetDoublev,
+        glGetIntegerv,
+        glHint,
+        glLightfv,
+        glLineWidth,
+        glLinkProgram,
+        glLoadIdentity,
+        glMatrixMode,
+        glNewList,
+        glNormal3f,
+        glOrtho,
+        glPointSize,
+        glPopMatrix,
+        glPushMatrix,
+        glRasterPos2i,
+        glScalef,
+        glShaderSource,
+        glTexCoord2f,
+        glTranslatef,
+        glUseProgram,
+        glVertex2f,
+        glVertex3f,
+        glViewport,
+    )
+    from OpenGL.GLU import (
+        gluLookAt,
+        gluPerspective,
+        gluProject,
+    )
 
     OPENGL_AVAILABLE = True
 except ImportError:

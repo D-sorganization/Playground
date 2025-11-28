@@ -2,13 +2,12 @@
 
 from __future__ import annotations
 
-# ruff: noqa: I001
-
-from dataclasses import dataclass
 import pathlib
 import urllib.request
+from dataclasses import dataclass
 
 try:  # Optional dependency during headless testing
+    import pygame
     from OpenGL.GL import (
         GL_LINEAR,
         GL_LINEAR_MIPMAP_LINEAR,
@@ -26,7 +25,6 @@ try:  # Optional dependency during headless testing
         glTexImage2D,
         glTexParameteri,
     )
-    import pygame
 
     TEXTURE_BACKEND_AVAILABLE = True
 except Exception:  # pragma: no cover - OpenGL unavailable in tests

@@ -1,5 +1,3 @@
-# ruff: noqa
-
 """
 Camera System
 =============
@@ -13,12 +11,11 @@ Provides multiple camera modes for viewing the solar system:
 """
 
 import math
-import numpy as np
-from typing import Optional, Tuple
-from enum import Enum
 from dataclasses import dataclass
+from enum import Enum
 
-from ..core.constants import AU
+import numpy as np
+
 from ..core.celestial_body import CelestialBody, Spacecraft
 
 
@@ -59,9 +56,9 @@ class Camera:
 
     def __init__(
         self,
-        position: Tuple[float, float, float] = (0, 1500, 4500),
-        target: Tuple[float, float, float] = (0, 0, 0),
-        up: Tuple[float, float, float] = (0, 1, 0),
+        position: tuple[float, float, float] = (0, 1500, 4500),
+        target: tuple[float, float, float] = (0, 0, 0),
+        up: tuple[float, float, float] = (0, 1, 0),
         fov: float = 60.0,
     ):
         """
@@ -88,8 +85,8 @@ class Camera:
 
         # Camera mode and tracking
         self.mode = CameraMode.FREE
-        self.tracked_body: Optional[CelestialBody] = None
-        self.tracked_spacecraft: Optional[Spacecraft] = None
+        self.tracked_body: CelestialBody | None = None
+        self.tracked_spacecraft: Spacecraft | None = None
 
         # Movement parameters
         self.move_speed = 0.5
@@ -136,7 +133,7 @@ class Camera:
 
     def stereo_states(
         self, eye_separation: float = 0.4
-    ) -> Tuple[CameraState, CameraState]:
+    ) -> tuple[CameraState, CameraState]:
         """Generate left/right stereo eye offsets for VR-style rendering."""
 
         base = self.snapshot()

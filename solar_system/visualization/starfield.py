@@ -1,11 +1,9 @@
-# ruff: noqa
-
 """Build accurate starfield geometry from catalog data."""
 
 from __future__ import annotations
 
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
-from typing import Iterable, List, Sequence
 
 import numpy as np
 
@@ -22,7 +20,7 @@ class StarVertex:
     magnitude: float
 
 
-def _spectral_color(bv_index: float) -> List[float]:
+def _spectral_color(bv_index: float) -> list[float]:
     """Map a B-V index to an RGB tuple using a simple black-body gradient."""
 
     # Clamp to a sensible stellar range
@@ -70,7 +68,7 @@ def point_size_from_magnitude(
 def build_star_vertices(
     catalog: Iterable[StarEntry],
     radius: float = 1200.0,
-) -> List[StarVertex]:
+) -> list[StarVertex]:
     """Generate star vertices positioned on a celestial sphere.
 
     Args:
@@ -78,7 +76,7 @@ def build_star_vertices(
         radius: Distance to place the sky dome.
     """
 
-    vertices: List[StarVertex] = []
+    vertices: list[StarVertex] = []
 
     for entry in catalog:
         direction = np.array(equatorial_to_cartesian(entry.ra_hours, entry.dec_degrees))
@@ -95,6 +93,7 @@ def build_star_vertices(
             )
         )
 
-    # Brighter stars first ensures the renderer keeps vivid ones crisp when GL_POINT_SIZE is limited.
+    # Brighter stars first ensures the renderer keeps vivid ones crisp
+    # when GL_POINT_SIZE is limited.
     vertices.sort(key=lambda star: star.magnitude)
     return vertices

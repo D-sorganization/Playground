@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-# ruff: noqa: F403, F405, I001
-
 import math
 from calendar import monthrange
 from dataclasses import dataclass
@@ -47,11 +45,55 @@ from .renderer import Renderer, RenderSettings
 
 try:
     import pygame
-    from pygame.locals import *
+    from pygame.locals import (
+        K_0,
+        K_1,
+        K_9,
+        K_EQUALS,
+        K_ESCAPE,
+        K_HOME,
+        K_KP_MINUS,
+        K_KP_PLUS,
+        K_LEFTBRACE,
+        K_LEFTBRACKET,
+        K_MINUS,
+        K_PERIOD,
+        K_PLUS,
+        K_RIGHTBRACE,
+        K_RIGHTBRACKET,
+        K_SPACE,
+        KEYDOWN,
+        MOUSEBUTTONDOWN,
+        MOUSEBUTTONUP,
+        MOUSEMOTION,
+        MOUSEWHEEL,
+        QUIT,
+        K_c,
+        K_d,
+        K_e,
+        K_f,
+        K_g,
+        K_h,
+        K_i,
+        K_l,
+        K_m,
+        K_n,
+        K_o,
+        K_r,
+        K_t,
+        K_v,
+    )
 
     PYGAME_AVAILABLE = True
 except ImportError:
     PYGAME_AVAILABLE = False
+
+try:
+    from OpenGL.GL import GL_DEPTH_BUFFER_BIT, glClear, glViewport
+
+    OPENGL_AVAILABLE = True
+except ImportError:
+    OPENGL_AVAILABLE = False
 
 
 @dataclass
@@ -98,7 +140,7 @@ class SolarSystemScene:
         self._action_message: str = ""
 
         # Selection
-        self.selected_body: Optional[CelestialBody] = None
+        self.selected_body: CelestialBody | None = None
 
         # Mouse state
         self._mouse_dragging = False
@@ -258,7 +300,7 @@ class SolarSystemScene:
             )
             self.comets[comet.name] = comet_body
 
-    def get_all_bodies(self) -> List[CelestialBody]:
+    def get_all_bodies(self) -> list[CelestialBody]:
         bodies = [self.sun]
         bodies.extend(self.planets.values())
         bodies.extend(self.moons.values())
@@ -267,7 +309,7 @@ class SolarSystemScene:
         bodies.extend(self.spacecraft.values())
         return bodies
 
-    def get_body_by_name(self, name: str) -> Optional[CelestialBody]:
+    def get_body_by_name(self, name: str) -> CelestialBody | None:
         if name == "Sun":
             return self.sun
         if name in self.planets:
@@ -291,8 +333,8 @@ class SolarSystemScene:
         self,
         origin_name: str,
         destination_name: str,
-        departure_date: Optional[float] = None,
-    ) -> Optional[TransferTrajectory]:
+        departure_date: float | None = None,
+    ) -> TransferTrajectory | None:
         origin = self.get_body_by_name(origin_name)
         destination = self.get_body_by_name(destination_name)
 
@@ -634,7 +676,7 @@ class SolarSystemScene:
             else:
                 self._mouse_dragging = False
 
-    def _handle_mouse_motion(self, pos: Tuple[int, int], rel: Tuple[int, int]):
+    def _handle_mouse_motion(self, pos: tuple[int, int], rel: tuple[int, int]):
         """Handle mouse motion."""
         if self._mouse_dragging:
             # Get mouse buttons
@@ -701,8 +743,6 @@ class SolarSystemScene:
         jd = self.time_manager.julian_date
 
         if self.settings.stereo_view:
-            from OpenGL.GL import GL_DEPTH_BUFFER_BIT, glClear, glViewport
-
             left_eye, right_eye = renderer.camera.stereo_states()
             half_width = renderer.settings.window_width // 2
 
@@ -854,7 +894,7 @@ class SolarSystemScene:
 
     def get_transfer_summary(
         self, origin_name: str, destination_name: str
-    ) -> Optional[Dict[str, Any]]:
+    ) -> dict[str, Any] | None:
         origin = self.get_body_by_name(origin_name)
         destination = self.get_body_by_name(destination_name)
 

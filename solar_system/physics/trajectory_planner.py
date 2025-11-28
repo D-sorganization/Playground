@@ -10,16 +10,15 @@ Calculates interplanetary transfer trajectories including:
 - Time of flight calculations
 """
 
-# ruff: noqa
-
 import math
-import numpy as np
-from typing import List, Tuple, Optional, Dict, Any
 from dataclasses import dataclass, field
 from enum import Enum
+from typing import Any
 
-from ..core.constants import AU, GM, SECONDS_PER_DAY, DAYS_PER_YEAR
-from ..core.celestial_body import CelestialBody, StateVector, Spacecraft
+import numpy as np
+
+from ..core.celestial_body import CelestialBody, Spacecraft, StateVector
+from ..core.constants import AU, GM, SECONDS_PER_DAY
 from .orbital_mechanics import OrbitalMechanics
 
 
@@ -81,11 +80,11 @@ class TransferTrajectory:
     arrival_time: float
     time_of_flight: float
     total_delta_v: float
-    maneuvers: List[ManeuverNode]
-    trajectory_points: List[StateVector] = field(default_factory=list)
+    maneuvers: list[ManeuverNode]
+    trajectory_points: list[StateVector] = field(default_factory=list)
     phase_angle: float = 0.0
 
-    def get_info_dict(self) -> Dict[str, Any]:
+    def get_info_dict(self) -> dict[str, Any]:
         """Get formatted information about the transfer."""
         return {
             "Route": f"{self.origin} → {self.destination}",
@@ -138,7 +137,7 @@ class TrajectoryPlanner:
 
     def hohmann_transfer(
         self, r1: float, r2: float
-    ) -> Tuple[float, float, float, float]:
+    ) -> tuple[float, float, float, float]:
         """
         Calculate Hohmann transfer parameters between circular orbits.
 
@@ -206,7 +205,7 @@ class TrajectoryPlanner:
 
     def bi_elliptic_transfer(
         self, r1: float, r2: float, r_intermediate: float
-    ) -> Tuple[float, float, float, float]:
+    ) -> tuple[float, float, float, float]:
         """
         Calculate bi-elliptic transfer parameters.
 
@@ -279,7 +278,7 @@ class TrajectoryPlanner:
         start_date: float,
         search_duration_days: float = 1000,
         window_tolerance_deg: float = 5.0,
-    ) -> List[LaunchWindow]:
+    ) -> list[LaunchWindow]:
         """
         Find optimal launch windows between two bodies.
 
@@ -573,7 +572,7 @@ class TrajectoryPlanner:
         start_date: float,
         duration_days: float,
         num_points: int = 100,
-    ) -> List[StateVector]:
+    ) -> list[StateVector]:
         """Generate points along a transfer trajectory."""
         points = []
 
@@ -637,7 +636,7 @@ class TrajectoryPlanner:
 
     def get_transfer_summary(
         self, origin: CelestialBody, destination: CelestialBody
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Get a summary of transfer options between two bodies.
 

@@ -1,5 +1,3 @@
-# ruff: noqa
-
 """
 UI Widgets
 ==========
@@ -10,19 +8,20 @@ This module provides interactive widgets for controlling the simulation,
 displaying information, and enhancing the educational experience.
 """
 
-from typing import Dict, List, Tuple, Any, Optional, Callable
+from collections.abc import Callable
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import datetime
+from typing import Any
 
 
 @dataclass
 class PanelStyle:
     """Styling for UI panels."""
 
-    background_color: Tuple[float, float, float, float] = (0.0, 0.0, 0.0, 0.7)
-    text_color: Tuple[int, int, int] = (220, 220, 220)
-    title_color: Tuple[int, int, int] = (255, 255, 100)
-    border_color: Tuple[float, float, float, float] = (0.3, 0.3, 0.4, 0.5)
+    background_color: tuple[float, float, float, float] = (0.0, 0.0, 0.0, 0.7)
+    text_color: tuple[int, int, int] = (220, 220, 220)
+    title_color: tuple[int, int, int] = (255, 255, 100)
+    border_color: tuple[float, float, float, float] = (0.3, 0.3, 0.4, 0.5)
     padding: int = 10
     line_height: int = 18
     font_size: int = 12
@@ -39,7 +38,7 @@ class InfoPanel:
 
     def __init__(
         self,
-        position: Tuple[int, int] = (20, 20),
+        position: tuple[int, int] = (20, 20),
         width: int = 300,
         style: PanelStyle = None,
     ):
@@ -55,10 +54,10 @@ class InfoPanel:
         self.width = width
         self.style = style or PanelStyle()
         self.visible = True
-        self._data: Dict[str, Any] = {}
+        self._data: dict[str, Any] = {}
         self._title: str = ""
 
-    def set_data(self, title: str, data: Dict[str, Any]):
+    def set_data(self, title: str, data: dict[str, Any]):
         """
         Set the data to display.
 
@@ -78,7 +77,7 @@ class InfoPanel:
         """Toggle visibility."""
         self.visible = not self.visible
 
-    def get_render_data(self) -> Dict[str, Any]:
+    def get_render_data(self) -> dict[str, Any]:
         """
         Get data formatted for rendering.
 
@@ -106,7 +105,7 @@ class StatusBar:
         """Initialize the status bar."""
         self.style = style or PanelStyle()
         self.visible = True
-        self._components: List[str] = []
+        self._components: list[str] = []
 
     def set_time(self, time_str: str):
         """Set the time display."""
@@ -154,7 +153,7 @@ class HelpOverlay:
     Overlay showing keyboard controls and help information.
     """
 
-    def __init__(self, position: Tuple[int, int] = None, style: PanelStyle = None):
+    def __init__(self, position: tuple[int, int] = None, style: PanelStyle = None):
         """
         Initialize the help overlay.
 
@@ -165,9 +164,9 @@ class HelpOverlay:
         self.position = position
         self.style = style or PanelStyle()
         self.visible = False
-        self._controls: List[Tuple[str, str]] = []
+        self._controls: list[tuple[str, str]] = []
 
-    def set_controls(self, controls: List[Tuple[str, str]]):
+    def set_controls(self, controls: list[tuple[str, str]]):
         """
         Set the control bindings to display.
 
@@ -180,7 +179,7 @@ class HelpOverlay:
         """Toggle visibility."""
         self.visible = not self.visible
 
-    def get_render_data(self) -> Dict[str, Any]:
+    def get_render_data(self) -> dict[str, Any]:
         """Get data for rendering."""
         return {
             "position": self.position,
@@ -201,10 +200,10 @@ class TransferPlanner:
         """Initialize the transfer planner."""
         self.style = style or PanelStyle()
         self.visible = False
-        self.origin: Optional[str] = None
-        self.destination: Optional[str] = None
-        self.departure_date: Optional[float] = None
-        self._transfer_info: Dict[str, Any] = {}
+        self.origin: str | None = None
+        self.destination: str | None = None
+        self.departure_date: float | None = None
+        self._transfer_info: dict[str, Any] = {}
 
     def set_origin(self, name: str):
         """Set origin body."""
@@ -214,7 +213,7 @@ class TransferPlanner:
         """Set destination body."""
         self.destination = name
 
-    def set_transfer_info(self, info: Dict[str, Any]):
+    def set_transfer_info(self, info: dict[str, Any]):
         """Set transfer calculation results."""
         self._transfer_info = info
 
@@ -222,7 +221,7 @@ class TransferPlanner:
         """Toggle visibility."""
         self.visible = not self.visible
 
-    def get_render_data(self) -> Dict[str, Any]:
+    def get_render_data(self) -> dict[str, Any]:
         """Get data for rendering."""
         return {
             "origin": self.origin,
@@ -242,12 +241,12 @@ class TooltipManager:
     def __init__(self, style: PanelStyle = None):
         """Initialize tooltip manager."""
         self.style = style or PanelStyle()
-        self._active_tooltip: Optional[Dict[str, Any]] = None
+        self._active_tooltip: dict[str, Any] | None = None
         self._hover_time: float = 0.0
         self._show_delay: float = 0.5  # Seconds before showing
 
     def set_hover(
-        self, body_name: str, position: Tuple[int, int], info: Dict[str, Any]
+        self, body_name: str, position: tuple[int, int], info: dict[str, Any]
     ):
         """
         Set the currently hovered body.
@@ -273,7 +272,7 @@ class TooltipManager:
         """Check if tooltip should be displayed."""
         return self._active_tooltip is not None and self._hover_time >= self._show_delay
 
-    def get_render_data(self) -> Optional[Dict[str, Any]]:
+    def get_render_data(self) -> dict[str, Any] | None:
         """Get tooltip data for rendering."""
         if self.should_show():
             return self._active_tooltip
@@ -290,9 +289,9 @@ class DateTimePicker:
 
     def __init__(
         self,
-        position: Tuple[int, int] = (20, 100),
+        position: tuple[int, int] = (20, 100),
         style: PanelStyle = None,
-        on_date_change: Optional[Callable[[datetime], None]] = None,
+        on_date_change: Callable[[datetime], None] | None = None,
     ):
         """
         Initialize the date/time picker.
@@ -305,9 +304,9 @@ class DateTimePicker:
         self.position = position
         self.style = style or PanelStyle()
         self.visible = False
-        self._current_date: Optional[datetime] = None
+        self._current_date: datetime | None = None
         self._on_date_change = on_date_change
-        self._editing_field: Optional[str] = None  # 'year', 'month', 'day', 'hour'
+        self._editing_field: str | None = None  # 'year', 'month', 'day', 'hour'
         self._input_buffer: str = ""
 
     def toggle(self):
@@ -323,7 +322,7 @@ class DateTimePicker:
         """
         self._current_date = dt
 
-    def get_date(self) -> Optional[datetime]:
+    def get_date(self) -> datetime | None:
         """Get the current selected date."""
         return self._current_date
 
@@ -382,9 +381,8 @@ class DateTimePicker:
                     except ValueError:
                         # Invalid date (e.g., Feb 30), ignore
                         pass
-            elif self._editing_field == "hour":
-                if 0 <= value <= 23:
-                    self._current_date = self._current_date.replace(hour=value)
+            elif self._editing_field == "hour" and 0 <= value <= 23:
+                self._current_date = self._current_date.replace(hour=value)
 
             if self._on_date_change:
                 self._on_date_change(self._current_date)
@@ -405,7 +403,7 @@ class DateTimePicker:
         self._editing_field = field
         self._input_buffer = ""
 
-    def get_render_data(self) -> Dict[str, Any]:
+    def get_render_data(self) -> dict[str, Any]:
         """Get data for rendering."""
         return {
             "position": self.position,
@@ -427,7 +425,7 @@ class TimeNavigationPanel:
     - Quick time warp presets
     """
 
-    def __init__(self, position: Tuple[int, int] = (20, 250), style: PanelStyle = None):
+    def __init__(self, position: tuple[int, int] = (20, 250), style: PanelStyle = None):
         """
         Initialize the time navigation panel.
 
@@ -469,7 +467,7 @@ class TimeNavigationPanel:
         """Toggle visibility."""
         self.visible = not self.visible
 
-    def get_render_data(self) -> Dict[str, Any]:
+    def get_render_data(self) -> dict[str, Any]:
         """Get data for rendering."""
         return {
             "position": self.position,
@@ -492,7 +490,7 @@ class EducationalInfoPanel:
 
     def __init__(
         self,
-        position: Tuple[int, int] = (20, 20),
+        position: tuple[int, int] = (20, 20),
         width: int = 350,
         style: PanelStyle = None,
     ):
@@ -508,13 +506,13 @@ class EducationalInfoPanel:
         self.width = width
         self.style = style or PanelStyle()
         self.visible = True
-        self._body_name: Optional[str] = None
-        self._properties: Dict[str, Any] = {}
-        self._fun_facts: List[str] = []
+        self._body_name: str | None = None
+        self._properties: dict[str, Any] = {}
+        self._fun_facts: list[str] = []
         self._current_fact_index: int = 0
 
     def set_body(
-        self, name: str, properties: Dict[str, Any], fun_facts: List[str] = None
+        self, name: str, properties: dict[str, Any], fun_facts: list[str] = None
     ):
         """
         Set the celestial body to display information about.
@@ -536,7 +534,7 @@ class EducationalInfoPanel:
                 self._fun_facts
             )
 
-    def get_current_fact(self) -> Optional[str]:
+    def get_current_fact(self) -> str | None:
         """Get the currently displayed fun fact."""
         if self._fun_facts:
             return self._fun_facts[self._current_fact_index]
@@ -546,7 +544,7 @@ class EducationalInfoPanel:
         """Toggle visibility."""
         self.visible = not self.visible
 
-    def get_render_data(self) -> Dict[str, Any]:
+    def get_render_data(self) -> dict[str, Any]:
         """Get data for rendering."""
         return {
             "position": self.position,
@@ -571,7 +569,7 @@ class HistoricalEventsPanel:
 
     def __init__(
         self,
-        position: Tuple[int, int] = (20, 450),
+        position: tuple[int, int] = (20, 450),
         width: int = 400,
         style: PanelStyle = None,
     ):
@@ -587,8 +585,8 @@ class HistoricalEventsPanel:
         self.width = width
         self.style = style or PanelStyle()
         self.visible = False
-        self._current_date: Optional[datetime] = None
-        self._events: List[Dict[str, str]] = []
+        self._current_date: datetime | None = None
+        self._events: list[dict[str, str]] = []
 
     def set_date(self, dt: datetime):
         """
@@ -600,7 +598,7 @@ class HistoricalEventsPanel:
         self._current_date = dt
         self._events = self._find_events_for_date(dt)
 
-    def _find_events_for_date(self, dt: datetime) -> List[Dict[str, str]]:
+    def _find_events_for_date(self, dt: datetime) -> list[dict[str, str]]:
         """
         Find historical events for the given date.
 
@@ -622,7 +620,7 @@ class HistoricalEventsPanel:
         """Toggle visibility."""
         self.visible = not self.visible
 
-    def get_render_data(self) -> Dict[str, Any]:
+    def get_render_data(self) -> dict[str, Any]:
         """Get data for rendering."""
         return {
             "position": self.position,
@@ -649,19 +647,19 @@ class ImmersionChecklistPanel:
 
     def __init__(
         self,
-        position: Tuple[int, int] = (20, 250),
+        position: tuple[int, int] = (20, 250),
         width: int = 360,
         style: PanelStyle = None,
-        tasks: Optional[List[ImmersionTask]] = None,
+        tasks: list[ImmersionTask] | None = None,
     ):
         self.position = position
         self.width = width
         self.style = style or PanelStyle()
         self.visible = True
-        self._tasks: Dict[str, ImmersionTask] = {}
+        self._tasks: dict[str, ImmersionTask] = {}
         self._initialize_tasks(tasks)
 
-    def _initialize_tasks(self, tasks: Optional[List[ImmersionTask]]):
+    def _initialize_tasks(self, tasks: list[ImmersionTask] | None):
         default_tasks = tasks or [
             ImmersionTask(
                 task_id="select_body",
@@ -703,7 +701,7 @@ class ImmersionChecklistPanel:
         for task in self._tasks.values():
             task.is_complete = False
 
-    def get_progress(self) -> Tuple[int, int]:
+    def get_progress(self) -> tuple[int, int]:
         """Return number of completed tasks and total tasks."""
         completed = sum(1 for task in self._tasks.values() if task.is_complete)
         return completed, len(self._tasks)
@@ -712,7 +710,7 @@ class ImmersionChecklistPanel:
         """Toggle visibility of the checklist."""
         self.visible = not self.visible
 
-    def get_render_data(self) -> Dict[str, Any]:
+    def get_render_data(self) -> dict[str, Any]:
         """Get data for rendering."""
         completed, total = self.get_progress()
         tasks = [

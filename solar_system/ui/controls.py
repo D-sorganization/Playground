@@ -6,10 +6,8 @@ Handles keyboard and mouse input for the simulation.
 Provides a clean interface between raw input events and simulation actions.
 """
 
-# ruff: noqa
-
-from typing import Callable, Dict, List, Tuple, Optional
-from dataclasses import dataclass, field
+from collections.abc import Callable
+from dataclasses import dataclass
 from enum import Enum
 
 try:
@@ -58,12 +56,12 @@ class InputAction(Enum):
 class MouseState:
     """Current state of the mouse."""
 
-    position: Tuple[int, int] = (0, 0)
+    position: tuple[int, int] = (0, 0)
     left_pressed: bool = False
     right_pressed: bool = False
     middle_pressed: bool = False
     scroll_delta: int = 0
-    drag_delta: Tuple[int, int] = (0, 0)
+    drag_delta: tuple[int, int] = (0, 0)
 
 
 @dataclass
@@ -86,8 +84,8 @@ class InputHandler:
     def __init__(self):
         """Initialize the input handler."""
         self.mouse_state = MouseState()
-        self._action_callbacks: Dict[InputAction, List[Callable]] = {}
-        self._key_bindings: List[KeyBinding] = []
+        self._action_callbacks: dict[InputAction, list[Callable]] = {}
+        self._key_bindings: list[KeyBinding] = []
         self._last_mouse_pos = (0, 0)
 
         # Set up default bindings
@@ -143,9 +141,11 @@ class InputHandler:
 
     def unregister_callback(self, action: InputAction, callback: Callable):
         """Remove a callback for an action."""
-        if action in self._action_callbacks:
-            if callback in self._action_callbacks[action]:
-                self._action_callbacks[action].remove(callback)
+        if (
+            action in self._action_callbacks
+            and callback in self._action_callbacks[action]
+        ):
+            self._action_callbacks[action].remove(callback)
 
     def _trigger_action(self, action: InputAction, **kwargs):
         """Trigger all callbacks for an action."""
@@ -208,7 +208,7 @@ class InputHandler:
 
         return True
 
-    def _handle_mouse_button_down(self, button: int, pos: Tuple[int, int]):
+    def _handle_mouse_button_down(self, button: int, pos: tuple[int, int]):
         """Handle mouse button press."""
         self.mouse_state.position = pos
 
@@ -221,7 +221,7 @@ class InputHandler:
 
         self._last_mouse_pos = pos
 
-    def _handle_mouse_button_up(self, button: int, pos: Tuple[int, int]):
+    def _handle_mouse_button_up(self, button: int, pos: tuple[int, int]):
         """Handle mouse button release."""
         self.mouse_state.position = pos
 
@@ -232,7 +232,7 @@ class InputHandler:
         elif button == 3:
             self.mouse_state.right_pressed = False
 
-    def _handle_mouse_motion(self, pos: Tuple[int, int], rel: Tuple[int, int]):
+    def _handle_mouse_motion(self, pos: tuple[int, int], rel: tuple[int, int]):
         """Handle mouse movement."""
         self.mouse_state.position = pos
         self.mouse_state.drag_delta = rel
@@ -251,7 +251,7 @@ class InputHandler:
         elif delta < 0:
             self._trigger_action(InputAction.ZOOM_OUT, amount=-delta)
 
-    def get_bindings_for_display(self) -> List[Tuple[str, str]]:
+    def get_bindings_for_display(self) -> list[tuple[str, str]]:
         """
         Get list of key bindings formatted for display.
 
