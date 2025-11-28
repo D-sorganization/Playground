@@ -70,6 +70,11 @@ class GameConfig:
     powerup_chance: float = 0.18
     sandwich_health: int = 5
     player_health: int = 3
+    retro_spawn_chance: float = 0.22
+    retro_speed_scale: float = 0.82
+    retro_radius: float = 18.0
+    retro_damage_bonus: int = 1
+    retro_reward_bonus: int = 15
 
 
 @dataclass
@@ -96,6 +101,15 @@ class Sandwich:
         return self.health > 0
 
 
+@dataclass(frozen=True)
+class EnemyArchetype:
+    name: str
+    speed_scale: float
+    damage_bonus: int
+    reward_bonus: int
+    radius: float
+
+
 @dataclass
 class Enemy:
     position: Vec2
@@ -103,6 +117,7 @@ class Enemy:
     damage: int
     reward: int
     radius: float = 14.0
+    kind: str = "modern_swarm"
 
 
 @dataclass
@@ -367,11 +382,36 @@ class GameWorld:
         else:
             position = (self.config.width + 10, self.rng.uniform(0, self.config.height))
 
-        speed = 90 + 14 * (self.stats.wave - 1)
-        damage = 1 + (self.stats.wave // 4)
-        reward = 30 + 5 * self.stats.wave
+        archetype = self._choose_archetype()
+        speed = (90 + 14 * (self.stats.wave - 1)) * archetype.speed_scale
+        damage = 1 + (self.stats.wave // 4) + archetype.damage_bonus
+        reward = 30 + 5 * self.stats.wave + archetype.reward_bonus
         return Enemy(
-            position=position, speed=float(speed), damage=damage, reward=reward
+            position=position,
+            speed=float(speed),
+            damage=damage,
+            reward=reward,
+            radius=archetype.radius,
+            kind=archetype.name,
+        )
+
+    def _choose_archetype(self) -> EnemyArchetype:
+        retro_roll = self.rng.random()
+        if retro_roll <= self.config.retro_spawn_chance:
+            return EnemyArchetype(
+                name="retro_brawler",
+                speed_scale=self.config.retro_speed_scale,
+                damage_bonus=self.config.retro_damage_bonus,
+                reward_bonus=self.config.retro_reward_bonus,
+                radius=self.config.retro_radius,
+            )
+
+        return EnemyArchetype(
+            name="modern_swarm",
+            speed_scale=1.0,
+            damage_bonus=0,
+            reward_bonus=0,
+            radius=14.0,
         )
 
     def _register_kill(self, enemy: Enemy) -> None:
@@ -444,7 +484,13 @@ class GameWorld:
         self.wave_timer = self.config.wave_duration
 
     def add_enemy(
-        self, position: Vec2, speed: float = 120.0, damage: int = 1, reward: int = 25
+        self,
+        position: Vec2,
+        speed: float = 120.0,
+        damage: int = 1,
+        reward: int = 25,
+        radius: float = 14.0,
+        kind: str = "modern_swarm",
     ) -> None:
         self.enemies.append(
             Enemy(
@@ -452,6 +498,8 @@ class GameWorld:
                 speed=speed,
                 damage=damage,
                 reward=reward,
+                radius=radius,
+                kind=kind,
             )
         )
 

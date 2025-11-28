@@ -5,7 +5,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from peanut_butter_panic import GameWorld, InputState
+from peanut_butter_panic import GameConfig, GameWorld, InputState
 
 
 def distance(a: tuple[float, float], b: tuple[float, float]) -> float:
@@ -64,3 +64,14 @@ def test_trap_slows_enemy_movement():
     moved_without_trap = distance(enemy_position, enemy_without_trap.position)
 
     assert moved_with_trap < moved_without_trap
+
+
+def test_retro_enemy_archetype_spawns_when_forced():
+    config = GameConfig(retro_spawn_chance=1.0)
+    world = GameWorld(config=config, seed=7)
+    world.spawn_timer = 0.0
+
+    world.update(0.0, InputState())
+
+    assert world.enemies[0].kind == "retro_brawler"
+    assert world.enemies[0].radius == config.retro_radius
