@@ -8,6 +8,8 @@ power-ups to keep every run fresh.
 ## Feature highlights
 
 - **Wave-based pressure** with accelerating spawn rates and tougher enemy bites.
+- **Retro brawler enemies** occasionally spawn, recalling the chunky doom-like
+  monsters from the earliest prototype while offering bigger rewards.
 - **Combo-driven scoring** that rewards streaks and speedy clears.
 - **Defense toolkit**: wide spatula swipes, sticky traps, dashes, and screen-clearing
   shockwaves.

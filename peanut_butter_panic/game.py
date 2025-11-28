@@ -71,7 +71,8 @@ def _render_world(
     _draw_circle(surface, (255, 230, 150), world.player.position, world.player.radius)
 
     for enemy in world.enemies:
-        _draw_circle(surface, (200, 70, 90), enemy.position, enemy.radius)
+        color = (200, 70, 90) if enemy.kind == "modern_swarm" else (120, 180, 210)
+        _draw_circle(surface, color, enemy.position, enemy.radius)
 
     for powerup in world.powerups:
         _draw_circle(surface, (255, 180, 60), powerup.position, powerup.radius)
