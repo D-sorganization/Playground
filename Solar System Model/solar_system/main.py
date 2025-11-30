@@ -73,17 +73,11 @@ def parse_arguments():
         epilog=__doc__,
     )
 
-    parser.add_argument(
-        "--fullscreen", action="store_true", help="Start in fullscreen mode"
-    )
+    parser.add_argument("--fullscreen", action="store_true", help="Start in fullscreen mode")
 
-    parser.add_argument(
-        "--width", type=int, default=1600, help="Window width (default: 1600)"
-    )
+    parser.add_argument("--width", type=int, default=1600, help="Window width (default: 1600)")
 
-    parser.add_argument(
-        "--height", type=int, default=900, help="Window height (default: 900)"
-    )
+    parser.add_argument("--height", type=int, default=900, help="Window height (default: 900)")
 
     parser.add_argument("--no-vsync", action="store_true", help="Disable vertical sync")
 
@@ -91,9 +85,7 @@ def parse_arguments():
         "--start-date", type=str, default=None, help="Start date in YYYY-MM-DD format"
     )
 
-    parser.add_argument(
-        "--no-antialiasing", action="store_true", help="Disable antialiasing"
-    )
+    parser.add_argument("--no-antialiasing", action="store_true", help="Disable antialiasing")
 
     return parser.parse_args()
 
@@ -122,9 +114,7 @@ def main():
     print("\nInitializing...")
 
     if not scene.initialize():
-        print(
-            "ERROR: Failed to initialize. Make sure PyGame and PyOpenGL are installed."
-        )
+        print("ERROR: Failed to initialize. Make sure PyGame and PyOpenGL are installed.")
         print("Install with: pip install pygame PyOpenGL PyOpenGL_accelerate numpy")
         return 1
 
@@ -135,9 +125,7 @@ def main():
             scene.time_manager.set_datetime(dt)
             print(f"Starting at: {args.start_date}")
         except ValueError:
-            print(
-                f"Warning: Invalid date format '{args.start_date}', using current date"
-            )
+            print(f"Warning: Invalid date format '{args.start_date}', using current date")
 
     print("\n✓ Initialization complete!")
     print("\n" + "=" * 70)

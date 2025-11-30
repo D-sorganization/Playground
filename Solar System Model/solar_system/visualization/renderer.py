@@ -455,9 +455,7 @@ class Renderer:
         if self._star_list:
             glCallList(self._star_list)
 
-    def render_body(
-        self, body: CelestialBody, julian_date: float, highlight: bool = False
-    ):
+    def render_body(self, body: CelestialBody, julian_date: float, highlight: bool = False):
         """
         Render a celestial body.
 
@@ -578,9 +576,7 @@ class Renderer:
         if color is None:
             # Use body color with reduced alpha
             body_color = body.color
-            glColor4f(
-                body_color[0] * 0.6, body_color[1] * 0.6, body_color[2] * 0.6, 0.4
-            )
+            glColor4f(body_color[0] * 0.6, body_color[1] * 0.6, body_color[2] * 0.6, 0.4)
         else:
             glColor4f(*color)
 
@@ -782,9 +778,7 @@ class Renderer:
         glMatrixMode(GL_MODELVIEW)
         glPopMatrix()
 
-    def render_info_panel(
-        self, info: dict[str, Any], position: tuple[int, int] = (20, 20)
-    ):
+    def render_info_panel(self, info: dict[str, Any], position: tuple[int, int] = (20, 20)):
         """Render an information panel overlay."""
         x, y = position
         line_height = 20
@@ -920,9 +914,7 @@ class Renderer:
         glEnd()
 
         # Title
-        title_surface = self._font.render(
-            "CONTROLS (Press H to hide)", True, (100, 200, 255)
-        )
+        title_surface = self._font.render("CONTROLS (Press H to hide)", True, (100, 200, 255))
         title_data = pygame.image.tostring(title_surface, "RGBA", True)
         w, h = title_surface.get_size()
         glRasterPos2i(x, y + h)
@@ -943,9 +935,7 @@ class Renderer:
                     text = f"{key}: {action}"
                     text_surface = self._small_font.render(text, True, (220, 220, 220))
                 else:  # No key, just action
-                    text_surface = self._small_font.render(
-                        action, True, (180, 180, 180)
-                    )
+                    text_surface = self._small_font.render(action, True, (180, 180, 180))
 
             text_data = pygame.image.tostring(text_surface, "RGBA", True)
             w, h = text_surface.get_size()

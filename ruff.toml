@@ -52,6 +52,20 @@ unfixable = []
     "S101",
     "PLR2004",
 ]
+# Graphics code commonly uses star imports for OpenGL/pygame
+"**/star_wars_rrt.py" = [
+    "F403",  # Star imports (OpenGL/pygame)
+    "F405",  # Undefined names from star imports
+]
+"**/controls.py" = [
+    "F403",  # Star imports (pygame.locals)
+    "F405",  # Undefined names from star imports
+]
+# Calculator directory uses capitalized name (legacy structure)
+"Calculator/__init__.py" = [
+    "N999",  # Invalid module name (capitalized directory name)
+]
 
 [lint.mccabe]
 max-complexity = 15  # More lenient for playground projects
+
