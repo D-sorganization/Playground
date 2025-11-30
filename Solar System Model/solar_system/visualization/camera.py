@@ -96,9 +96,7 @@ class Camera:
 
         # View bounds
         self.min_distance = 0.01
-        self.max_distance = (
-            6000.0  # Increased to view entire solar system (Neptune ~4500 units)
-        )
+        self.max_distance = 6000.0  # Increased to view entire solar system (Neptune ~4500 units)
 
         # Near/far clipping planes
         self.near = 0.0001
@@ -131,9 +129,7 @@ class Camera:
         self.near = state.near
         self.far = state.far
 
-    def stereo_states(
-        self, eye_separation: float = 0.4
-    ) -> tuple[CameraState, CameraState]:
+    def stereo_states(self, eye_separation: float = 0.4) -> tuple[CameraState, CameraState]:
         """Generate left/right stereo eye offsets for VR-style rendering."""
 
         base = self.snapshot()
@@ -217,9 +213,7 @@ class Camera:
         self._elevation += delta_elevation * self.rotate_speed
 
         # Clamp elevation to prevent flipping
-        self._elevation = np.clip(
-            self._elevation, -math.pi / 2 + 0.01, math.pi / 2 - 0.01
-        )
+        self._elevation = np.clip(self._elevation, -math.pi / 2 + 0.01, math.pi / 2 - 0.01)
 
         self._update_position_from_angles()
 
@@ -285,12 +279,9 @@ class Camera:
         # Handle smooth animation
         if self._animating:
             self.position = (
-                self.position
-                + (self._target_position - self.position) * self.smooth_factor
+                self.position + (self._target_position - self.position) * self.smooth_factor
             )
-            self.target = (
-                self.target + (self._target_target - self.target) * self.smooth_factor
-            )
+            self.target = self.target + (self._target_target - self.target) * self.smooth_factor
 
             if np.linalg.norm(self.position - self._target_position) < 0.01:
                 self._animating = False
@@ -307,18 +298,14 @@ class Camera:
             else:
                 forward = np.array([1, 0, 0])
 
-            camera_offset = -forward * self._distance + np.array(
-                [0, self._distance * 0.3, 0]
-            )
+            camera_offset = -forward * self._distance + np.array([0, self._distance * 0.3, 0])
 
             self._target_target = body_pos
             self._target_position = body_pos + camera_offset
 
             # Smooth follow
             self.target = self.target + (self._target_target - self.target) * 0.1
-            self.position = (
-                self.position + (self._target_position - self.position) * 0.1
-            )
+            self.position = self.position + (self._target_position - self.position) * 0.1
 
         elif self.mode == CameraMode.SPACECRAFT_FOLLOW and self.tracked_spacecraft:
             state = self.tracked_spacecraft.get_state_at_time(julian_date)
@@ -330,9 +317,7 @@ class Camera:
             else:
                 forward = np.array([1, 0, 0])
 
-            camera_offset = -forward * self._distance * 0.5 + np.array(
-                [0, self._distance * 0.2, 0]
-            )
+            camera_offset = -forward * self._distance * 0.5 + np.array([0, self._distance * 0.2, 0])
 
             self.target = spacecraft_pos
             self.position = spacecraft_pos + camera_offset
@@ -343,9 +328,7 @@ class Camera:
             earth_pos = state.position * scale
 
             # Position on Earth's surface (simplified)
-            surface_offset = np.array(
-                [0.0001, 0, 0]
-            )  # Small offset representing surface
+            surface_offset = np.array([0.0001, 0, 0])  # Small offset representing surface
 
             self.position = earth_pos + surface_offset
             self.target = earth_pos + np.array([0, 0, 1])  # Looking up

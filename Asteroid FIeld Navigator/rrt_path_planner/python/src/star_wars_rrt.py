@@ -53,7 +53,7 @@ class RRTPlanner:
         """Plan path using RRT algorithm"""
         nodes = [np.append(start, -1)]  # [x, y, z, parent_index]
 
-        for iteration in range(self.max_iterations):
+        for _iteration in range(self.max_iterations):
             # Goal-biased sampling
             if random.random() < self.goal_bias:
                 sample = goal
@@ -377,7 +377,7 @@ class StarWarsRRTApp:
             # Try to load Millennium Falcon
             models["falcon"] = trimesh.load("falcon_clean_fixed.stl")
             print("✅ Loaded Millennium Falcon model")
-        except:
+        except Exception:
             print("⚠️ Could not load STL model, using simple geometry")
 
         return models
@@ -498,9 +498,7 @@ class StarWarsRRTApp:
             target = self.ships[1]
 
             # Update target behavior
-            new_target_pos = self.pursuit_ai.update_target_behavior(
-                target, pursuer, self.obstacles
-            )
+            new_target_pos = self.pursuit_ai.update_target_behavior(target, pursuer, self.obstacles)
             target.position = new_target_pos
 
             # Update pursuer (simple direct movement for now)

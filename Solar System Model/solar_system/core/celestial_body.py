@@ -193,8 +193,7 @@ class CelestialBody:
         elem = self.orbital_elements
 
         return OrbitalElements(
-            semi_major_axis=elem.semi_major_axis
-            + elem.semi_major_axis_rate * t_centuries,
+            semi_major_axis=elem.semi_major_axis + elem.semi_major_axis_rate * t_centuries,
             eccentricity=elem.eccentricity + elem.eccentricity_rate * t_centuries,
             inclination=elem.inclination + elem.inclination_rate * t_centuries,
             longitude_ascending=elem.longitude_ascending
@@ -295,14 +294,10 @@ class CelestialBody:
         vy_orb = parent_gm / h * (e + math.cos(nu))
 
         # Transform velocity to heliocentric ecliptic coordinates
-        vx = (
-            cos_omega * cos_ascending - sin_omega * sin_ascending * cos_i
-        ) * vx_orb + (
+        vx = (cos_omega * cos_ascending - sin_omega * sin_ascending * cos_i) * vx_orb + (
             -sin_omega * cos_ascending - cos_omega * sin_ascending * cos_i
         ) * vy_orb
-        vy = (
-            cos_omega * sin_ascending + sin_omega * cos_ascending * cos_i
-        ) * vx_orb + (
+        vy = (cos_omega * sin_ascending + sin_omega * cos_ascending * cos_i) * vx_orb + (
             -sin_omega * sin_ascending + cos_omega * cos_ascending * cos_i
         ) * vy_orb
         vz = (sin_omega * sin_i) * vx_orb + (cos_omega * sin_i) * vy_orb
@@ -346,11 +341,7 @@ class CelestialBody:
 
         # Newton-Raphson iteration
         for _ in range(50):
-            f_val = (
-                eccentric_anomaly
-                - eccentricity * math.sin(eccentric_anomaly)
-                - mean_anomaly
-            )
+            f_val = eccentric_anomaly - eccentricity * math.sin(eccentric_anomaly) - mean_anomaly
             f_prime = 1 - eccentricity * math.cos(eccentric_anomaly)
 
             delta = f_val / f_prime
@@ -408,14 +399,10 @@ class CelestialBody:
             y_orb = r * math.sin(nu)
 
             # Transform to heliocentric ecliptic coordinates
-            x = (
-                cos_omega * cos_ascending - sin_omega * sin_ascending * cos_i
-            ) * x_orb + (
+            x = (cos_omega * cos_ascending - sin_omega * sin_ascending * cos_i) * x_orb + (
                 -sin_omega * cos_ascending - cos_omega * sin_ascending * cos_i
             ) * y_orb
-            y = (
-                cos_omega * sin_ascending + sin_omega * cos_ascending * cos_i
-            ) * x_orb + (
+            y = (cos_omega * sin_ascending + sin_omega * cos_ascending * cos_i) * x_orb + (
                 -sin_omega * sin_ascending + cos_omega * cos_ascending * cos_i
             ) * y_orb
             z = (sin_omega * sin_i) * x_orb + (cos_omega * sin_i) * y_orb
@@ -474,9 +461,7 @@ class CelestialBody:
 class Star(CelestialBody):
     """Specialized class for stars (primarily the Sun)."""
 
-    def __init__(
-        self, name: str = "Sun", physical_properties: PhysicalProperties | None = None
-    ):
+    def __init__(self, name: str = "Sun", physical_properties: PhysicalProperties | None = None):
         if physical_properties is None:
             physical_properties = PHYSICAL_PROPERTIES.get(name)
 

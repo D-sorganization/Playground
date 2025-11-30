@@ -245,9 +245,7 @@ class TooltipManager:
         self._hover_time: float = 0.0
         self._show_delay: float = 0.5  # Seconds before showing
 
-    def set_hover(
-        self, body_name: str, position: tuple[int, int], info: dict[str, Any]
-    ):
+    def set_hover(self, body_name: str, position: tuple[int, int], info: dict[str, Any]):
         """
         Set the currently hovered body.
 
@@ -372,15 +370,13 @@ class DateTimePicker:
                 # Validate that the day exists in the current month/year
                 from calendar import monthrange
 
-                max_days = monthrange(
-                    self._current_date.year, self._current_date.month
-                )[1]
+                max_days = monthrange(self._current_date.year, self._current_date.month)[1]
                 if 1 <= value <= max_days:
-                    try:
-                        self._current_date = self._current_date.replace(day=value)
-                    except ValueError:
+                    from contextlib import suppress
+
+                    with suppress(ValueError):
                         # Invalid date (e.g., Feb 30), ignore
-                        pass
+                        self._current_date = self._current_date.replace(day=value)
             elif self._editing_field == "hour" and 0 <= value <= 23:
                 self._current_date = self._current_date.replace(hour=value)
 
@@ -511,9 +507,7 @@ class EducationalInfoPanel:
         self._fun_facts: list[str] = []
         self._current_fact_index: int = 0
 
-    def set_body(
-        self, name: str, properties: dict[str, Any], fun_facts: list[str] = None
-    ):
+    def set_body(self, name: str, properties: dict[str, Any], fun_facts: list[str] = None):
         """
         Set the celestial body to display information about.
 
@@ -530,9 +524,7 @@ class EducationalInfoPanel:
     def cycle_fact(self):
         """Cycle to the next fun fact."""
         if self._fun_facts:
-            self._current_fact_index = (self._current_fact_index + 1) % len(
-                self._fun_facts
-            )
+            self._current_fact_index = (self._current_fact_index + 1) % len(self._fun_facts)
 
     def get_current_fact(self) -> str | None:
         """Get the currently displayed fun fact."""
@@ -669,7 +661,9 @@ class ImmersionChecklistPanel:
             ImmersionTask(
                 task_id="navigate_time",
                 title="Travel through time",
-                description="Use the date picker or time navigation hotkeys to see planetary alignments.",
+                description=(
+                    "Use the date picker or time navigation hotkeys to see planetary alignments."
+                ),
             ),
             ImmersionTask(
                 task_id="toggle_overlays",
@@ -684,7 +678,9 @@ class ImmersionChecklistPanel:
             ImmersionTask(
                 task_id="plan_transfer",
                 title="Plot a transfer",
-                description="Plan an Earth→Mars Hohmann transfer to visualize interplanetary travel.",
+                description=(
+                    "Plan an Earth→Mars Hohmann transfer to visualize interplanetary travel."
+                ),
             ),
         ]
 

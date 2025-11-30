@@ -45,11 +45,11 @@ class TestOrbitalMechanics(unittest.TestCase):
     def test_orbital_period_earth(self):
         """Test Earth's orbital period calculation."""
         a = 1.0 * AU
-        T = OrbitalMechanics.orbital_period(a, GM["Sun"])
+        t = OrbitalMechanics.orbital_period(a, GM["Sun"])
 
         # Earth's orbital period is about 365.25 days
-        T_days = T / 86400
-        self.assertAlmostEqual(T_days, 365.25, delta=1)
+        t_days = t / 86400
+        self.assertAlmostEqual(t_days, 365.25, delta=1)
 
     def test_vis_viva_at_perihelion(self):
         """Test vis-viva equation at perihelion."""
@@ -70,12 +70,12 @@ class TestOrbitalMechanics(unittest.TestCase):
         a_earth = 1.0 * AU
         a_mars = 1.524 * AU
 
-        T_earth = OrbitalMechanics.orbital_period(a_earth, GM["Sun"])
-        T_mars = OrbitalMechanics.orbital_period(a_mars, GM["Sun"])
+        t_earth = OrbitalMechanics.orbital_period(a_earth, GM["Sun"])
+        t_mars = OrbitalMechanics.orbital_period(a_mars, GM["Sun"])
 
         # T²/a³ should be constant
-        ratio_earth = T_earth**2 / a_earth**3
-        ratio_mars = T_mars**2 / a_mars**3
+        ratio_earth = t_earth**2 / a_earth**3
+        ratio_mars = t_mars**2 / a_mars**3
 
         self.assertAlmostEqual(ratio_earth, ratio_mars, places=10)
 
@@ -104,10 +104,10 @@ class TestOrbitalMechanics(unittest.TestCase):
 
     def test_synodic_period_earth_mars(self):
         """Test synodic period calculation for Earth-Mars."""
-        T_earth = 365.25  # days
-        T_mars = 687.0  # days
+        t_earth = 365.25  # days
+        t_mars = 687.0  # days
 
-        synodic = OrbitalMechanics.synodic_period(T_earth, T_mars)
+        synodic = OrbitalMechanics.synodic_period(t_earth, t_mars)
 
         # Earth-Mars synodic period is about 780 days
         self.assertAlmostEqual(synodic, 780, delta=10)
