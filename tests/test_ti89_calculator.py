@@ -1,5 +1,5 @@
 import sympy as sp
-from ti89.calculator import TI89Calculator
+from Calculator.calculator import TI89Calculator
 
 
 def test_evaluate_with_trigonometric_identity() -> None:

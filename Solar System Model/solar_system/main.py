@@ -58,6 +58,7 @@ Educational Features:
 """
 
 import argparse
+import logging
 import sys
 from datetime import datetime
 
@@ -106,16 +107,19 @@ def main():
     # Create scene
     scene = SolarSystemScene(settings)
 
+    # Configure logging
+    logging.basicConfig(level=logging.INFO, format="%(message)s")
+
     # Initialize
-    print("\n" + "=" * 70)
-    print("  SOLAR SYSTEM SIMULATION")
-    print("  Professional-grade astronomical visualization")
-    print("=" * 70)
-    print("\nInitializing...")
+    logging.info("\n" + "=" * 70)
+    logging.info("  SOLAR SYSTEM SIMULATION")
+    logging.info("  Professional-grade astronomical visualization")
+    logging.info("=" * 70)
+    logging.info("\nInitializing...")
 
     if not scene.initialize():
-        print("ERROR: Failed to initialize. Make sure PyGame and PyOpenGL are installed.")
-        print("Install with: pip install pygame PyOpenGL PyOpenGL_accelerate numpy")
+        logging.error("ERROR: Failed to initialize. Make sure PyGame and PyOpenGL are installed.")
+        logging.error("Install with: pip install pygame PyOpenGL PyOpenGL_accelerate numpy")
         return 1
 
     # Set start date if specified
@@ -123,50 +127,50 @@ def main():
         try:
             dt = datetime.strptime(args.start_date, "%Y-%m-%d")
             scene.time_manager.set_datetime(dt)
-            print(f"Starting at: {args.start_date}")
+            logging.info(f"Starting at: {args.start_date}")
         except ValueError:
-            print(f"Warning: Invalid date format '{args.start_date}', using current date")
+            logging.warning(f"Warning: Invalid date format '{args.start_date}', using current date")
 
-    print("\n✓ Initialization complete!")
-    print("\n" + "=" * 70)
-    print("  QUICK START GUIDE")
-    print("=" * 70)
-    print("\n  The help overlay is now visible in the simulation window.")
-    print("  Press 'H' to toggle it on/off.\n")
-    print("  KEY CONTROLS:")
-    print("  • SCROLL WHEEL  - Zoom in/out to see all planets")
-    print("  • LEFT DRAG     - Rotate camera")
-    print("  • RIGHT DRAG    - Pan camera")
-    print("  • SPACE         - Pause/Resume simulation")
-    print("  • +/-           - Speed up/slow down time")
-    print("  • D             - Toggle date picker (jump to any date)")
-    print("  • N             - Toggle time navigation panel")
-    print("  • E             - Toggle historical events")
-    print("  • [ / ]         - Jump backward/forward 1 day")
-    print("  • { / }         - Jump backward/forward 1 month")
-    print("  • T             - Plan trip to Mars from Earth")
-    print("  • 0-9           - Select planets (0=Sun, 3=Earth, 4=Mars, etc.)")
-    print("  • I             - Toggle info panel")
-    print("  • M             - Toggle immersion checklist")
-    print("  • H             - Toggle help overlay")
-    print("  • ESC           - Quit")
-    print("\n  EDUCATIONAL FEATURES:")
-    print("  • Navigate to any date in history (1800-2200)")
-    print("  • View space exploration events at different times")
-    print("  • Learn fun facts about each celestial body")
-    print("\n" + "=" * 70)
-    print("\nStarting simulation...\n")
+    logging.info("\n✓ Initialization complete!")
+    logging.info("\n" + "=" * 70)
+    logging.info("  QUICK START GUIDE")
+    logging.info("=" * 70)
+    logging.info("\n  The help overlay is now visible in the simulation window.")
+    logging.info("  Press 'H' to toggle it on/off.\n")
+    logging.info("  KEY CONTROLS:")
+    logging.info("  • SCROLL WHEEL  - Zoom in/out to see all planets")
+    logging.info("  • LEFT DRAG     - Rotate camera")
+    logging.info("  • RIGHT DRAG    - Pan camera")
+    logging.info("  • SPACE         - Pause/Resume simulation")
+    logging.info("  • +/-           - Speed up/slow down time")
+    logging.info("  • D             - Toggle date picker (jump to any date)")
+    logging.info("  • N             - Toggle time navigation panel")
+    logging.info("  • E             - Toggle historical events")
+    logging.info("  • [ / ]         - Jump backward/forward 1 day")
+    logging.info("  • { / }         - Jump backward/forward 1 month")
+    logging.info("  • T             - Plan trip to Mars from Earth")
+    logging.info("  • 0-9           - Select planets (0=Sun, 3=Earth, 4=Mars, etc.)")
+    logging.info("  • I             - Toggle info panel")
+    logging.info("  • M             - Toggle immersion checklist")
+    logging.info("  • H             - Toggle help overlay")
+    logging.info("  • ESC           - Quit")
+    logging.info("\n  EDUCATIONAL FEATURES:")
+    logging.info("  • Navigate to any date in history (1800-2200)")
+    logging.info("  • View space exploration events at different times")
+    logging.info("  • Learn fun facts about each celestial body")
+    logging.info("\n" + "=" * 70)
+    logging.info("\nStarting simulation...\n")
 
     # Run the simulation
     try:
         scene.run()
     except KeyboardInterrupt:
-        print("\nSimulation interrupted by user")
+        logging.info("\nSimulation interrupted by user")
     except Exception as e:
-        print(f"\nError: {e}")
+        logging.error(f"\nError: {e}")
         raise
 
-    print("Simulation ended.")
+    logging.info("Simulation ended.")
     return 0
 
 

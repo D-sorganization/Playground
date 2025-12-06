@@ -29,8 +29,20 @@ class CalculatorResult:
 class TI89Calculator:
     """A lightweight TI-89 inspired calculator focused on algebra and calculus."""
 
+    _ALLOWED_FUNCTIONS_CACHE: Mapping[str, object] | None = None
+
     def __init__(self) -> None:
-        self._allowed_functions = self._build_allowed_functions()
+        if TI89Calculator._ALLOWED_FUNCTIONS_CACHE is None:
+            TI89Calculator._ALLOWED_FUNCTIONS_CACHE = self._build_allowed_functions()
+        self._allowed_functions = TI89Calculator._ALLOWED_FUNCTIONS_CACHE
+
+    @property
+    def allowed_functions(self) -> Mapping[str, object]:
+        return self._allowed_functions
+
+    @property
+    def safe_globals(self) -> Mapping[str, object]:
+        return self._safe_globals()
 
     def evaluate(
         self,
@@ -186,6 +198,9 @@ class TI89Calculator:
             "Rational": sp.Rational,
             "Float": sp.Float,
             "Pow": sp.Pow,
+            "Function": sp.Function,
+            "Derivative": sp.Derivative,
+            "Eq": sp.Eq,
         }
 
     def _parse_equation(self, equation: str, symbols: Mapping[str, sp.Symbol | sp.Expr]) -> sp.Eq:
