@@ -51,6 +51,11 @@ class RRTPlanner:
         self, start: np.ndarray, goal: np.ndarray, obstacles: list[Obstacle]
     ) -> np.ndarray | None:
         """Plan path using RRT algorithm"""
+        if self._check_collision(start, obstacles):
+            return None
+        if self._check_collision(goal, obstacles):
+            return None
+
         nodes = [np.append(start, -1)]  # [x, y, z, parent_index]
 
         for _iteration in range(self.max_iterations):

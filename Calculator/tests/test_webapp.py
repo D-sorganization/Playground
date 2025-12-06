@@ -1,0 +1,49 @@
+import unittest
+import sys
+import os
+
+# Add the repo root to sys.path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
+
+from Calculator.webapp import create_app
+
+class TestWebApp(unittest.TestCase):
+    def setUp(self):
+        self.app = create_app()
+        self.client = self.app.test_client()
+
+    def test_index(self):
+        response = self.client.get('/')
+        self.assertEqual(response.status_code, 200)
+
+    def test_calculate_evaluate(self):
+        payload = {
+            "operation": "evaluate",
+            "expression": "2 + 2"
+        }
+        response = self.client.post('/api/calculate', json=payload)
+        self.assertEqual(response.status_code, 200)
+        data = response.get_json()
+        self.assertEqual(data['result'], "4")
+
+    def test_calculate_derivative(self):
+        payload = {
+            "operation": "derivative",
+            "expression": "x**2",
+            "variable": "x"
+        }
+        response = self.client.post('/api/calculate', json=payload)
+        self.assertEqual(response.status_code, 200)
+        data = response.get_json()
+        self.assertEqual(data['result'], "2*x")
+
+    def test_invalid_operation(self):
+        payload = {
+            "operation": "invalid",
+            "expression": "2 + 2"
+        }
+        response = self.client.post('/api/calculate', json=payload)
+        self.assertEqual(response.status_code, 400)
+
+if __name__ == '__main__':
+    unittest.main()
