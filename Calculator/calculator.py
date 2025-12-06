@@ -4,6 +4,7 @@ from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 
 import sympy as sp
+from sympy.parsing.sympy_parser import convert_xor, parse_expr, standard_transformations
 
 
 @dataclass(frozen=True)
@@ -152,14 +153,16 @@ class TI89Calculator:
 
         function_symbol = sp.Function(function)
         independent_variable = sp.Symbol("x")
-        parsed_equation = sp.sympify(
+        parsed_equation = parse_expr(
             equation,
-            locals={
+            local_dict={
                 **self._allowed_functions,
                 function: function_symbol,
                 "x": independent_variable,
             },
-            convert_xor=True,
+            global_dict=self._safe_globals(),
+            transformations=standard_transformations + (convert_xor,),
+            evaluate=True,
         )
         solution = sp.dsolve(sp.Eq(parsed_equation, 0))
         return CalculatorResult(equation, solution)
@@ -167,9 +170,23 @@ class TI89Calculator:
     def _parse_expression(
         self, expression: str, symbols: Mapping[str, sp.Symbol | sp.Expr]
     ) -> sp.Expr:
-        return sp.sympify(
-            expression, locals={**self._allowed_functions, **symbols}, convert_xor=True
+        return parse_expr(
+            expression,
+            local_dict={**self._allowed_functions, **symbols},
+            global_dict=self._safe_globals(),
+            transformations=standard_transformations + (convert_xor,),
+            evaluate=True,
         )
+
+    def _safe_globals(self) -> Mapping[str, object]:
+        return {
+            "__builtins__": {},
+            "Symbol": sp.Symbol,
+            "Integer": sp.Integer,
+            "Rational": sp.Rational,
+            "Float": sp.Float,
+            "Pow": sp.Pow,
+        }
 
     def _parse_equation(self, equation: str, symbols: Mapping[str, sp.Symbol | sp.Expr]) -> sp.Eq:
         if "=" in equation:

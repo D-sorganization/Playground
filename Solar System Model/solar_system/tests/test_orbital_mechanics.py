@@ -12,12 +12,10 @@ import unittest
 
 import numpy as np
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-from core.celestial_body import Planet, Star, StateVector
-from core.constants import AU, GM, J2000, PHYSICAL_PROPERTIES
-from physics.orbital_mechanics import OrbitalMechanics
-from physics.trajectory_planner import TrajectoryPlanner
+from solar_system.core.celestial_body import Planet, Star, StateVector
+from solar_system.core.constants import AU, GM, J2000, PHYSICAL_PROPERTIES
+from solar_system.physics.orbital_mechanics import OrbitalMechanics
+from solar_system.physics.trajectory_planner import TrajectoryPlanner
 
 
 class TestOrbitalMechanics(unittest.TestCase):
@@ -111,6 +109,29 @@ class TestOrbitalMechanics(unittest.TestCase):
 
         # Earth-Mars synodic period is about 780 days
         self.assertAlmostEqual(synodic, 780, delta=10)
+
+    def test_velocity_at_true_anomaly(self):
+        """Test velocity vector components at true anomaly."""
+        # For circular orbit, v_r=0, v_t = v_circ
+        r = 1.0 * AU
+        a = r
+        e = 0.0
+        nu = math.pi / 2
+        v_r, v_t = OrbitalMechanics.velocity_at_true_anomaly(a, e, nu, GM["Sun"])
+
+        v_circ = OrbitalMechanics.circular_velocity(r, GM["Sun"])
+        self.assertAlmostEqual(v_r, 0.0)
+        self.assertAlmostEqual(v_t, v_circ)
+
+    def test_time_of_flight_half_orbit(self):
+        """Test time of flight for half orbit."""
+        a = 1.0 * AU
+        e = 0.0
+        nu1 = 0.0
+        nu2 = math.pi
+        tof = OrbitalMechanics.time_of_flight(nu1, nu2, a, e, GM["Sun"])
+        period = OrbitalMechanics.orbital_period(a, GM["Sun"])
+        self.assertAlmostEqual(tof, period / 2)
 
 
 class TestCelestialBodies(unittest.TestCase):

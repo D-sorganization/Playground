@@ -555,8 +555,8 @@ class TrajectoryPlanner:
         self,
         initial_state: StateVector,
         a_transfer: float,
-        r_periapsis: float,
-        r_apoapsis: float,
+        r_start: float,
+        r_end: float,
         start_date: float,
         duration_days: float,
         num_points: int = 100,
@@ -564,37 +564,55 @@ class TrajectoryPlanner:
         """Generate points along a transfer trajectory."""
         points = []
 
-        # Transfer orbit eccentricity
-        e = OrbitalMechanics.eccentricity_from_apsides(r_periapsis, r_apoapsis)
+        # Determine orbit parameters
+        r_min = min(r_start, r_end)
+        r_max = max(r_start, r_end)
+        e = OrbitalMechanics.eccentricity_from_apsides(r_min, r_max)
+
+        # Determine anomaly range
+        if r_start < r_end:
+            # Outward: Periapsis -> Apoapsis
+            nu_start = 0.0
+            nu_end = math.pi
+        else:
+            # Inward: Apoapsis -> Periapsis
+            nu_start = math.pi
+            nu_end = 2 * math.pi
 
         # Get initial position angle
         pos = initial_state.position
         initial_angle = math.atan2(pos[1], pos[0])
 
-        # Generate points for half orbit (Hohmann transfer)
+        # Generate points
         for i in range(num_points + 1):
             fraction = i / num_points
 
-            # True anomaly from 0 to pi
-            nu = math.pi * fraction
+            # True anomaly
+            nu = nu_start + (nu_end - nu_start) * fraction
 
             # Distance at this angle
-            r = a_transfer * (1 - e**2) / (1 + e * math.cos(nu))
+            r = OrbitalMechanics.radius_at_true_anomaly(a_transfer, e, nu)
 
             # Position (rotate by initial angle)
-            angle = initial_angle + nu
+            # The angle change corresponds to change in true anomaly
+            angle = initial_angle + (nu - nu_start)
             x = r * math.cos(angle)
             y = r * math.sin(angle)
             z = 0.0  # Assuming coplanar
 
-            # Velocity (approximate)
-            v = OrbitalMechanics.vis_viva(r, a_transfer, self.mu)
-            vx = -v * math.sin(angle)
-            vy = v * math.cos(angle)
+            # Velocity (accurate)
+            v_r, v_t = OrbitalMechanics.velocity_at_true_anomaly(a_transfer, e, nu, self.mu)
+
+            # Rotate velocity to inertial frame
+            # v_r is along radial vector (angle)
+            # v_t is along tangential vector (angle + 90 deg)
+            vx = v_r * math.cos(angle) - v_t * math.sin(angle)
+            vy = v_r * math.sin(angle) + v_t * math.cos(angle)
             vz = 0.0
 
-            # Time (approximate using Kepler's equation)
-            time = start_date + duration_days * fraction
+            # Calculate time accurately
+            dt = OrbitalMechanics.time_of_flight(nu_start, nu, a_transfer, e, self.mu)
+            time = start_date + dt / SECONDS_PER_DAY
 
             points.append(
                 StateVector(
