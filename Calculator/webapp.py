@@ -225,17 +225,6 @@ def _safe_constants() -> Mapping[str, sp.Expr]:
     }
 
 
-def _safe_parse_globals() -> Mapping[str, object]:
-    return {
-        "__builtins__": {},
-        "Symbol": sp.Symbol,
-        "Integer": sp.Integer,
-        "Rational": sp.Rational,
-        "Float": sp.Float,
-        "Pow": sp.Pow,
-    }
-
-
 def _normalize_variables(
     variables: Mapping[str, str] | None, calculator: TI89Calculator
 ) -> Mapping[str, sp.Expr]:
@@ -254,11 +243,11 @@ def _sympify_value(
         return parse_expr(
             value,
             local_dict={
-                **calculator._allowed_functions,
+                **calculator.allowed_functions,
                 **_safe_constants(),
                 **(symbols or {}),
             },
-            global_dict=_safe_parse_globals(),
+            global_dict=calculator.safe_globals,
             transformations=standard_transformations + (convert_xor,),
             evaluate=True,
         )

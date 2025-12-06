@@ -4,6 +4,7 @@ Star Wars RRT Path Planner - Python Version
 Enhanced performance with real-time rendering and GPU acceleration
 """
 
+import logging
 import random
 from dataclasses import dataclass
 
@@ -381,9 +382,9 @@ class StarWarsRRTApp:
         try:
             # Try to load Millennium Falcon
             models["falcon"] = trimesh.load("falcon_clean_fixed.stl")
-            print("✅ Loaded Millennium Falcon model")
+            logging.info("✅ Loaded Millennium Falcon model")
         except Exception:
-            print("⚠️ Could not load STL model, using simple geometry")
+            logging.warning("⚠️ Could not load STL model, using simple geometry")
 
         return models
 
@@ -409,9 +410,9 @@ class StarWarsRRTApp:
             path = self.planner.plan_path(start, goal, self.obstacles)
             if path is not None:
                 self.paths = [path]
-                print(f"✅ Path planned: {len(path)} waypoints")
+                logging.info(f"✅ Path planned: {len(path)} waypoints")
             else:
-                print("❌ No path found")
+                logging.warning("❌ No path found")
 
         elif mode == "pursuit":
             # Pursuit scenario
@@ -463,11 +464,11 @@ class StarWarsRRTApp:
 
     def run(self) -> None:
         """Main game loop"""
-        print("🚀 Starting Star Wars RRT Path Planner - Python Version")
-        print("Controls:")
-        print("  SPACE - Toggle between single/pursuit mode")
-        print("  C - Change camera view")
-        print("  ESC - Quit")
+        logging.info("🚀 Starting Star Wars RRT Path Planner - Python Version")
+        logging.info("Controls:")
+        logging.info("  SPACE - Toggle between single/pursuit mode")
+        logging.info("  C - Change camera view")
+        logging.info("  ESC - Quit")
 
         while self.running:
             # Handle events
@@ -515,12 +516,13 @@ class StarWarsRRTApp:
 
             # Check for capture
             if distance < self.pursuit_ai.capture_radius:
-                print("🎯 Target captured!")
+                logging.info("🎯 Target captured!")
                 target.color = (1.0, 0.0, 0.0)  # Turn red
 
 
 def main() -> None:
     """Main entry point"""
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
     app = StarWarsRRTApp()
     app.setup_scenario("single")
     app.run()
