@@ -58,6 +58,9 @@ def create_app() -> Flask:
     return app
 
 
+MAX_INPUT_LENGTH = 1000
+
+
 def _parse_payload(raw_payload: Mapping[str, object]) -> CalculationPayload:
     operation = str(raw_payload.get("operation", "")).strip()
     if not operation:
@@ -67,10 +70,38 @@ def _parse_payload(raw_payload: Mapping[str, object]) -> CalculationPayload:
     if not expression:
         raise ValueError("Expression is required")
 
+    if len(expression) > MAX_INPUT_LENGTH:
+        raise ValueError(f"Expression exceeds maximum length of {MAX_INPUT_LENGTH} characters")
+
     variable = _clean_optional(raw_payload.get("variable"))
+    _validate_length(variable, "Variable")
+
     variables: Mapping[str, str] | None = None
     if isinstance(raw_payload.get("variables"), Mapping):
-        variables = {str(key): str(value) for key, value in raw_payload["variables"].items()}
+        variables = {}
+        for key, value in raw_payload["variables"].items():
+            k_str, v_str = str(key), str(value)
+            _validate_length(k_str, "Variable name")
+            _validate_length(v_str, "Variable value")
+            variables[k_str] = v_str
+
+    lower = _clean_optional(raw_payload.get("lower"))
+    _validate_length(lower, "Lower bound")
+
+    upper = _clean_optional(raw_payload.get("upper"))
+    _validate_length(upper, "Upper bound")
+
+    value = _clean_optional(raw_payload.get("value"))
+    _validate_length(value, "Value")
+
+    direction = _clean_optional(raw_payload.get("direction"))
+    _validate_length(direction, "Direction")
+
+    around = _clean_optional(raw_payload.get("around"))
+    _validate_length(around, "Around value")
+
+    function = _clean_optional(raw_payload.get("function"))
+    _validate_length(function, "Function name")
 
     return CalculationPayload(
         operation=operation,
@@ -78,13 +109,18 @@ def _parse_payload(raw_payload: Mapping[str, object]) -> CalculationPayload:
         variable=variable,
         variables=variables,
         order=_parse_optional_int(raw_payload.get("order")),
-        lower=_clean_optional(raw_payload.get("lower")),
-        upper=_clean_optional(raw_payload.get("upper")),
-        value=_clean_optional(raw_payload.get("value")),
-        direction=_clean_optional(raw_payload.get("direction")),
-        around=_clean_optional(raw_payload.get("around")),
-        function=_clean_optional(raw_payload.get("function")),
+        lower=lower,
+        upper=upper,
+        value=value,
+        direction=direction,
+        around=around,
+        function=function,
     )
+
+
+def _validate_length(value: str | None, name: str) -> None:
+    if value and len(value) > MAX_INPUT_LENGTH:
+        raise ValueError(f"{name} exceeds maximum length of {MAX_INPUT_LENGTH} characters")
 
 
 def _dispatch_calculation(
