@@ -583,35 +583,75 @@ class TrajectoryPlanner:
         pos = initial_state.position
         initial_angle = math.atan2(pos[1], pos[0])
 
+        # Optimization: Precalculate constants
+        mu = self.mu
+        h = math.sqrt(mu * a_transfer * (1 - e**2))
+        n = math.sqrt(mu / a_transfer**3)
+        sqrt_1_minus_e = math.sqrt(1 - e)
+        sqrt_1_plus_e = math.sqrt(1 + e)
+        parameter = a_transfer * (1 - e**2)  # Semi-latus rectum
+
+        # Calculate initial Mean Anomaly
+        sin_nu_start_2 = math.sin(nu_start / 2)
+        cos_nu_start_2 = math.cos(nu_start / 2)
+        E_start = 2 * math.atan2(
+            sqrt_1_minus_e * sin_nu_start_2, sqrt_1_plus_e * cos_nu_start_2
+        )
+        M_start = E_start - e * math.sin(E_start)
+
+        # Precalculate angle offset constants
+        # angle = nu + (initial_angle - nu_start)
+        phi = initial_angle - nu_start
+        cos_phi = math.cos(phi)
+        sin_phi = math.sin(phi)
+
+        nu_start_2 = nu_start / 2
+        nu_range_2 = (nu_end - nu_start) / 2
+
         # Generate points
         for i in range(num_points + 1):
             fraction = i / num_points
 
-            # True anomaly
-            nu = nu_start + (nu_end - nu_start) * fraction
+            # Use half-angle for iteration
+            nu_2 = nu_start_2 + nu_range_2 * fraction
+            sin_nu_2 = math.sin(nu_2)
+            cos_nu_2 = math.cos(nu_2)
 
-            # Distance at this angle
-            r = OrbitalMechanics.radius_at_true_anomaly(a_transfer, e, nu)
+            # Double angle formulas for nu
+            sin_nu = 2 * sin_nu_2 * cos_nu_2
+            cos_nu = cos_nu_2**2 - sin_nu_2**2
 
-            # Position (rotate by initial angle)
-            # The angle change corresponds to change in true anomaly
-            angle = initial_angle + (nu - nu_start)
-            x = r * math.cos(angle)
-            y = r * math.sin(angle)
+            # 1. Radius
+            r = parameter / (1 + e * cos_nu)
+
+            # 2. Velocity components
+            v_r = mu * e * sin_nu / h
+            v_t = h / r
+
+            # 3. Position and Velocity in inertial frame
+            # angle = nu + phi
+            cos_angle = cos_nu * cos_phi - sin_nu * sin_phi
+            sin_angle = sin_nu * cos_phi + cos_nu * sin_phi
+
+            x = r * cos_angle
+            y = r * sin_angle
             z = 0.0  # Assuming coplanar
 
-            # Velocity (accurate)
-            v_r, v_t = OrbitalMechanics.velocity_at_true_anomaly(a_transfer, e, nu, self.mu)
-
-            # Rotate velocity to inertial frame
-            # v_r is along radial vector (angle)
-            # v_t is along tangential vector (angle + 90 deg)
-            vx = v_r * math.cos(angle) - v_t * math.sin(angle)
-            vy = v_r * math.sin(angle) + v_t * math.cos(angle)
+            vx = v_r * cos_angle - v_t * sin_angle
+            vy = v_r * sin_angle + v_t * cos_angle
             vz = 0.0
 
-            # Calculate time accurately
-            dt = OrbitalMechanics.time_of_flight(nu_start, nu, a_transfer, e, self.mu)
+            # 4. Time
+            E = 2 * math.atan2(
+                sqrt_1_minus_e * sin_nu_2, sqrt_1_plus_e * cos_nu_2
+            )
+            M = E - e * math.sin(E)
+
+            delta_M = M - M_start
+            if delta_M < 0:
+                delta_M += 2 * math.pi
+
+            dt = delta_M / n
             time = start_date + dt / SECONDS_PER_DAY
 
             points.append(
