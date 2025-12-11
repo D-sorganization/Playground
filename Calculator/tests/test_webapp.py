@@ -15,6 +15,10 @@ class TestWebApp(unittest.TestCase):
     def test_index(self):
         response = self.client.get('/')
         self.assertEqual(response.status_code, 200)
+        # Verify ARIA labels for accessibility
+        self.assertIn(b'aria-label="Move cursor left"', response.data)
+        self.assertIn(b'aria-label="Matrix exponential"', response.data)
+        self.assertIn(b'aria-label="SE3 Hat operator"', response.data)
 
     def test_calculate_evaluate(self):
         payload = {
