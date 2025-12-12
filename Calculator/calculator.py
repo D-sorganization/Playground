@@ -30,11 +30,29 @@ class TI89Calculator:
     """A lightweight TI-89 inspired calculator focused on algebra and calculus."""
 
     _ALLOWED_FUNCTIONS_CACHE: Mapping[str, object] | None = None
+    _SAFE_GLOBALS_CACHE: Mapping[str, object] | None = None
+    _TRANSFORMATIONS_CACHE: tuple | None = None
 
     def __init__(self) -> None:
         if TI89Calculator._ALLOWED_FUNCTIONS_CACHE is None:
             TI89Calculator._ALLOWED_FUNCTIONS_CACHE = self._build_allowed_functions()
         self._allowed_functions = TI89Calculator._ALLOWED_FUNCTIONS_CACHE
+
+        if TI89Calculator._SAFE_GLOBALS_CACHE is None:
+            TI89Calculator._SAFE_GLOBALS_CACHE = {
+                "__builtins__": {},
+                "Symbol": sp.Symbol,
+                "Integer": sp.Integer,
+                "Rational": sp.Rational,
+                "Float": sp.Float,
+                "Pow": sp.Pow,
+                "Function": sp.Function,
+                "Derivative": sp.Derivative,
+                "Eq": sp.Eq,
+            }
+
+        if TI89Calculator._TRANSFORMATIONS_CACHE is None:
+            TI89Calculator._TRANSFORMATIONS_CACHE = standard_transformations + (convert_xor,)
 
     @property
     def allowed_functions(self) -> Mapping[str, object]:
@@ -42,7 +60,7 @@ class TI89Calculator:
 
     @property
     def safe_globals(self) -> Mapping[str, object]:
-        return self._safe_globals()
+        return self._SAFE_GLOBALS_CACHE
 
     def evaluate(
         self,
@@ -172,8 +190,8 @@ class TI89Calculator:
                 function: function_symbol,
                 "x": independent_variable,
             },
-            global_dict=self._safe_globals(),
-            transformations=standard_transformations + (convert_xor,),
+            global_dict=self._SAFE_GLOBALS_CACHE,
+            transformations=self._TRANSFORMATIONS_CACHE,
             evaluate=True,
         )
         solution = sp.dsolve(sp.Eq(parsed_equation, 0))
@@ -185,23 +203,10 @@ class TI89Calculator:
         return parse_expr(
             expression,
             local_dict={**self._allowed_functions, **symbols},
-            global_dict=self._safe_globals(),
-            transformations=standard_transformations + (convert_xor,),
+            global_dict=self._SAFE_GLOBALS_CACHE,
+            transformations=self._TRANSFORMATIONS_CACHE,
             evaluate=True,
         )
-
-    def _safe_globals(self) -> Mapping[str, object]:
-        return {
-            "__builtins__": {},
-            "Symbol": sp.Symbol,
-            "Integer": sp.Integer,
-            "Rational": sp.Rational,
-            "Float": sp.Float,
-            "Pow": sp.Pow,
-            "Function": sp.Function,
-            "Derivative": sp.Derivative,
-            "Eq": sp.Eq,
-        }
 
     def _parse_equation(self, equation: str, symbols: Mapping[str, sp.Symbol | sp.Expr]) -> sp.Eq:
         if "=" in equation:
