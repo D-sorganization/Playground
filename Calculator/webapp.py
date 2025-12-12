@@ -5,10 +5,11 @@ from dataclasses import dataclass
 from typing import Any
 
 import sympy as sp
-from flask import Flask, jsonify, render_template, request, send_from_directory
+from flask import Flask, current_app, jsonify, render_template, request, send_from_directory
 from sympy.parsing.sympy_parser import convert_xor, parse_expr, standard_transformations
 
 from .calculator import CalculatorResult, TI89Calculator
+from .limiter import RateLimiter
 
 
 @dataclass
@@ -29,6 +30,8 @@ class CalculationPayload:
 def create_app() -> Flask:
     app = Flask(__name__, static_folder="static", template_folder="templates")
     calculator = TI89Calculator()
+    # Rate limit: 100 requests per 60 seconds per IP
+    app.limiter = RateLimiter(limit=100, window=60)  # type: ignore
 
     @app.get("/")
     def index() -> str:
@@ -36,6 +39,13 @@ def create_app() -> Flask:
 
     @app.post("/api/calculate")
     def calculate() -> tuple[Any, int]:
+        # Security: Rate limiting to prevent DoS
+        if not current_app.testing:
+            client_ip = request.remote_addr or "unknown"
+            # Access limiter via closure over 'app'
+            if not app.limiter.is_allowed(client_ip):  # type: ignore
+                return jsonify({"error": "Rate limit exceeded. Please try again later."}), 429
+
         payload = request.get_json(silent=True) or {}
         try:
             parsed_payload = _parse_payload(payload)
