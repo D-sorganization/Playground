@@ -10,6 +10,7 @@ from Calculator.webapp import create_app
 class TestWebApp(unittest.TestCase):
     def setUp(self):
         self.app = create_app()
+        self.app.config.update({"TESTING": True})
         self.client = self.app.test_client()
 
     def test_index(self):
