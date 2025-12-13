@@ -200,9 +200,14 @@ class TI89Calculator:
     def _parse_expression(
         self, expression: str, symbols: Mapping[str, sp.Symbol | sp.Expr]
     ) -> sp.Expr:
+        # Optimization: Avoid copying the large allowed_functions dict if no symbols are provided
+        local_dict = self._allowed_functions
+        if symbols:
+            local_dict = {**self._allowed_functions, **symbols}
+
         return parse_expr(
             expression,
-            local_dict={**self._allowed_functions, **symbols},
+            local_dict=local_dict,
             global_dict=self._SAFE_GLOBALS_CACHE,
             transformations=self._TRANSFORMATIONS_CACHE,
             evaluate=True,
@@ -415,4 +420,8 @@ class TI89Calculator:
             "pi": sp.pi,
             "E": sp.E,
             "e": sp.E,
+            "oo": sp.oo,
+            "Infinity": sp.oo,
+            "inf": sp.oo,
+            "nan": sp.nan,
         }
