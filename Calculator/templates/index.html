@@ -38,7 +38,7 @@
             </div>
             <div class="result-display" id="result-display">
                 <div class="result-header">Result</div>
-                <pre id="result-text">Ready.</pre>
+                <pre id="result-text" aria-live="polite" aria-atomic="true">Ready.</pre>
                 <div class="approx-line" id="approx-line" hidden>
                     ≈ <span id="approx-value"></span>
                 </div>
@@ -149,8 +149,8 @@
                 <button type="button" data-token="log(" class="key soft" aria-label="Logarithm">log</button>
                 <button type="button" data-token="sqrt(" class="key soft" aria-label="Square root">√</button>
                 <button type="button" data-token="exp(" class="key soft" aria-label="Exponential">exp</button>
-                <button type="button" data-token="," class="key">,</button>
-                <button type="button" data-token="=" class="key">=</button>
+                <button type="button" data-token="," class="key" aria-label="Comma">,</button>
+                <button type="button" data-token="=" class="key" aria-label="Equals">=</button>
             </div>
             <div class="key-row">
                 <button type="button" data-token="re(" class="key soft" aria-label="Real part">Re</button>
@@ -189,7 +189,7 @@
                 <button type="button" data-token="2" class="key">2</button>
                 <button type="button" data-token="3" class="key">3</button>
                 <button type="button" data-token="0" class="key wide">0</button>
-                <button type="button" data-token="." class="key">.</button>
+                <button type="button" data-token="." class="key" aria-label="Decimal point">.</button>
                 <button type="button" data-token="ans" class="key soft" aria-label="Previous answer">ANS</button>
             </div>
             <div class="key-row">
