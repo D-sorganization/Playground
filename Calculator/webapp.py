@@ -259,18 +259,6 @@ def _serialize(result: object) -> object:
     return result
 
 
-def _safe_constants() -> Mapping[str, sp.Expr]:
-    return {
-        "pi": sp.pi,
-        "E": sp.E,
-        "e": sp.E,
-        "oo": sp.oo,
-        "Infinity": sp.oo,
-        "inf": sp.oo,
-        "nan": sp.nan,
-    }
-
-
 def _normalize_variables(
     variables: Mapping[str, str] | None, calculator: TI89Calculator
 ) -> Mapping[str, sp.Expr]:
@@ -286,13 +274,14 @@ def _sympify_value(
     symbols: Mapping[str, sp.Symbol | sp.Expr] | None = None,
 ) -> sp.Expr:
     try:
+        # Optimization: Use cached allowed_functions directly if no extra symbols are needed
+        local_dict = calculator.allowed_functions
+        if symbols:
+            local_dict = {**calculator.allowed_functions, **symbols}
+
         return parse_expr(
             value,
-            local_dict={
-                **calculator.allowed_functions,
-                **_safe_constants(),
-                **(symbols or {}),
-            },
+            local_dict=local_dict,
             global_dict=calculator.safe_globals,
             transformations=standard_transformations + (convert_xor,),
             evaluate=True,
