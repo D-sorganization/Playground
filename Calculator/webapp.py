@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Any
@@ -10,6 +11,9 @@ from sympy.parsing.sympy_parser import convert_xor, parse_expr, standard_transfo
 
 from .calculator import CalculatorResult, TI89Calculator
 from .limiter import RateLimiter
+
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -55,7 +59,8 @@ def create_app() -> Flask:
         except ValueError as error:
             return jsonify({"error": str(error)}), 400
         except Exception as error:  # pragma: no cover - fallback safety
-            return jsonify({"error": f"Calculation failed: {error}"}), 500
+            logger.exception("Calculation failed")
+            return jsonify({"error": "An internal error occurred."}), 500
 
     @app.get("/manifest.webmanifest")
     def manifest() -> Any:
