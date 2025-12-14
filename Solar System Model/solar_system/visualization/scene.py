@@ -227,8 +227,12 @@ class SolarSystemScene:
         # Educational info (Top Left)
         self.educational_panel = EducationalInfoPanel(position=(20, 20), width=320)
         
-        # Historical events (Right Side, Middle)
-        self.historical_events = HistoricalEventsPanel(position=(self.renderer.settings.window_width - 420, 350), width=400)
+        # Historical events (Top Right, below date picker/time nav height line if relevant, or just top right)
+        # Moving to Top Right to make room for Immersion Guide at Bottom Right
+        self.historical_events = HistoricalEventsPanel(
+            position=(self.renderer.settings.window_width - 420, 60),
+            width=400
+        )
         self.historical_events.set_date(self.time_manager.current_time.datetime_utc)
         
         # Time Navigation (Bottom Center)
@@ -236,9 +240,10 @@ class SolarSystemScene:
         time_nav_y = self.renderer.settings.window_height - 100
         self.time_nav_panel = TimeNavigationPanel(position=(time_nav_x, time_nav_y))
         
-        # Immersive checklist (Top Right)
+        # Immersive checklist (Bottom Right)
+        checklist_y = self.renderer.settings.window_height - 320
         self.immersion_checklist = ImmersionChecklistPanel(
-            position=(self.renderer.settings.window_width - 380, 20),
+            position=(self.renderer.settings.window_width - 380, checklist_y),
             width=360
         )
         
