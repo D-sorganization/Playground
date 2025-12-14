@@ -234,7 +234,6 @@ class SolarSystemScene:
         self.date_picker.set_date(self.time_manager.current_time.datetime_utc)
 
         # Time navigation logic (reusing existing class for logic handling)
-        # Position is irrelevant as it is rendered by UnifiedControlPanel
         self.time_nav_panel = TimeNavigationPanel(position=(0, 0))
 
         # --- Sidebar Panel (Right) ---
@@ -246,24 +245,33 @@ class SolarSystemScene:
         )
         
         # Initialize content panels used by Sidebar
-        # We pass dummy positions as the Sidebar will override them during render
         self.educational_panel = EducationalInfoPanel(position=(0,0), width=360) 
         self.immersion_checklist = ImmersionChecklistPanel(position=(0,0), width=360)
         self.historical_events = HistoricalEventsPanel(position=(0,0), width=360)
         self.historical_events.set_date(self.time_manager.current_time.datetime_utc)
 
         # --- Unified Control Panel (Bottom) ---
-        control_height = 120
+        control_height = 180  # Increased for granular controls
         self.unified_controls = UnifiedControlPanel(
             position=(0, self.renderer.settings.window_height - control_height),
             width=self.renderer.settings.window_width
         )
+        self.unified_controls.height = control_height
         
-        # Add Checkboxes (formerly SettingsPanel)
-        self.unified_controls.add_checkbox("Orbits (O)", self.view_state.show_orbits, "toggle_orbits")
-        self.unified_controls.add_checkbox("Labels (L)", self.view_state.show_labels, "toggle_labels")
-        self.unified_controls.add_checkbox("Grid (G)", self.renderer.settings.show_grid, "toggle_grid")
-        self.unified_controls.add_checkbox("Stereo (V)", self.settings.stereo_view, "toggle_stereo")
+        # Granular Checkboxes
+        # View Settings
+        self.unified_controls.add_checkbox("Show Labels", self.view_state.show_labels, "toggle_labels")
+        self.unified_controls.add_checkbox("Show Grid", self.renderer.settings.show_grid, "toggle_grid")
+        self.unified_controls.add_checkbox("Stereo View", self.settings.stereo_view, "toggle_stereo")
+        
+        # Orbits - Granular
+        self.unified_controls.add_checkbox("Inner Planets", self.view_state.show_inner_planets, "toggle_inner")
+        self.unified_controls.add_checkbox("Outer Planets", self.view_state.show_outer_planets, "toggle_outer")
+        self.unified_controls.add_checkbox("Dwarf Planets", self.view_state.show_dwarf_planets, "toggle_dwarf")
+        self.unified_controls.add_checkbox("Moons/Small", self.view_state.show_minor_bodies, "toggle_moons")
+
+        # Add Action Buttons
+        self.unified_controls.add_button("Reset View", "reset_view")
         
         # Set initial Nav Mode
         self.unified_controls.set_mode("Orbit")
@@ -943,12 +951,18 @@ class SolarSystemScene:
             renderer.render_date_picker(self.date_picker.get_render_data())
 
     def _should_render_body(self, body: CelestialBody) -> bool:
+        # Check granular visibility flags
         if body.name in INNER_PLANETS:
             return self.view_state.show_inner_planets
         elif body.name in OUTER_PLANETS:
             return self.view_state.show_outer_planets
         elif body.name in DWARF_PLANETS:
             return self.view_state.show_dwarf_planets
+        # For Moons, we might need a specific flag if we want to toggle them separately
+        elif body.body_type == BodyType.MOON: 
+             # For now, let's tie moon visibility to general minor bodies or parent visibility?
+             # User asked for granular. Let's start with minor bodies flag for moons/asteroids.
+             return self.view_state.show_minor_bodies
         elif body.body_type in {BodyType.ASTEROID, BodyType.COMET}:
             return self.view_state.show_minor_bodies
         return True
@@ -968,7 +982,7 @@ class SolarSystemScene:
         """Handle clicks on UI overlays."""
         x, y = pos
         
-        # 1. Check Date Picker (Modal-ish)
+        # 1. Check Date Picker
         if self.date_picker and self.date_picker.visible:
              # Add logic if DatePicker had proper hit testing exposed
              pass
@@ -980,7 +994,6 @@ class SolarSystemScene:
                 action = self.sidebar_panel.handle_click(x - sx, y - sy)
                 if action == "tab_changed":
                     return True
-                # Consume clicks
                 return True
 
         # 3. Check Unified Controls
@@ -993,30 +1006,38 @@ class SolarSystemScene:
                 rel_y = y - cy
                 
                 # A. Navigation Modes (Left) [20, 20] -> width ~300
-                if 20 <= rel_x <= 350 and 20 <= rel_y <= 90:
+                if 20 <= rel_x <= 350 and 20 <= rel_y <= 80:
                     idx = (rel_x - 20) // 80
                     if 0 <= idx < len(self.unified_controls.modes):
                         self.unified_controls.set_mode(self.unified_controls.modes[idx])
                     return True
 
-                # B. View Settings (Right)
-                set_x = cw - 250
-                if rel_x >= set_x and 20 <= rel_y <= 90:
+                # B. Buttons (Left, below modes)
+                if 20 <= rel_x <= 350 and 80 <= rel_y <= 120:
+                     bx = 20
+                     for btn in self.unified_controls.buttons:
+                         if bx <= rel_x <= bx + btn.width:
+                             if btn.action == "reset_view":
+                                 self.renderer.camera.reset()
+                             return True
+                         bx += btn.width + 10
+
+                # C. View Settings (Right)
+                set_x = cw - 350
+                if rel_x >= set_x:
                     # Checkboxes
-                    # 2 columns: col1 at 0, col2 at 120 relative to set_x
-                    # row height 20 start at y=45 relative to panel
-                    if rel_y > 45:
-                        row = (rel_y - 45) // 20
-                        col = 0 if (rel_x - set_x) < 120 else 1
+                    # 2 columns: col1 at 0, col2 at 160 relative to set_x
+                    # row height 30 start at y=55 relative to panel
+                    start_y = 55
+                    if rel_y >= start_y:
+                        row = (rel_y - start_y) // 30
+                        col = 0 if (rel_x - set_x) < 160 else 1
                         idx = row * 2 + col
                         action = self.unified_controls.toggle_checkbox(int(idx))
                         if action:
                             self._handle_setting_action(action)
                     return True
                 
-                # C. Time Controls (Center) - Let clicks pass through or handle simpler?
-                # scene.py input handler deals with time nav via keys mostly, 
-                # but if we had buttons we'd check them here.
                 return True
 
         return False
@@ -1024,7 +1045,7 @@ class SolarSystemScene:
     def _handle_setting_action(self, action: str):
         if action == "toggle_orbits":
             self.view_state.show_orbits = not self.view_state.show_orbits
-            self.renderer.settings.show_orbits = self.view_state.show_orbits
+            # self.renderer.settings.show_orbits = self.view_state.show_orbits
         elif action == "toggle_labels":
             self.view_state.show_labels = not self.view_state.show_labels
             self.renderer.settings.show_labels = self.view_state.show_labels
@@ -1032,3 +1053,12 @@ class SolarSystemScene:
             self.renderer.settings.show_grid = not self.renderer.settings.show_grid
         elif action == "toggle_stereo":
             self.settings.stereo_view = not self.settings.stereo_view
+        # Granular
+        elif action == "toggle_inner":
+            self.view_state.show_inner_planets = not self.view_state.show_inner_planets
+        elif action == "toggle_outer":
+            self.view_state.show_outer_planets = not self.view_state.show_outer_planets
+        elif action == "toggle_dwarf":
+            self.view_state.show_dwarf_planets = not self.view_state.show_dwarf_planets
+        elif action == "toggle_moons":
+            self.view_state.show_minor_bodies = not self.view_state.show_minor_bodies

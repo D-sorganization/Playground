@@ -22,10 +22,10 @@ class PanelStyle:
     text_color: tuple[int, int, int] = (220, 220, 220)
     title_color: tuple[int, int, int] = (255, 255, 100)
     border_color: tuple[float, float, float, float] = (0.3, 0.3, 0.4, 0.5)
-    padding: int = 10
-    line_height: int = 18
-    font_size: int = 12
-    title_font_size: int = 14
+    padding: int = 15
+    line_height: int = 24
+    font_size: int = 26  # Increased from 12
+    title_font_size: int = 32  # Increased from 14
 
 
 class InfoPanel:
@@ -92,6 +92,7 @@ class InfoPanel:
             "style": self.style,
             "visible": self.visible,
         }
+
 
 
 class StatusBar:
@@ -835,6 +836,12 @@ class SidebarPanel:
             "visible": self.visible
         }
 
+@dataclass
+class Button:
+    label: str
+    action: str
+    width: int = 100
+
 class UnifiedControlPanel:
     """
     Combined Bottom Control Panel
@@ -843,15 +850,19 @@ class UnifiedControlPanel:
     def __init__(self, position: tuple[int, int] = (0, 0), width: int = 800, style: PanelStyle = None):
         self.position = position
         self.width = width
-        self.height = 100
+        self.height = 140 # Increased height for more toggles
         self.style = style or PanelStyle()
         self.visible = True
         self.checkboxes: list[Checkbox] = []
         self.modes = ["Orbit", "Pan", "Zoom"]
         self.current_mode_index = 0
+        self.buttons: list[Button] = []
         
     def add_checkbox(self, label: str, checked: bool, action: str):
         self.checkboxes.append(Checkbox(label, checked, action))
+        
+    def add_button(self, label: str, action: str):
+         self.buttons.append(Button(label, action))
         
     def toggle_checkbox(self, index: int) -> str | None:
         if 0 <= index < len(self.checkboxes):
@@ -872,6 +883,7 @@ class UnifiedControlPanel:
             "width": self.width,
             "height": self.height,
             "checkboxes": self.checkboxes,
+            "buttons": self.buttons,
             "modes": self.modes,
             "current_mode_index": self.current_mode_index,
             "style": self.style,

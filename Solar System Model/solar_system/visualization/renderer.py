@@ -245,12 +245,15 @@ class Renderer:
         self.clock = pygame.time.Clock()
 
         # Initialize fonts
+        # Initialize fonts
         try:
-            self._font = pygame.font.SysFont("Arial", 16)
-            self._small_font = pygame.font.SysFont("Arial", 12)
+            self._font = pygame.font.SysFont("segoeui", 28, bold=True)
+            self._small_font = pygame.font.SysFont("segoeui", 20)
+            self._title_font = pygame.font.SysFont("segoeui", 32, bold=True)
         except Exception:
-            self._font = pygame.font.Font(None, 16)
-            self._small_font = pygame.font.Font(None, 12)
+            self._font = pygame.font.Font(None, 28)
+            self._small_font = pygame.font.Font(None, 20)
+            self._title_font = pygame.font.Font(None, 32)
 
         # OpenGL setup
         self._setup_opengl()
@@ -1779,7 +1782,8 @@ class Renderer:
             mode_x += 80 # horizontal layout
 
         # 2. View Settings (Right)
-        set_x = x + width - 250
+        # Shift slightly left to accommodate more content
+        set_x = x + width - 350
         set_y = y + 20
         title_surface = self._small_font.render("VIEW SETTINGS", True, (100, 200, 255))
         w, h = title_surface.get_size()
@@ -1787,17 +1791,17 @@ class Renderer:
         glRasterPos2i(int(set_x), int(set_y + h))
         glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, text_data)
         
-        set_y += 25
+        set_y += 35 # More spacing
         col_1_x = set_x
-        col_2_x = set_x + 120
+        col_2_x = set_x + 160 # Wider column spacing
         
         for i, cb in enumerate(checkboxes):
             # 2 columns
             cx = col_1_x if i % 2 == 0 else col_2_x
-            cy = set_y + (i // 2) * 20
+            cy = set_y + (i // 2) * 30 # Increased row height
             
             color = (255, 255, 255) if cb.checked else (150, 150, 150)
-            marker = "[x]" if cb.checked else "[ ]"
+            marker = "☑" if cb.checked else "☐"
             label = f"{marker} {cb.label}"
             
             s = self._small_font.render(label, True, color)
@@ -1805,6 +1809,32 @@ class Renderer:
             d = pygame.image.tostring(s, "RGBA", True)
             glRasterPos2i(int(cx), int(cy + hd))
             glDrawPixels(wd, hd, GL_RGBA, GL_UNSIGNED_BYTE, d)
+
+        # 3. Action Buttons (e.g. Reset View) - placed near Modes or Time
+        btn_x = x + 20
+        btn_y = y + 80
+        
+        buttons = ctrl_data.get("buttons", [])
+        for btn in buttons:
+            # Draw Button BG
+            glColor4f(0.2, 0.4, 0.6, 0.8)
+            glBegin(GL_QUADS)
+            glVertex2f(btn_x, btn_y)
+            glVertex2f(btn_x + btn.width, btn_y)
+            glVertex2f(btn_x + btn.width, btn_y + 30)
+            glVertex2f(btn_x, btn_y + 30)
+            glEnd()
+            
+            # Text
+            s = self._small_font.render(btn.label, True, (255, 255, 255))
+            wd, hd = s.get_size()
+            d = pygame.image.tostring(s, "RGBA", True)
+            text_pos_x = btn_x + (btn.width - wd) // 2
+            text_pos_y = btn_y + (30 - hd) // 2
+            glRasterPos2i(int(text_pos_x), int(text_pos_y + hd))
+            glDrawPixels(wd, hd, GL_RGBA, GL_UNSIGNED_BYTE, d)
+            
+            btn_x += btn.width + 10
 
         # 3. Time Controls (Center)
         # We render the text status here, buttons are rendered by separate call usually
