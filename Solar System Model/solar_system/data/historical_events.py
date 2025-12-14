@@ -209,7 +209,8 @@ SPACE_EVENTS = [
         "day": 25,
         "title": "Voyager 2 at Neptune",
         "description": (
-            "Completes grand tour, discovers Great Dark Spot and active geysers on " "Triton"
+            "Completes grand tour, discovers Great Dark Spot and active geysers on "
+            "Triton"
         ),
         "category": "mission",
     },
@@ -448,12 +449,16 @@ def get_events_for_date(dt: datetime, window_days: int = 3) -> list[dict[str, An
         # Also check adjacent months if within window
         # Handle month wrapping (December <-> January)
         month_diff = abs(event["month"] - dt.month)
-        is_adjacent = (month_diff == 1) or (month_diff == 11)  # 11 handles Dec->Jan or Jan->Dec
+        is_adjacent = (month_diff == 1) or (
+            month_diff == 11
+        )  # 11 handles Dec->Jan or Jan->Dec
 
         if is_adjacent:
             # Calculate day difference across month boundary
             # Use calendar module to get actual days in month
-            if event["month"] == dt.month + 1 or (dt.month == 12 and event["month"] == 1):
+            if event["month"] == dt.month + 1 or (
+                dt.month == 12 and event["month"] == 1
+            ):
                 # Event is in next month
                 days_in_current = monthrange(dt.year, dt.month)[1]
                 day_diff = (days_in_current - dt.day) + event["day"]

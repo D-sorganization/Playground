@@ -137,7 +137,9 @@ class TrajectoryPlanner:
         """
         self.mu = central_body_mu if central_body_mu is not None else GM["Sun"]
 
-    def hohmann_transfer(self, r1: float, r2: float) -> tuple[float, float, float, float]:
+    def hohmann_transfer(
+        self, r1: float, r2: float
+    ) -> tuple[float, float, float, float]:
         """
         Calculate Hohmann transfer parameters between circular orbits.
 
@@ -253,7 +255,9 @@ class TrajectoryPlanner:
 
         return delta_v1, delta_v2, delta_v3, total_tof
 
-    def synodic_period_planets(self, origin: CelestialBody, destination: CelestialBody) -> float:
+    def synodic_period_planets(
+        self, origin: CelestialBody, destination: CelestialBody
+    ) -> float:
         """
         Calculate the synodic period between two planets.
 
@@ -314,7 +318,9 @@ class TrajectoryPlanner:
             dest_state = destination.get_state_at_time(current_date)
 
             # Calculate current phase angle
-            phase = OrbitalMechanics.phase_angle(origin_state.position, dest_state.position)
+            phase = OrbitalMechanics.phase_angle(
+                origin_state.position, dest_state.position
+            )
             phase_deg = math.degrees(phase)
 
             # Check if phase angle is close to ideal
@@ -369,7 +375,9 @@ class TrajectoryPlanner:
         if transfer_type == TransferType.HOHMANN:
             return self._calculate_hohmann(origin, destination, departure_date, r1, r2)
         elif transfer_type == TransferType.BI_ELLIPTIC:
-            return self._calculate_bi_elliptic(origin, destination, departure_date, r1, r2)
+            return self._calculate_bi_elliptic(
+                origin, destination, departure_date, r1, r2
+            )
         elif transfer_type == TransferType.GRAVITY_ASSIST:
             raise ValueError("Use calculate_gravity_assist to specify an assist body")
         else:
@@ -460,7 +468,9 @@ class TrajectoryPlanner:
 
         # Calculate intermediate maneuver time
         a1 = (r1 + r_intermediate) / 2
-        t_intermediate = OrbitalMechanics.orbital_period(a1, self.mu) / 2 / SECONDS_PER_DAY
+        t_intermediate = (
+            OrbitalMechanics.orbital_period(a1, self.mu) / 2 / SECONDS_PER_DAY
+        )
         intermediate_date = departure_date + t_intermediate
 
         v_unit = origin_state.velocity / np.linalg.norm(origin_state.velocity)
@@ -519,7 +529,9 @@ class TrajectoryPlanner:
 
         flyby_radius = (assist_body.radius + periapsis_altitude_km) * 1000.0
         flyby_speed = (
-            math.sqrt(max(assist_body.gm, 0.0) / flyby_radius) if assist_body.gm > 0 else 0.0
+            math.sqrt(max(assist_body.gm, 0.0) / flyby_radius)
+            if assist_body.gm > 0
+            else 0.0
         )
         assist_heliocentric_speed = np.linalg.norm(
             assist_body.get_state_at_time(assist_arrival).velocity
@@ -533,7 +545,9 @@ class TrajectoryPlanner:
         )
 
         assist_bonus = flyby_speed + assist_heliocentric_speed * 0.3
-        total_delta_v = max(first_leg.total_delta_v + second_leg.total_delta_v - assist_bonus, 0.0)
+        total_delta_v = max(
+            first_leg.total_delta_v + second_leg.total_delta_v - assist_bonus, 0.0
+        )
 
         maneuvers = first_leg.maneuvers + second_leg.maneuvers
         trajectory_points = first_leg.trajectory_points + second_leg.trajectory_points
@@ -642,9 +656,7 @@ class TrajectoryPlanner:
             vz = 0.0
 
             # 4. Time
-            E = 2 * math.atan2(
-                sqrt_1_minus_e * sin_nu_2, sqrt_1_plus_e * cos_nu_2
-            )
+            E = 2 * math.atan2(sqrt_1_minus_e * sin_nu_2, sqrt_1_plus_e * cos_nu_2)
             M = E - e * math.sin(E)
 
             delta_M = M - M_start

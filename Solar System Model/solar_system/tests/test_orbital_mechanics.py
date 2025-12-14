@@ -6,8 +6,6 @@ by comparing calculated values against known astronomical data.
 """
 
 import math
-import os
-import sys
 import unittest
 
 import numpy as np

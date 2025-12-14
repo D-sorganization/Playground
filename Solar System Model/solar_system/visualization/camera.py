@@ -129,7 +129,9 @@ class Camera:
         self.near = state.near
         self.far = state.far
 
-    def stereo_states(self, eye_separation: float = 0.4) -> tuple[CameraState, CameraState]:
+    def stereo_states(
+        self, eye_separation: float = 0.4
+    ) -> tuple[CameraState, CameraState]:
         """Generate left/right stereo eye offsets for VR-style rendering."""
 
         base = self.snapshot()
@@ -213,7 +215,9 @@ class Camera:
         self._elevation += delta_elevation * self.rotate_speed
 
         # Clamp elevation to prevent flipping
-        self._elevation = np.clip(self._elevation, -math.pi / 2 + 0.01, math.pi / 2 - 0.01)
+        self._elevation = np.clip(
+            self._elevation, -math.pi / 2 + 0.01, math.pi / 2 - 0.01
+        )
 
         self._update_position_from_angles()
 
@@ -228,70 +232,88 @@ class Camera:
         self._distance = np.clip(self._distance, self.min_distance, self.max_distance)
         self._update_position_from_angles()
 
-    def zoom_at(self, delta: float, mouse_ndc: tuple[float, float], aspect_ratio: float):
+    def zoom_at(
+        self, delta: float, mouse_ndc: tuple[float, float], aspect_ratio: float
+    ):
         """
         Zoom towards a specific point on the screen (mouse cursor).
 
         Args:
-           delta: Zoom amount.
+           delta: Zoom amount (positive = zoom in, negative = zoom out).
            mouse_ndc: Mouse coordinates in Normalized Device Coordinates (-1 to 1).
            aspect_ratio: Screen aspect ratio.
         """
         factor = 1.0 - delta * self.zoom_speed
         new_distance = self._distance * factor
         new_distance = np.clip(new_distance, self.min_distance, self.max_distance)
-        
+
         # Calculate how much we zoomed
-        if self._distance > 0:
-            actual_factor = new_distance / self._distance
-        else:
-            actual_factor = 1.0
-            
+        # Calculate how much we zoomed
+        actual_factor = new_distance / self._distance if self._distance > 0 else 1.0
+
         # If zooming in (factor < 1), we want to move the target towards the mouse ray
         # If zooming out, we usually just pull back
-        
+
         # Simplified "zoom to cursor" for orbit camera:
         # We need to pan the camera so the point under cursor remains stable.
         # This effectively shifts the 'target'
-        
+
         # Calculate Right and Up vectors
         forward = self.target - self.position
         forward_norm = np.linalg.norm(forward)
         if forward_norm > 0:
             forward /= forward_norm
-            
+        else:
+            forward = np.array([0, 0, -1])
+
         right = np.cross(forward, self.up)
-        right /= np.linalg.norm(right)
-        
+        right_norm = np.linalg.norm(right)
+
+        if right_norm > 1e-6:
+            right /= right_norm
+        else:
+            # Handle degenerate case (looking straight up/down)
+            # Choose an arbitrary "right" vector orthogonal to forward
+            if abs(forward[1]) < 0.99:
+                right = np.cross(forward, np.array([0, 1, 0]))
+            else:
+                right = np.array([1, 0, 0])
+
+            # Re-normalize just in case
+            rn = np.linalg.norm(right)
+            if rn > 0:
+                right /= rn
+
         up = np.cross(right, forward)
-        
+
         # Calculate viewport dimensions at the target depth
         # box height at distance D = 2 * D * tan(fov/2)
         fov_rad = math.radians(self.fov)
         view_height = 2.0 * self._distance * math.tan(fov_rad / 2.0)
         view_width = view_height * aspect_ratio
-        
+
         # Mouse offset from center (0,0) in NDC
         mx, my = mouse_ndc
-        
+
         # Calculate shift in world space
-        # We want to shift the target such that the point under cursor stays fixed relative to camera frame?
-        # Actually, standard "Google Earth" style: 
+        # We want to shift the target such that the point under cursor stays
+        # fixed relative to camera frame?
+        # Actually, standard "Google Earth" style:
         # offset = (mouse_pos_world_on_plane - camera_pos) * (1 - scale_factor)
-        
+
         # Shift amount in camera plane
         shift_x = mx * (view_width / 2.0) * (1 - actual_factor)
         shift_y = my * (view_height / 2.0) * (1 - actual_factor)
-        
+
         offset = right * shift_x + up * shift_y
-        
+
         self.target += offset
         self.position += offset
-        
+
         # Apply distance change
         self._distance = new_distance
         self._update_position_from_angles()
-        
+
     def pan(self, delta_x: float, delta_y: float):
         """
         Pan the camera (move target and position together).
@@ -343,9 +365,12 @@ class Camera:
         # Handle smooth animation
         if self._animating:
             self.position = (
-                self.position + (self._target_position - self.position) * self.smooth_factor
+                self.position
+                + (self._target_position - self.position) * self.smooth_factor
             )
-            self.target = self.target + (self._target_target - self.target) * self.smooth_factor
+            self.target = (
+                self.target + (self._target_target - self.target) * self.smooth_factor
+            )
 
             if np.linalg.norm(self.position - self._target_position) < 0.01:
                 self._animating = False
@@ -362,14 +387,18 @@ class Camera:
             else:
                 forward = np.array([1, 0, 0])
 
-            camera_offset = -forward * self._distance + np.array([0, self._distance * 0.3, 0])
+            camera_offset = -forward * self._distance + np.array(
+                [0, self._distance * 0.3, 0]
+            )
 
             self._target_target = body_pos
             self._target_position = body_pos + camera_offset
 
             # Smooth follow
             self.target = self.target + (self._target_target - self.target) * 0.1
-            self.position = self.position + (self._target_position - self.position) * 0.1
+            self.position = (
+                self.position + (self._target_position - self.position) * 0.1
+            )
 
         elif self.mode == CameraMode.SPACECRAFT_FOLLOW and self.tracked_spacecraft:
             state = self.tracked_spacecraft.get_state_at_time(julian_date)
@@ -381,7 +410,9 @@ class Camera:
             else:
                 forward = np.array([1, 0, 0])
 
-            camera_offset = -forward * self._distance * 0.5 + np.array([0, self._distance * 0.2, 0])
+            camera_offset = -forward * self._distance * 0.5 + np.array(
+                [0, self._distance * 0.2, 0]
+            )
 
             self.target = spacecraft_pos
             self.position = spacecraft_pos + camera_offset
@@ -392,7 +423,9 @@ class Camera:
             earth_pos = state.position * scale
 
             # Position on Earth's surface (simplified)
-            surface_offset = np.array([0.0001, 0, 0])  # Small offset representing surface
+            surface_offset = np.array(
+                [0.0001, 0, 0]
+            )  # Small offset representing surface
 
             self.position = earth_pos + surface_offset
             self.target = earth_pos + np.array([0, 0, 1])  # Looking up

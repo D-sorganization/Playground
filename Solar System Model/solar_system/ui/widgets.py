@@ -94,7 +94,6 @@ class InfoPanel:
         }
 
 
-
 class StatusBar:
     """
     Status bar showing simulation state at bottom of screen.
@@ -246,7 +245,9 @@ class TooltipManager:
         self._hover_time: float = 0.0
         self._show_delay: float = 0.5  # Seconds before showing
 
-    def set_hover(self, body_name: str, position: tuple[int, int], info: dict[str, Any]):
+    def set_hover(
+        self, body_name: str, position: tuple[int, int], info: dict[str, Any]
+    ):
         """
         Set the currently hovered body.
 
@@ -371,7 +372,9 @@ class DateTimePicker:
                 # Validate that the day exists in the current month/year
                 from calendar import monthrange
 
-                max_days = monthrange(self._current_date.year, self._current_date.month)[1]
+                max_days = monthrange(
+                    self._current_date.year, self._current_date.month
+                )[1]
                 if 1 <= value <= max_days:
                     from contextlib import suppress
 
@@ -508,7 +511,9 @@ class EducationalInfoPanel:
         self._fun_facts: list[str] = []
         self._current_fact_index: int = 0
 
-    def set_body(self, name: str, properties: dict[str, Any], fun_facts: list[str] = None):
+    def set_body(
+        self, name: str, properties: dict[str, Any], fun_facts: list[str] = None
+    ):
         """
         Set the celestial body to display information about.
 
@@ -525,7 +530,9 @@ class EducationalInfoPanel:
     def cycle_fact(self):
         """Cycle to the next fun fact."""
         if self._fun_facts:
-            self._current_fact_index = (self._current_fact_index + 1) % len(self._fun_facts)
+            self._current_fact_index = (self._current_fact_index + 1) % len(
+                self._fun_facts
+            )
 
     def get_current_fact(self) -> str | None:
         """Get the currently displayed fun fact."""
@@ -728,75 +735,88 @@ class ImmersionChecklistPanel:
             "visible": self.visible,
         }
 
+
 @dataclass
 class Checkbox:
     label: str
     checked: bool
     action: str
 
+
 class SettingsPanel:
     """
     Panel for configuring simulation settings.
     """
+
     def __init__(self, position: tuple[int, int] = (20, 500), style: PanelStyle = None):
         self.position = position
         self.style = style or PanelStyle()
         self.visible = False
         self.checkboxes: list[Checkbox] = []
-        
+
     def add_checkbox(self, label: str, checked: bool, action: str):
         self.checkboxes.append(Checkbox(label, checked, action))
-        
+
     def toggle_checkbox(self, index: int) -> str | None:
         if 0 <= index < len(self.checkboxes):
             self.checkboxes[index].checked = not self.checkboxes[index].checked
             return self.checkboxes[index].action
         return None
-        
+
     def toggle(self):
         self.visible = not self.visible
-        
+
     def get_render_data(self) -> dict[str, Any]:
         return {
             "position": self.position,
             "checkboxes": self.checkboxes,
             "style": self.style,
-            "visible": self.visible
+            "visible": self.visible,
         }
+
 
 class NavigationPanel:
     """
     Panel for changing navigation/interaction modes.
     """
+
     def __init__(self, position: tuple[int, int] = (20, 300), style: PanelStyle = None):
         self.position = position
         self.style = style or PanelStyle()
         self.visible = True
         self.modes = ["Orbit", "Pan", "Zoom"]
-        self.current_mode_index = 0 # 0=Orbit
-        
+        self.current_mode_index = 0  # 0=Orbit
+
     def set_mode(self, mode_name: str):
         if mode_name in self.modes:
             self.current_mode_index = self.modes.index(mode_name)
-            
+
     def cycle_mode(self) -> str:
         self.current_mode_index = (self.current_mode_index + 1) % len(self.modes)
         return self.modes[self.current_mode_index]
 
     def get_current_mode(self) -> str:
         return self.modes[self.current_mode_index]
-        
+
+
 @dataclass
 class Tab:
     name: str
     content_renderer_key: str  # identify which renderer method to use
-    
+
+
 class SidebarPanel:
     """
     Combined Sidebar Panel (Right side)
     Contains tabs for: Info, Checklist, History
     """
-    def __init__(self, position: tuple[int, int] = (0, 0), height: int = 600, style: PanelStyle = None):
+
+    def __init__(
+        self,
+        position: tuple[int, int] = (0, 0),
+        height: int = 600,
+        style: PanelStyle = None,
+    ):
         self.position = position
         self.width = 380
         self.height = height
@@ -806,9 +826,9 @@ class SidebarPanel:
         self.tabs = [
             Tab("Info", "educational"),
             Tab("Guide", "checklist"),
-            Tab("History", "history")
+            Tab("History", "history"),
         ]
-        
+
     def set_tab(self, index: int):
         if 0 <= index < len(self.tabs):
             self.current_tab_index = index
@@ -816,8 +836,8 @@ class SidebarPanel:
     def handle_click(self, rel_x: int, rel_y: int) -> str | None:
         # Simple tab hit detection
         tab_width = self.width // len(self.tabs)
-        header_height = 30
-        
+        header_height = 35
+
         if rel_y < header_height:
             clicked_index = rel_x // tab_width
             self.set_tab(clicked_index)
@@ -831,10 +851,13 @@ class SidebarPanel:
             "height": self.height,
             "tabs": [t.name for t in self.tabs],
             "current_tab_index": self.current_tab_index,
-            "current_content_key": self.tabs[self.current_tab_index].content_renderer_key,
+            "current_content_key": self.tabs[
+                self.current_tab_index
+            ].content_renderer_key,
             "style": self.style,
-            "visible": self.visible
+            "visible": self.visible,
         }
+
 
 @dataclass
 class Button:
@@ -842,34 +865,41 @@ class Button:
     action: str
     width: int = 100
 
+
 class UnifiedControlPanel:
     """
     Combined Bottom Control Panel
     Contains: Navigation Modes, View Settings, Time Controls
     """
-    def __init__(self, position: tuple[int, int] = (0, 0), width: int = 800, style: PanelStyle = None):
+
+    def __init__(
+        self,
+        position: tuple[int, int] = (0, 0),
+        width: int = 800,
+        style: PanelStyle = None,
+    ):
         self.position = position
         self.width = width
-        self.height = 140 # Increased height for more toggles
+        self.height = 140  # Increased height for more toggles
         self.style = style or PanelStyle()
         self.visible = True
         self.checkboxes: list[Checkbox] = []
         self.modes = ["Orbit", "Pan", "Zoom"]
         self.current_mode_index = 0
         self.buttons: list[Button] = []
-        
+
     def add_checkbox(self, label: str, checked: bool, action: str):
         self.checkboxes.append(Checkbox(label, checked, action))
-        
+
     def add_button(self, label: str, action: str):
-         self.buttons.append(Button(label, action))
-        
+        self.buttons.append(Button(label, action))
+
     def toggle_checkbox(self, index: int) -> str | None:
         if 0 <= index < len(self.checkboxes):
             self.checkboxes[index].checked = not self.checkboxes[index].checked
             return self.checkboxes[index].action
         return None
-        
+
     def set_mode(self, mode_name: str):
         if mode_name in self.modes:
             self.current_mode_index = self.modes.index(mode_name)
@@ -887,5 +917,5 @@ class UnifiedControlPanel:
             "modes": self.modes,
             "current_mode_index": self.current_mode_index,
             "style": self.style,
-            "visible": self.visible
+            "visible": self.visible,
         }

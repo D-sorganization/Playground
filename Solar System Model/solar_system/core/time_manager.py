@@ -66,7 +66,13 @@ class SimulationTime:
         century = int(year / 100)
         correction = 2 - century + int(century / 4)
 
-        jd = int(365.25 * (year + 4716)) + int(30.6001 * (month + 1)) + day + correction - 1524.5
+        jd = (
+            int(365.25 * (year + 4716))
+            + int(30.6001 * (month + 1))
+            + day
+            + correction
+            - 1524.5
+        )
 
         return jd
 
@@ -191,7 +197,9 @@ class TimeManager:
     @time_warp.setter
     def time_warp(self, value: float):
         """Set time warp factor."""
-        self._time_warp = max(-365.25 * SECONDS_PER_DAY, min(value, 365.25 * SECONDS_PER_DAY))
+        self._time_warp = max(
+            -365.25 * SECONDS_PER_DAY, min(value, 365.25 * SECONDS_PER_DAY)
+        )
 
     @property
     def is_paused(self) -> bool:

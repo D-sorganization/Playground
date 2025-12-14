@@ -20,9 +20,9 @@ try:
     from pygame.locals import (
         DOUBLEBUF,
         FULLSCREEN,
-        OPENGL,
         GL_MULTISAMPLEBUFFERS,
         GL_MULTISAMPLESAMPLES,
+        OPENGL,
     )
 
     PYGAME_AVAILABLE = True
@@ -416,16 +416,31 @@ class Renderer:
         """Build a star field from the curated catalog for accurate sky matches."""
 
         self.star_vertices = build_star_vertices(iter_catalog())
+        # Sort by magnitude for efficient state switching if we were using variable point sizes
+        # However, to be maximally efficient with glBegin/glEnd as requested, we should batch them.
+        # But point_size_from_magnitude returns variable sizes.
+        # We will group stars by size bin to minimize state changes.
+
+        # Group stars by integer point size for batching
+        stars_by_size = {}
+        for star in self.star_vertices:
+            size = int(point_size_from_magnitude(star.magnitude))
+            if size not in stars_by_size:
+                stars_by_size[size] = []
+            stars_by_size[size].append(star)
+
         self._star_list = glGenLists(1)
         glNewList(self._star_list, GL_COMPILE)
-
         glDisable(GL_LIGHTING)
-        for star in self.star_vertices:
-            glPointSize(point_size_from_magnitude(star.magnitude))
+
+        for size, stars in stars_by_size.items():
+            glPointSize(float(size))
             glBegin(GL_POINTS)
-            glColor3f(*star.color)
-            glVertex3f(*star.position)
+            for star in stars:
+                glColor3f(*star.color)
+                glVertex3f(*star.position)
             glEnd()
+
         glEnable(GL_LIGHTING)
         glEndList()
 
@@ -460,7 +475,9 @@ class Renderer:
         if self._star_list:
             glCallList(self._star_list)
 
-    def render_body(self, body: CelestialBody, julian_date: float, highlight: bool = False):
+    def render_body(
+        self, body: CelestialBody, julian_date: float, highlight: bool = False
+    ):
         """
         Render a celestial body.
 
@@ -581,7 +598,9 @@ class Renderer:
         if color is None:
             # Use body color with reduced alpha
             body_color = body.color
-            glColor4f(body_color[0] * 0.6, body_color[1] * 0.6, body_color[2] * 0.6, 0.4)
+            glColor4f(
+                body_color[0] * 0.6, body_color[1] * 0.6, body_color[2] * 0.6, 0.4
+            )
         else:
             glColor4f(*color)
 
@@ -774,17 +793,17 @@ class Renderer:
         # Check for overlaps and adjust
         rect = pygame.Rect(position[0], position[1], width, height)
         original_y = rect.y
-        
+
         # Try a few offsets if overlapping
         offsets = [0, height + 2, -(height + 2), (height + 2) * 2]
-        
+
         final_pos = position
         found_spot = False
-        
+
         for offset in offsets:
             test_rect = rect.copy()
             test_rect.y = original_y + offset
-            
+
             # constrain to screen
             if test_rect.top < 0 or test_rect.bottom > self.settings.window_height:
                 continue
@@ -794,20 +813,18 @@ class Renderer:
                 if test_rect.colliderect(other_rect):
                     collision = True
                     break
-            
+
             if not collision:
                 rect = test_rect
                 final_pos = (rect.x, rect.y)
                 found_spot = True
                 break
-        
+
         if not found_spot:
-            # If we simply can't find a spot, draw it anyway but maybe dimmed? 
-            # Or just draw it at original pos (overlap is better than missing sometimes)
-            # The prompt specifically asked to fix overlap.
-            # Let's default to original position but maybe shift slightly right
-            pass
-            
+            # If we simply can't find a spot, draw it anyway at original position
+            # This ensures labels are never missing, even if overlapping
+            final_pos = position
+
         self.drawn_labels.append(rect)
 
         # Draw as texture
@@ -822,7 +839,9 @@ class Renderer:
         glMatrixMode(GL_MODELVIEW)
         glPopMatrix()
 
-    def render_info_panel(self, info: dict[str, Any], position: tuple[int, int] = (20, 20)):
+    def render_info_panel(
+        self, info: dict[str, Any], position: tuple[int, int] = (20, 20)
+    ):
         """Render an information panel overlay."""
         x, y = position
         line_height = 20
@@ -917,10 +936,16 @@ class Renderer:
         glMatrixMode(GL_MODELVIEW)
         glPopMatrix()
 
-    def render_help_overlay(self, controls: list[tuple[str, str]]):
+    def render_help_overlay(self, help_data: dict[str, Any]):
         """Render help overlay with control instructions."""
-        x = self.settings.window_width - 350
-        y = 20
+        if not help_data.get("visible", False):
+            return
+
+        controls = help_data.get("controls", [])
+        if not controls:
+            return
+
+        x, y = help_data.get("position") or (self.settings.window_width - 350, 20)
         line_height = 20
 
         glMatrixMode(GL_PROJECTION)
@@ -958,7 +983,9 @@ class Renderer:
         glEnd()
 
         # Title
-        title_surface = self._font.render("CONTROLS (Press H to hide)", True, (100, 200, 255))
+        title_surface = self._font.render(
+            "CONTROLS (Press H to hide)", True, (100, 200, 255)
+        )
         title_data = pygame.image.tostring(title_surface, "RGBA", True)
         w, h = title_surface.get_size()
         glRasterPos2i(x, y + h)
@@ -979,7 +1006,9 @@ class Renderer:
                     text = f"{key}: {action}"
                     text_surface = self._small_font.render(text, True, (220, 220, 220))
                 else:  # No key, just action
-                    text_surface = self._small_font.render(action, True, (180, 180, 180))
+                    text_surface = self._small_font.render(
+                        action, True, (180, 180, 180)
+                    )
 
             text_data = pygame.image.tostring(text_surface, "RGBA", True)
             w, h = text_surface.get_size()
@@ -1453,7 +1482,7 @@ class Renderer:
 
         x, y = settings_data.get("position", (20, 500))
         checkboxes = settings_data.get("checkboxes", [])
-        
+
         # Dimensions
         width = 200
         line_height = 24
@@ -1481,7 +1510,7 @@ class Renderer:
         glVertex2f(x + width, y + height)
         glVertex2f(x - 5, y + height)
         glEnd()
-        
+
         # Border
         glColor4f(0.5, 0.5, 0.6, 0.8)
         glLineWidth(1)
@@ -1503,19 +1532,18 @@ class Renderer:
         current_y = y + header_height
         for cb in checkboxes:
             # Draw box
-            box_color = (100, 255, 100) if cb.checked else (100, 100, 100)
             text_color = (255, 255, 255) if cb.checked else (180, 180, 180)
-            
+
             marker = "[x]" if cb.checked else "[ ]"
             label = f"{marker} {cb.label}"
-            
+
             text_surface = self._small_font.render(label, True, text_color)
             text_data = pygame.image.tostring(text_surface, "RGBA", True)
             w, h = text_surface.get_size()
-            
+
             glRasterPos2i(x + 5, current_y + 15)
             glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, text_data)
-            
+
             current_y += line_height
 
         glEnable(GL_DEPTH_TEST)
@@ -1534,7 +1562,7 @@ class Renderer:
         x, y = nav_data.get("position", (20, 300))
         modes = nav_data.get("modes", [])
         current_index = nav_data.get("current_mode_index", 0)
-        
+
         # Dimensions
         width = 150
         line_height = 24
@@ -1562,7 +1590,7 @@ class Renderer:
         glVertex2f(x + width, y + height)
         glVertex2f(x - 5, y + height)
         glEnd()
-        
+
         # Border
         glColor4f(0.5, 0.5, 0.6, 0.8)
         glLineWidth(1)
@@ -1583,19 +1611,19 @@ class Renderer:
         # Modes
         current_y = y + header_height
         for i, mode in enumerate(modes):
-            is_active = (i == current_index)
+            is_active = i == current_index
             text_color = (100, 255, 100) if is_active else (180, 180, 180)
             prefix = ">> " if is_active else "   "
-            
+
             label = f"{prefix}{mode}"
-            
+
             text_surface = self._small_font.render(label, True, text_color)
             text_data = pygame.image.tostring(text_surface, "RGBA", True)
             w, h = text_surface.get_size()
-            
+
             glRasterPos2i(x + 5, current_y + 15)
             glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, text_data)
-            
+
             current_y += line_height
 
         glEnable(GL_DEPTH_TEST)
@@ -1606,7 +1634,9 @@ class Renderer:
         glMatrixMode(GL_MODELVIEW)
         glPopMatrix()
 
-    def render_sidebar(self, sidebar_data: dict[str, Any], content_data: dict[str, Any]):
+    def render_sidebar(
+        self, sidebar_data: dict[str, Any], content_data: dict[str, Any]
+    ):
         """Render the unified sidebar."""
         if not sidebar_data.get("visible", False):
             return
@@ -1638,7 +1668,7 @@ class Renderer:
         glVertex2f(x + width, y + height)
         glVertex2f(x, y + height)
         glEnd()
-        
+
         # Border
         glColor4f(0.3, 0.5, 0.7, 0.5)
         glLineWidth(2)
@@ -1652,24 +1682,24 @@ class Renderer:
         # Tabs Header
         header_height = 35
         tab_width = width / len(tabs) if tabs else 10
-        
+
         for i, tab_name in enumerate(tabs):
             tab_x = x + i * tab_width
-            is_active = (i == current_tab)
-            
+            is_active = i == current_tab
+
             # Tab Background
             if is_active:
                 glColor4f(0.2, 0.3, 0.4, 0.9)
             else:
                 glColor4f(0.1, 0.15, 0.2, 0.8)
-                
+
             glBegin(GL_QUADS)
             glVertex2f(tab_x, y)
             glVertex2f(tab_x + tab_width, y)
             glVertex2f(tab_x + tab_width, y + header_height)
             glVertex2f(tab_x, y + header_height)
             glEnd()
-            
+
             # Active indicator line
             if is_active:
                 glColor4f(0.4, 0.8, 1.0, 1.0)
@@ -1678,7 +1708,7 @@ class Renderer:
                 glVertex2f(tab_x, y + header_height)
                 glVertex2f(tab_x + tab_width, y + header_height)
                 glEnd()
-            
+
             # Tab Text
             color = (255, 255, 255) if is_active else (150, 150, 150)
             text_surface = self._font.render(tab_name, True, color)
@@ -1701,14 +1731,14 @@ class Renderer:
 
         # Render Content based on active tab
         content_pos = (x + 10, y + header_height + 10)
-        
+
         # We assume the content dictionary is passed correctly for the active tab
         if content_data:
             # Override position to fit in sidebar
-            content_data['position'] = content_pos
-            content_data['width'] = width - 20
-            content_data['visible'] = True # Force visible since tab is active
-            
+            content_data["position"] = content_pos
+            content_data["width"] = width - 20
+            content_data["visible"] = True  # Force visible since tab is active
+
             if content_key == "educational":
                 self.render_educational_panel(content_data)
             elif content_key == "checklist":
@@ -1716,7 +1746,9 @@ class Renderer:
             elif content_key == "history":
                 self.render_historical_events(content_data)
 
-    def render_unified_controls(self, ctrl_data: dict[str, Any], time_data: dict[str, Any]):
+    def render_unified_controls(
+        self, ctrl_data: dict[str, Any], time_data: dict[str, Any]
+    ):
         """Render the bottom unified control panel."""
         if not ctrl_data.get("visible", False):
             return
@@ -1748,7 +1780,7 @@ class Renderer:
         glVertex2f(x + width, y + height)
         glVertex2f(x, y + height)
         glEnd()
-        
+
         # Top Border
         glColor4f(0.4, 0.8, 1.0, 0.6)
         glLineWidth(2)
@@ -1758,7 +1790,7 @@ class Renderer:
         glEnd()
 
         # Layout: Left side = Modes, Middle = Time (passed in), Right = Settings
-        
+
         # 1. Navigation Modes (Left)
         mode_x = x + 20
         mode_y = y + 20
@@ -1767,19 +1799,19 @@ class Renderer:
         text_data = pygame.image.tostring(title_surface, "RGBA", True)
         glRasterPos2i(int(mode_x), int(mode_y + h))
         glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, text_data)
-        
+
         mode_y += 25
         for i, mode in enumerate(modes):
             color = (100, 255, 100) if i == curr_mode else (150, 150, 150)
             prefix = "● " if i == curr_mode else "○ "
             label = f"{prefix}{mode}"
-            
+
             s = self._small_font.render(label, True, color)
             wd, hd = s.get_size()
             d = pygame.image.tostring(s, "RGBA", True)
             glRasterPos2i(int(mode_x), int(mode_y + hd))
             glDrawPixels(wd, hd, GL_RGBA, GL_UNSIGNED_BYTE, d)
-            mode_x += 80 # horizontal layout
+            mode_x += 80  # horizontal layout
 
         # 2. View Settings (Right)
         # Shift slightly left to accommodate more content
@@ -1790,20 +1822,20 @@ class Renderer:
         text_data = pygame.image.tostring(title_surface, "RGBA", True)
         glRasterPos2i(int(set_x), int(set_y + h))
         glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, text_data)
-        
-        set_y += 35 # More spacing
+
+        set_y += 35  # More spacing
         col_1_x = set_x
-        col_2_x = set_x + 160 # Wider column spacing
-        
+        col_2_x = set_x + 160  # Wider column spacing
+
         for i, cb in enumerate(checkboxes):
             # 2 columns
             cx = col_1_x if i % 2 == 0 else col_2_x
-            cy = set_y + (i // 2) * 30 # Increased row height
-            
+            cy = set_y + (i // 2) * 30  # Increased row height
+
             color = (255, 255, 255) if cb.checked else (150, 150, 150)
             marker = "☑" if cb.checked else "☐"
             label = f"{marker} {cb.label}"
-            
+
             s = self._small_font.render(label, True, color)
             wd, hd = s.get_size()
             d = pygame.image.tostring(s, "RGBA", True)
@@ -1813,7 +1845,7 @@ class Renderer:
         # 3. Action Buttons (e.g. Reset View) - placed near Modes or Time
         btn_x = x + 20
         btn_y = y + 80
-        
+
         buttons = ctrl_data.get("buttons", [])
         for btn in buttons:
             # Draw Button BG
@@ -1824,7 +1856,7 @@ class Renderer:
             glVertex2f(btn_x + btn.width, btn_y + 30)
             glVertex2f(btn_x, btn_y + 30)
             glEnd()
-            
+
             # Text
             s = self._small_font.render(btn.label, True, (255, 255, 255))
             wd, hd = s.get_size()
@@ -1833,17 +1865,15 @@ class Renderer:
             text_pos_y = btn_y + (30 - hd) // 2
             glRasterPos2i(int(text_pos_x), int(text_pos_y + hd))
             glDrawPixels(wd, hd, GL_RGBA, GL_UNSIGNED_BYTE, d)
-            
+
             btn_x += btn.width + 10
 
         # 3. Time Controls (Center)
         # We render the text status here, buttons are rendered by separate call usually
         # but let's draw a nice container for them
-        center_x = x + width // 2
-        time_msg = "Time Controls (Center)"
-        # Note: scene.py will handle calling the actual time nav renderer locally 
+        # Note: scene.py will handle calling the actual time nav renderer locally
         # but we provide the visual container here.
-        
+
         glEnable(GL_DEPTH_TEST)
         glEnable(GL_LIGHTING)
         glMatrixMode(GL_PROJECTION)

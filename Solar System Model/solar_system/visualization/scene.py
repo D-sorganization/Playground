@@ -34,9 +34,9 @@ from ..physics.trajectory_planner import (
     TransferType,
 )
 from ..ui.widgets import (
-    Checkbox,
     DateTimePicker,
     EducationalInfoPanel,
+    HelpOverlay,
     HistoricalEventsPanel,
     ImmersionChecklistPanel,
     NavigationPanel,
@@ -59,12 +59,12 @@ try:
         K_HOME,
         K_KP_MINUS,
         K_KP_PLUS,
-        K_PAGEUP,
         K_LEFTBRACKET,
         K_MINUS,
+        K_PAGEDOWN,
+        K_PAGEUP,
         K_PERIOD,
         K_PLUS,
-        K_PAGEDOWN,
         K_RIGHTBRACKET,
         K_SPACE,
         KEYDOWN,
@@ -188,20 +188,22 @@ class SolarSystemScene:
         self.date_picker: DateTimePicker | None = None
         # self.time_nav_panel is now visually inside UnifiedControlPanel but kept for logic
         self.time_nav_panel: TimeNavigationPanel | None = None
-        
+
         # New Container Panels
         self.sidebar_panel: SidebarPanel | None = None
         self.unified_controls: UnifiedControlPanel | None = None
-        
+
         # Child panels (kept for logic/data, managed by containers for rendering state)
         self.educational_panel: EducationalInfoPanel | None = None
         self.historical_events: HistoricalEventsPanel | None = None
         self.immersion_checklist: ImmersionChecklistPanel | None = None
-        
+
         # Legacy references (set to None or removed)
         self.settings_panel: SettingsPanel | None = None
         self.nav_mode_panel: NavigationPanel | None = None
-        
+
+        self.help_overlay: HelpOverlay | None = None
+
         self._last_ui_sync_jd: float | None = None
 
     def initialize(self) -> bool:
@@ -226,7 +228,7 @@ class SolarSystemScene:
 
     def _initialize_ui_widgets(self):
         """Initialize enhanced UI widgets with modern Unified Layout."""
-        
+
         # Date picker for manual time navigation
         self.date_picker = DateTimePicker(
             position=(20, 100), on_date_change=self._on_date_picker_change
@@ -240,41 +242,60 @@ class SolarSystemScene:
         sidebar_height = self.renderer.settings.window_height - 40
         sidebar_x = self.renderer.settings.window_width - 380
         self.sidebar_panel = SidebarPanel(
-            position=(sidebar_x, 20),
-            height=sidebar_height
+            position=(sidebar_x, 20), height=sidebar_height
         )
-        
+
         # Initialize content panels used by Sidebar
-        self.educational_panel = EducationalInfoPanel(position=(0,0), width=360) 
-        self.immersion_checklist = ImmersionChecklistPanel(position=(0,0), width=360)
-        self.historical_events = HistoricalEventsPanel(position=(0,0), width=360)
+        self.educational_panel = EducationalInfoPanel(width=360)
+        self.immersion_checklist = ImmersionChecklistPanel(width=360)
+        self.historical_events = HistoricalEventsPanel(width=360)
         self.historical_events.set_date(self.time_manager.current_time.datetime_utc)
 
         # --- Unified Control Panel (Bottom) ---
         control_height = 180  # Increased for granular controls
         self.unified_controls = UnifiedControlPanel(
             position=(0, self.renderer.settings.window_height - control_height),
-            width=self.renderer.settings.window_width
+            width=self.renderer.settings.window_width,
         )
         self.unified_controls.height = control_height
-        
+
         # Granular Checkboxes
         # View Settings
-        self.unified_controls.add_checkbox("Show Labels", self.view_state.show_labels, "toggle_labels")
-        self.unified_controls.add_checkbox("Show Grid", self.renderer.settings.show_grid, "toggle_grid")
-        self.unified_controls.add_checkbox("Stereo View", self.settings.stereo_view, "toggle_stereo")
-        
+        self.unified_controls.add_checkbox(
+            "Show Labels", self.view_state.show_labels, "toggle_labels"
+        )
+        self.unified_controls.add_checkbox(
+            "Show Grid", self.renderer.settings.show_grid, "toggle_grid"
+        )
+        self.unified_controls.add_checkbox(
+            "Stereo View", self.settings.stereo_view, "toggle_stereo"
+        )
+
         # Orbits - Granular
-        self.unified_controls.add_checkbox("Inner Planets", self.view_state.show_inner_planets, "toggle_inner")
-        self.unified_controls.add_checkbox("Outer Planets", self.view_state.show_outer_planets, "toggle_outer")
-        self.unified_controls.add_checkbox("Dwarf Planets", self.view_state.show_dwarf_planets, "toggle_dwarf")
-        self.unified_controls.add_checkbox("Moons/Small", self.view_state.show_minor_bodies, "toggle_moons")
+        self.unified_controls.add_checkbox(
+            "Inner Planets", self.view_state.show_inner_planets, "toggle_inner"
+        )
+        self.unified_controls.add_checkbox(
+            "Outer Planets", self.view_state.show_outer_planets, "toggle_outer"
+        )
+        self.unified_controls.add_checkbox(
+            "Dwarf Planets", self.view_state.show_dwarf_planets, "toggle_dwarf"
+        )
+        self.unified_controls.add_checkbox(
+            "Moons/Small", self.view_state.show_minor_bodies, "toggle_moons"
+        )
 
         # Add Action Buttons
         self.unified_controls.add_button("Reset View", "reset_view")
-        
+
         # Set initial Nav Mode
         self.unified_controls.set_mode("Orbit")
+
+        # Help Overlay
+        self.help_overlay = HelpOverlay(
+            position=(self.renderer.settings.window_width - 350, 20)
+        )
+        self.help_overlay.set_controls(self.controls)
 
     def _on_date_picker_change(self, new_date: datetime):
         """
@@ -439,7 +460,7 @@ class SolarSystemScene:
                 self._handle_mouse_motion(event.pos, event.rel)
 
             elif event.type == MOUSEWHEEL:
-                self.renderer.camera.zoom(event.y * 0.5)
+                self._handle_mouse_wheel(event.y)
 
         return True
 
@@ -470,7 +491,9 @@ class SolarSystemScene:
             if self.date_picker:
                 self.date_picker.toggle()
                 if self.date_picker.visible:
-                    self.date_picker.set_date(self.time_manager.current_time.datetime_utc)
+                    self.date_picker.set_date(
+                        self.time_manager.current_time.datetime_utc
+                    )
                     self._mark_immersion_task("navigate_time")
 
         elif key == K_n:
@@ -515,7 +538,9 @@ class SolarSystemScene:
             max_days_in_prev = monthrange(prev_year, prev_month)[1]
             actual_day = min(target_day, max_days_in_prev)
 
-            prev_date = current_dt.replace(year=prev_year, month=prev_month, day=actual_day)
+            prev_date = current_dt.replace(
+                year=prev_year, month=prev_month, day=actual_day
+            )
             self.time_manager.set_datetime(prev_date)
             self._update_ui_date()
             self._mark_immersion_task("navigate_time")
@@ -537,7 +562,9 @@ class SolarSystemScene:
             max_days_in_next = monthrange(next_year, next_month)[1]
             actual_day = min(target_day, max_days_in_next)
 
-            next_date = current_dt.replace(year=next_year, month=next_month, day=actual_day)
+            next_date = current_dt.replace(
+                year=next_year, month=next_month, day=actual_day
+            )
             self.time_manager.set_datetime(next_date)
             self._update_ui_date()
             self._mark_immersion_task("navigate_time")
@@ -591,7 +618,9 @@ class SolarSystemScene:
         elif key == K_m:
             if self.immersion_checklist:
                 self.immersion_checklist.toggle()
-            self.view_state.show_immersion_checklist = not self.view_state.show_immersion_checklist
+            self.view_state.show_immersion_checklist = (
+                not self.view_state.show_immersion_checklist
+            )
 
         # Period/comma for cycling fun facts
         elif key == K_PERIOD:
@@ -717,7 +746,7 @@ class SolarSystemScene:
         if self._mouse_dragging:
             # Get mouse buttons
             buttons = pygame.mouse.get_pressed()
-            
+
             mode = "Orbit"
             if self.unified_controls:
                 mode = self.unified_controls.get_current_mode()
@@ -744,24 +773,31 @@ class SolarSystemScene:
             mode = self.nav_mode_panel.get_current_mode()
 
         if mode == "Zoom" or mode == "Orbit":
-            # Normal orbit zoom is always available via scroll, 
+            # Normal orbit zoom is always available via scroll,
             # but now we want to zoom towards the mouse cursor
             mx, my = pygame.mouse.get_pos()
             # Convert to NDC (-1 to 1)
+            # Convert to NDC (-1 to 1)
             width = self.renderer.settings.window_width
             height = self.renderer.settings.window_height
-            ndc_x = (mx / width) * 2.0 - 1.0
-            ndc_y = -((my / height) * 2.0 - 1.0) # Y is inverted in OpenGL
             aspect = width / height
-            
+
+            ndc_x = (mx / width) * 2.0 - 1.0
+            ndc_y = -((my / height) * 2.0 - 1.0)  # Y is inverted in OpenGL
+
             # Use new zoom_at capability
             self.renderer.camera.zoom_at(y_offset, (ndc_x, ndc_y), aspect)
-            
+
         elif mode == "Pan":
             # Maybe scroll pans up/down? for now just zoom
-            self.renderer.camera.zoom_at(y_offset, (0, 0), self.renderer.settings.window_width/self.renderer.settings.window_height)
+            width = self.renderer.settings.window_width
+            height = self.renderer.settings.window_height
+            aspect = width / height
+            self.renderer.camera.zoom_at(y_offset, (0, 0), aspect)
 
-        self._mark_immersion_task("toggle_overlays")  # Close enough to 'interacting', trigger check
+        self._mark_immersion_task(
+            "toggle_overlays"
+        )  # Close enough to 'interacting', trigger check
 
     def _cycle_camera_mode(self):
         """Cycle through camera modes."""
@@ -802,13 +838,16 @@ class SolarSystemScene:
         current_jd = self.time_manager.julian_date
 
         if (delta_jd or self._last_ui_sync_jd is None) and (
-            self._last_ui_sync_jd is None or not math.isclose(current_jd, self._last_ui_sync_jd)
+            self._last_ui_sync_jd is None
+            or not math.isclose(current_jd, self._last_ui_sync_jd)
         ):
             self._update_ui_date()
             self._last_ui_sync_jd = current_jd
 
         # Update camera
-        self.renderer.camera.update(self.time_manager.julian_date, self.renderer.distance_scale)
+        self.renderer.camera.update(
+            self.time_manager.julian_date, self.renderer.distance_scale
+        )
 
     def _render(self):
         renderer = self.renderer
@@ -827,7 +866,9 @@ class SolarSystemScene:
             glClear(GL_DEPTH_BUFFER_BIT)
             self._render_view_contents(jd)
 
-            glViewport(0, 0, renderer.settings.window_width, renderer.settings.window_height)
+            glViewport(
+                0, 0, renderer.settings.window_width, renderer.settings.window_height
+            )
             renderer.begin_frame(clear=False)
             self._render_overlays(jd)
             renderer.end_frame()
@@ -869,24 +910,34 @@ class SolarSystemScene:
         if self.view_state.show_minor_bodies:
             renderer.render_asteroid_belt(self.asteroid_belt_points)
             for asteroid in self.asteroids.values():
-                renderer.render_body(asteroid, julian_date, self.selected_body == asteroid)
+                renderer.render_body(
+                    asteroid, julian_date, self.selected_body == asteroid
+                )
                 if self.view_state.show_labels:
                     state = asteroid.get_state_at_time(julian_date)
-                    renderer.render_label(asteroid.name, state.position * renderer.distance_scale)
+                    renderer.render_label(
+                        asteroid.name, state.position * renderer.distance_scale
+                    )
 
             for comet in self.comets.values():
                 renderer.render_body(comet, julian_date, self.selected_body == comet)
                 if self.view_state.show_orbits:
-                    renderer.render_orbit(comet, julian_date, color=(0.6, 0.8, 1.0, 0.7))
+                    renderer.render_orbit(
+                        comet, julian_date, color=(0.6, 0.8, 1.0, 0.7)
+                    )
                 if self.view_state.show_labels:
                     state = comet.get_state_at_time(julian_date)
-                    renderer.render_label(comet.name, state.position * renderer.distance_scale)
+                    renderer.render_label(
+                        comet.name, state.position * renderer.distance_scale
+                    )
 
         for moon in self.moons.values():
             renderer.render_body(moon, julian_date, self.selected_body == moon)
             if self.view_state.show_labels:
                 state = moon.get_state_at_time(julian_date)
-                renderer.render_label(moon.name, state.position * renderer.distance_scale)
+                renderer.render_label(
+                    moon.name, state.position * renderer.distance_scale
+                )
 
         if self.view_state.show_trajectories:
             for trajectory in self.trajectories:
@@ -903,48 +954,58 @@ class SolarSystemScene:
 
     def _render_overlays(self, julian_date: float):
         renderer = self.renderer
-        
+
         # 1. Sidebar Panel (Right)
         if self.sidebar_panel:
             # We need to prepare the content data for the active tab
-            content_key = self.sidebar_panel.tabs[self.sidebar_panel.current_tab_index].content_renderer_key
+            content_key = self.sidebar_panel.tabs[
+                self.sidebar_panel.current_tab_index
+            ].content_renderer_key
             content_data = None
-            
+
             # Helper to get info/edu data
             if content_key == "educational" and self.educational_panel:
                 # If body selected, show it, otherwise show "Welcome" or something?
                 # The educational panel class assumes a body is set.
                 if self.selected_body:
-                     # Refresh data
-                     info = self.selected_body.get_info_dict()
-                     state = self.selected_body.get_state_at_time(julian_date)
-                     dist = np.linalg.norm(state.position) / AU
-                     info["Distance"] = f"{dist:.2f} AU"
-                     self.educational_panel.set_body(self.selected_body.name, info)
+                    # Refresh data
+                    info = self.selected_body.get_info_dict()
+                    state = self.selected_body.get_state_at_time(julian_date)
+                    dist = np.linalg.norm(state.position) / AU
+                    info["Distance"] = f"{dist:.2f} AU"
+                    self.educational_panel.set_body(self.selected_body.name, info)
                 content_data = self.educational_panel.get_render_data()
-                
+
             elif content_key == "checklist" and self.immersion_checklist:
                 content_data = self.immersion_checklist.get_render_data()
             elif content_key == "history" and self.historical_events:
-                 content_data = self.historical_events.get_render_data()
-            
+                content_data = self.historical_events.get_render_data()
+
             # Pass to sidebar renderer (which handles the sidebar frame + invokes content)
             renderer.render_sidebar(self.sidebar_panel.get_render_data(), content_data)
 
         # 2. Unified Control Panel (Bottom)
         if self.unified_controls:
             # Pass TimeNav data to it
-            time_data = self.time_nav_panel.get_render_data() if self.time_nav_panel else {}
-            renderer.render_unified_controls(self.unified_controls.get_render_data(), time_data)
+            time_data = (
+                self.time_nav_panel.get_render_data() if self.time_nav_panel else {}
+            )
+            renderer.render_unified_controls(
+                self.unified_controls.get_render_data(), time_data
+            )
 
         # 3. Floating Overlays
         # Basic status info (FPS etc) - simplified now that we have panels?
         status = f"FPS: {renderer.get_fps():.0f}"
         if self.selected_body:
-             status += f"  |  Selected: {self.selected_body.name}"
+            status += f"  |  Selected: {self.selected_body.name}"
         renderer.render_status_bar(status)
-        
-        if self.view_state.show_help and hasattr(self, "help_overlay") and self.help_overlay:
+
+        if (
+            self.view_state.show_help
+            and hasattr(self, "help_overlay")
+            and self.help_overlay
+        ):
             renderer.render_help_overlay(self.help_overlay.get_render_data())
 
         if self.date_picker and self.date_picker.visible:
@@ -959,10 +1020,10 @@ class SolarSystemScene:
         elif body.name in DWARF_PLANETS:
             return self.view_state.show_dwarf_planets
         # For Moons, we might need a specific flag if we want to toggle them separately
-        elif body.body_type == BodyType.MOON: 
-             # For now, let's tie moon visibility to general minor bodies or parent visibility?
-             # User asked for granular. Let's start with minor bodies flag for moons/asteroids.
-             return self.view_state.show_minor_bodies
+        elif body.body_type == BodyType.MOON:
+            # For now, let's tie moon visibility to general minor bodies or parent visibility?
+            # User asked for granular. Let's start with minor bodies flag for moons/asteroids.
+            return self.view_state.show_minor_bodies
         elif body.body_type in {BodyType.ASTEROID, BodyType.COMET}:
             return self.view_state.show_minor_bodies
         return True
@@ -981,16 +1042,19 @@ class SolarSystemScene:
     def _handle_ui_click(self, pos: tuple[int, int]) -> bool:
         """Handle clicks on UI overlays."""
         x, y = pos
-        
+
         # 1. Check Date Picker
         if self.date_picker and self.date_picker.visible:
-             # Add logic if DatePicker had proper hit testing exposed
-             pass
+            # Add logic if DatePicker had proper hit testing exposed
+            pass
 
         # 2. Check Sidebar
         if self.sidebar_panel:
             sx, sy = self.sidebar_panel.position
-            if sx <= x <= sx + self.sidebar_panel.width and sy <= y <= sy + self.sidebar_panel.height:
+            if (
+                sx <= x <= sx + self.sidebar_panel.width
+                and sy <= y <= sy + self.sidebar_panel.height
+            ):
                 action = self.sidebar_panel.handle_click(x - sx, y - sy)
                 if action == "tab_changed":
                     return True
@@ -1004,7 +1068,7 @@ class SolarSystemScene:
             if cx <= x <= cx + cw and cy <= y <= cy + ch:
                 rel_x = x - cx
                 rel_y = y - cy
-                
+
                 # A. Navigation Modes (Left) [20, 20] -> width ~300
                 if 20 <= rel_x <= 350 and 20 <= rel_y <= 80:
                     idx = (rel_x - 20) // 80
@@ -1014,13 +1078,13 @@ class SolarSystemScene:
 
                 # B. Buttons (Left, below modes)
                 if 20 <= rel_x <= 350 and 80 <= rel_y <= 120:
-                     bx = 20
-                     for btn in self.unified_controls.buttons:
-                         if bx <= rel_x <= bx + btn.width:
-                             if btn.action == "reset_view":
-                                 self.renderer.camera.reset()
-                             return True
-                         bx += btn.width + 10
+                    bx = 20
+                    for btn in self.unified_controls.buttons:
+                        if bx <= rel_x <= bx + btn.width:
+                            if btn.action == "reset_view":
+                                self.renderer.camera.reset()
+                            return True
+                        bx += btn.width + 10
 
                 # C. View Settings (Right)
                 set_x = cw - 350
@@ -1033,11 +1097,12 @@ class SolarSystemScene:
                         row = (rel_y - start_y) // 30
                         col = 0 if (rel_x - set_x) < 160 else 1
                         idx = row * 2 + col
-                        action = self.unified_controls.toggle_checkbox(int(idx))
-                        if action:
-                            self._handle_setting_action(action)
+                        if idx < len(self.unified_controls.checkboxes):
+                            action = self.unified_controls.toggle_checkbox(int(idx))
+                            if action:
+                                self._handle_setting_action(action)
                     return True
-                
+
                 return True
 
         return False
