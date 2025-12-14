@@ -34,10 +34,13 @@ from ..physics.trajectory_planner import (
     TransferType,
 )
 from ..ui.widgets import (
+    Checkbox,
     DateTimePicker,
     EducationalInfoPanel,
     HistoricalEventsPanel,
     ImmersionChecklistPanel,
+    NavigationPanel,
+    SettingsPanel,
     TimeNavigationPanel,
 )
 from .camera import CameraMode
@@ -185,6 +188,8 @@ class SolarSystemScene:
         self.educational_panel: EducationalInfoPanel | None = None
         self.historical_events: HistoricalEventsPanel | None = None
         self.immersion_checklist: ImmersionChecklistPanel | None = None
+        self.settings_panel: SettingsPanel | None = None
+        self.nav_mode_panel: NavigationPanel | None = None
         self._last_ui_sync_jd: float | None = None
 
     def initialize(self) -> bool:
@@ -235,6 +240,17 @@ class SolarSystemScene:
 
         # Immersive checklist to guide educational exploration
         self.immersion_checklist = ImmersionChecklistPanel(position=(20, 240))
+        
+        # Settings Panel
+        self.settings_panel = SettingsPanel(position=(20, 500))
+        self.settings_panel.add_checkbox("Orbits (O)", self.view_state.show_orbits, "toggle_orbits")
+        self.settings_panel.add_checkbox("Labels (L)", self.view_state.show_labels, "toggle_labels")
+        self.settings_panel.add_checkbox("Grid (G)", self.renderer.settings.show_grid, "toggle_grid")
+        self.settings_panel.add_checkbox("Stereo (V)", self.settings.stereo_view, "toggle_stereo")
+        self.settings_panel.visible = True
+        
+        # Navigation Mode Panel
+        self.nav_mode_panel = NavigationPanel(position=(20, 350))
 
     def _on_date_picker_change(self, new_date: datetime):
         """
@@ -657,6 +673,10 @@ class SolarSystemScene:
     def _handle_mouse_button(self, button: int, pressed: bool):
         """Handle mouse button events."""
         if button == 1:  # Left button
+            # Check UI clicks first
+            if pressed and self._handle_ui_click(pygame.mouse.get_pos()):
+                return
+
             self._mouse_dragging = pressed
             if pressed:
                 self._last_mouse_pos = pygame.mouse.get_pos()
@@ -673,9 +693,18 @@ class SolarSystemScene:
         if self._mouse_dragging:
             # Get mouse buttons
             buttons = pygame.mouse.get_pressed()
+            
+            mode = "Orbit"
+            if self.nav_mode_panel:
+                mode = self.nav_mode_panel.get_current_mode()
 
-            if buttons[0]:  # Left button - orbit camera
-                self.renderer.camera.orbit(-rel[0], -rel[1])
+            if buttons[0]:  # Left button - depends on mode
+                if mode == "Orbit":
+                    self.renderer.camera.orbit(-rel[0], -rel[1])
+                elif mode == "Pan":
+                    self.renderer.camera.pan(-rel[0], rel[1])
+                elif mode == "Zoom":
+                    self.renderer.camera.zoom(rel[1] * 0.5)
 
             elif buttons[2]:  # Right button - pan camera
                 self.renderer.camera.pan(-rel[0], rel[1])
@@ -855,6 +884,12 @@ class SolarSystemScene:
 
         if self.view_state.show_immersion_checklist and self.immersion_checklist:
             renderer.render_immersion_checklist(self.immersion_checklist.get_render_data())
+            
+        if self.settings_panel:
+            renderer.render_settings_panel(self.settings_panel.get_render_data())
+            
+        if self.nav_mode_panel:
+            renderer.render_nav_mode_panel(self.nav_mode_panel.get_render_data())
 
     def _should_render_body(self, body: CelestialBody) -> bool:
         if body.name in INNER_PLANETS:
@@ -877,3 +912,56 @@ class SolarSystemScene:
             return None
 
         return self.trajectory_planner.get_transfer_summary(origin, destination)
+
+    def _handle_ui_click(self, pos: tuple[int, int]) -> bool:
+        """Handle clicks on UI overlays."""
+        x, y = pos
+        
+        # Check Settings Panel
+        if self.settings_panel and self.settings_panel.visible:
+            # Simple hit test based on known layout in renderer
+            # position, width=200, height=header+items
+            px, py = self.settings_panel.position
+            width = 200
+            line_height = 24
+            header_height = 30
+            height = header_height + len(self.settings_panel.checkboxes) * line_height + 10
+            
+            if px <= x <= px + width and py <= y <= py + height:
+                # Clicked info, check items
+                if py + header_height <= y:
+                    idx = (y - (py + header_height)) // line_height
+                    action = self.settings_panel.toggle_checkbox(idx)
+                    if action:
+                        self._handle_setting_action(action)
+                return True
+                
+        # Check Navigation Panel
+        if self.nav_mode_panel and self.nav_mode_panel.visible:
+            px, py = self.nav_mode_panel.position
+            width = 150
+            line_height = 24
+            header_height = 30
+            height = header_height + len(self.nav_mode_panel.modes) * line_height + 10
+            
+            if px <= x <= px + width and py <= y <= py + height:
+                if py + header_height <= y:
+                    idx = (y - (py + header_height)) // line_height
+                    if 0 <= idx < len(self.nav_mode_panel.modes):
+                         mode = self.nav_mode_panel.modes[idx]
+                         self.nav_mode_panel.set_mode(mode)
+                return True
+
+        return False
+
+    def _handle_setting_action(self, action: str):
+        if action == "toggle_orbits":
+            self.view_state.show_orbits = not self.view_state.show_orbits
+            self.renderer.settings.show_orbits = self.view_state.show_orbits
+        elif action == "toggle_labels":
+            self.view_state.show_labels = not self.view_state.show_labels
+            self.renderer.settings.show_labels = self.view_state.show_labels
+        elif action == "toggle_grid":
+            self.renderer.settings.show_grid = not self.renderer.settings.show_grid
+        elif action == "toggle_stereo":
+            self.settings.stereo_view = not self.settings.stereo_view

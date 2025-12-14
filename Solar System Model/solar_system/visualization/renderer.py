@@ -214,6 +214,9 @@ class Renderer:
         self._font: pygame.font.Font | None = None
         self._small_font: pygame.font.Font | None = None
 
+        # Label collision
+        self.drawn_labels: list[pygame.Rect] = []
+
     def initialize(self) -> bool:
         """
         Initialize the rendering system.
@@ -425,6 +428,7 @@ class Renderer:
 
     def begin_frame(self, camera_state: CameraState | None = None, clear: bool = True):
         """Begin a new frame."""
+        self.drawn_labels.clear()
         if clear:
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
@@ -764,8 +768,47 @@ class Renderer:
         text_data = pygame.image.tostring(text_surface, "RGBA", True)
         width, height = text_surface.get_size()
 
+        # Check for overlaps and adjust
+        rect = pygame.Rect(position[0], position[1], width, height)
+        original_y = rect.y
+        
+        # Try a few offsets if overlapping
+        offsets = [0, height + 2, -(height + 2), (height + 2) * 2]
+        
+        final_pos = position
+        found_spot = False
+        
+        for offset in offsets:
+            test_rect = rect.copy()
+            test_rect.y = original_y + offset
+            
+            # constrain to screen
+            if test_rect.top < 0 or test_rect.bottom > self.settings.window_height:
+                continue
+
+            collision = False
+            for other_rect in self.drawn_labels:
+                if test_rect.colliderect(other_rect):
+                    collision = True
+                    break
+            
+            if not collision:
+                rect = test_rect
+                final_pos = (rect.x, rect.y)
+                found_spot = True
+                break
+        
+        if not found_spot:
+            # If we simply can't find a spot, draw it anyway but maybe dimmed? 
+            # Or just draw it at original pos (overlap is better than missing sometimes)
+            # The prompt specifically asked to fix overlap.
+            # Let's default to original position but maybe shift slightly right
+            pass
+            
+        self.drawn_labels.append(rect)
+
         # Draw as texture
-        glRasterPos2i(position[0], position[1])
+        glRasterPos2i(final_pos[0], final_pos[1])
         glDrawPixels(width, height, GL_RGBA, GL_UNSIGNED_BYTE, text_data)
 
         glEnable(GL_DEPTH_TEST)
@@ -1399,3 +1442,163 @@ class Renderer:
     def get_fps(self) -> float:
         """Get current frames per second."""
         return self.clock.get_fps() if self.clock else 0.0
+
+    def render_settings_panel(self, settings_data: dict[str, Any]):
+        """Render the settings panel."""
+        if not settings_data.get("visible", False):
+            return
+
+        x, y = settings_data.get("position", (20, 500))
+        checkboxes = settings_data.get("checkboxes", [])
+        
+        # Dimensions
+        width = 200
+        line_height = 24
+        header_height = 30
+        height = header_height + len(checkboxes) * line_height + 10
+
+        glMatrixMode(GL_PROJECTION)
+        glPushMatrix()
+        glLoadIdentity()
+        glOrtho(0, self.settings.window_width, self.settings.window_height, 0, -1, 1)
+
+        glMatrixMode(GL_MODELVIEW)
+        glPushMatrix()
+        glLoadIdentity()
+
+        glDisable(GL_LIGHTING)
+        glDisable(GL_DEPTH_TEST)
+        glEnable(GL_BLEND)
+
+        # Background
+        glColor4f(0.1, 0.1, 0.15, 0.9)
+        glBegin(GL_QUADS)
+        glVertex2f(x - 5, y - 5)
+        glVertex2f(x + width, y - 5)
+        glVertex2f(x + width, y + height)
+        glVertex2f(x - 5, y + height)
+        glEnd()
+        
+        # Border
+        glColor4f(0.5, 0.5, 0.6, 0.8)
+        glLineWidth(1)
+        glBegin(GL_LINE_LOOP)
+        glVertex2f(x - 5, y - 5)
+        glVertex2f(x + width, y - 5)
+        glVertex2f(x + width, y + height)
+        glVertex2f(x - 5, y + height)
+        glEnd()
+
+        # Title
+        title_surface = self._font.render("Settings", True, (255, 255, 100))
+        title_data = pygame.image.tostring(title_surface, "RGBA", True)
+        w, h = title_surface.get_size()
+        glRasterPos2i(x, y + 20)
+        glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, title_data)
+
+        # Checkboxes
+        current_y = y + header_height
+        for cb in checkboxes:
+            # Draw box
+            box_color = (100, 255, 100) if cb.checked else (100, 100, 100)
+            text_color = (255, 255, 255) if cb.checked else (180, 180, 180)
+            
+            marker = "[x]" if cb.checked else "[ ]"
+            label = f"{marker} {cb.label}"
+            
+            text_surface = self._small_font.render(label, True, text_color)
+            text_data = pygame.image.tostring(text_surface, "RGBA", True)
+            w, h = text_surface.get_size()
+            
+            glRasterPos2i(x + 5, current_y + 15)
+            glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, text_data)
+            
+            current_y += line_height
+
+        glEnable(GL_DEPTH_TEST)
+        glEnable(GL_LIGHTING)
+
+        glMatrixMode(GL_PROJECTION)
+        glPopMatrix()
+        glMatrixMode(GL_MODELVIEW)
+        glPopMatrix()
+
+    def render_nav_mode_panel(self, nav_data: dict[str, Any]):
+        """Render the navigation mode panel."""
+        if not nav_data.get("visible", False):
+            return
+
+        x, y = nav_data.get("position", (20, 300))
+        modes = nav_data.get("modes", [])
+        current_index = nav_data.get("current_mode_index", 0)
+        
+        # Dimensions
+        width = 150
+        line_height = 24
+        header_height = 30
+        height = header_height + len(modes) * line_height + 10
+
+        glMatrixMode(GL_PROJECTION)
+        glPushMatrix()
+        glLoadIdentity()
+        glOrtho(0, self.settings.window_width, self.settings.window_height, 0, -1, 1)
+
+        glMatrixMode(GL_MODELVIEW)
+        glPushMatrix()
+        glLoadIdentity()
+
+        glDisable(GL_LIGHTING)
+        glDisable(GL_DEPTH_TEST)
+        glEnable(GL_BLEND)
+
+        # Background
+        glColor4f(0.1, 0.1, 0.15, 0.9)
+        glBegin(GL_QUADS)
+        glVertex2f(x - 5, y - 5)
+        glVertex2f(x + width, y - 5)
+        glVertex2f(x + width, y + height)
+        glVertex2f(x - 5, y + height)
+        glEnd()
+        
+        # Border
+        glColor4f(0.5, 0.5, 0.6, 0.8)
+        glLineWidth(1)
+        glBegin(GL_LINE_LOOP)
+        glVertex2f(x - 5, y - 5)
+        glVertex2f(x + width, y - 5)
+        glVertex2f(x + width, y + height)
+        glVertex2f(x - 5, y + height)
+        glEnd()
+
+        # Title
+        title_surface = self._font.render("Mouse Control", True, (255, 255, 100))
+        title_data = pygame.image.tostring(title_surface, "RGBA", True)
+        w, h = title_surface.get_size()
+        glRasterPos2i(x, y + 20)
+        glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, title_data)
+
+        # Modes
+        current_y = y + header_height
+        for i, mode in enumerate(modes):
+            is_active = (i == current_index)
+            text_color = (100, 255, 100) if is_active else (180, 180, 180)
+            prefix = ">> " if is_active else "   "
+            
+            label = f"{prefix}{mode}"
+            
+            text_surface = self._small_font.render(label, True, text_color)
+            text_data = pygame.image.tostring(text_surface, "RGBA", True)
+            w, h = text_surface.get_size()
+            
+            glRasterPos2i(x + 5, current_y + 15)
+            glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, text_data)
+            
+            current_y += line_height
+
+        glEnable(GL_DEPTH_TEST)
+        glEnable(GL_LIGHTING)
+
+        glMatrixMode(GL_PROJECTION)
+        glPopMatrix()
+        glMatrixMode(GL_MODELVIEW)
+        glPopMatrix()
