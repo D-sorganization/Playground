@@ -33,16 +33,16 @@ except Exception:  # pragma: no cover - OpenGL unavailable in tests
 
 
 TEXTURE_MANIFEST: dict[str, str] = {
-    "Mercury": "https://planetarymaps.usgs.gov/mosaic/Mercury_v1_L3.png",
-    "Venus": "https://planetarymaps.usgs.gov/mosaic/VenusMagellan.png",
-    "Earth": "https://eoimages.gsfc.nasa.gov/images/imagerecords/57000/57730/land_ocean_ice_cloud_2048.png",
-    "Moon": "https://planetarymaps.usgs.gov/mosaic/Lunar_LRO_LOLA_Global_LDEM_118m_Mar2014.png",
-    "Mars": "https://planetarymaps.usgs.gov/mosaic/Mars_MGS_MOLA_DEM_mosaic_global_463m.tif",
-    "Jupiter": "https://planetarymaps.usgs.gov/mosaic/Jupiter_Voyager_GalileoSSI_global_mosaic_1km.tif",
-    "Saturn": "https://planetarymaps.usgs.gov/mosaic/Saturn_Cassini_ISS_Composite_global_mosaic_1km.tif",
-    "Uranus": "https://planetarymaps.usgs.gov/mosaic/Uranus_Voyager2_ISS_global_mosaic_1km.tif",
-    "Neptune": "https://planetarymaps.usgs.gov/mosaic/Neptune_Voyager2_ISS_global_mosaic_4km.tif",
-    "Pluto": "https://planetarymaps.usgs.gov/mosaic/Pluto_NewHorizons_Global_Mosaic_300m_Jul2017_12bit.tif",
+    "Mercury": "https://www.solarsystemscope.com/textures/download/2k_mercury.jpg",
+    "Venus": "https://www.solarsystemscope.com/textures/download/2k_venus_surface.jpg",
+    "Earth": "https://www.solarsystemscope.com/textures/download/2k_earth_daymap.jpg",
+    "Moon": "https://www.solarsystemscope.com/textures/download/2k_moon.jpg",
+    "Mars": "https://www.solarsystemscope.com/textures/download/2k_mars.jpg",
+    "Jupiter": "https://www.solarsystemscope.com/textures/download/2k_jupiter.jpg",
+    "Saturn": "https://www.solarsystemscope.com/textures/download/2k_saturn.jpg",
+    "Uranus": "https://www.solarsystemscope.com/textures/download/2k_uranus.jpg",
+    "Neptune": "https://www.solarsystemscope.com/textures/download/2k_neptune.jpg",
+    "Sun": "https://www.solarsystemscope.com/textures/download/2k_sun.jpg",
 }
 
 
@@ -62,7 +62,7 @@ class TextureManager:
 
     def _texture_path(self, body_name: str) -> pathlib.Path:
         safe_name = body_name.lower().replace(" ", "_")
-        return self.asset_root / "textures" / f"{safe_name}.png"
+        return self.asset_root / "textures" / f"{safe_name}.jpg"
 
     def ensure_texture(self, body_name: str) -> pathlib.Path | None:
         path = self._texture_path(body_name)

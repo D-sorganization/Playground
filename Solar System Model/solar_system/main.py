@@ -88,6 +88,8 @@ def parse_arguments():
 
     parser.add_argument("--no-antialiasing", action="store_true", help="Disable antialiasing")
 
+    parser.add_argument("--no-shaders", action="store_true", help="Disable shaders")
+
     return parser.parse_args()
 
 
@@ -102,6 +104,7 @@ def main():
         fullscreen=args.fullscreen,
         vsync=not args.no_vsync,
         antialiasing=not args.no_antialiasing,
+        use_shaders=not args.no_shaders,
     )
 
     # Create scene

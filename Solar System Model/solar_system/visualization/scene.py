@@ -54,12 +54,12 @@ try:
         K_HOME,
         K_KP_MINUS,
         K_KP_PLUS,
-        K_LEFTBRACE,
+        K_PAGEUP,
         K_LEFTBRACKET,
         K_MINUS,
         K_PERIOD,
         K_PLUS,
-        K_RIGHTBRACE,
+        K_PAGEDOWN,
         K_RIGHTBRACKET,
         K_SPACE,
         KEYDOWN,
@@ -161,7 +161,7 @@ class SolarSystemScene:
             ("  N", "Toggle time navigation panel"),
             ("  E", "Toggle historical events"),
             ("  [ / ]", "Jump backward/forward 1 day"),
-            ("  { / }", "Jump backward/forward 1 month"),
+            ("  PgUp/Dn", "Jump backward/forward 1 month"),
             ("  T", "Plan trip to Mars 🚀"),
             ("  M", "Toggle immersion checklist"),
             ("", ""),
@@ -458,7 +458,7 @@ class SolarSystemScene:
             self._update_ui_date()
             self._mark_immersion_task("navigate_time")
 
-        elif key == K_LEFTBRACE:
+        elif key == K_PAGEUP:
             # Jump backward 1 month, preserving day of month when possible
             current_dt = self.time_manager.current_time.datetime_utc
             target_day = current_dt.day
@@ -480,7 +480,7 @@ class SolarSystemScene:
             self._update_ui_date()
             self._mark_immersion_task("navigate_time")
 
-        elif key == K_RIGHTBRACE:
+        elif key == K_PAGEDOWN:
             # Jump forward 1 month, preserving day of month when possible
             current_dt = self.time_manager.current_time.datetime_utc
             target_day = current_dt.day

@@ -21,6 +21,8 @@ try:
         DOUBLEBUF,
         FULLSCREEN,
         OPENGL,
+        GL_MULTISAMPLEBUFFERS,
+        GL_MULTISAMPLESAMPLES,
     )
 
     PYGAME_AVAILABLE = True
@@ -50,8 +52,6 @@ try:
         GL_LINES,
         GL_MODELVIEW,
         GL_MODELVIEW_MATRIX,
-        GL_MULTISAMPLEBUFFERS,
-        GL_MULTISAMPLESAMPLES,
         GL_NICEST,
         GL_NORMALIZE,
         GL_ONE_MINUS_SRC_ALPHA,
@@ -414,14 +414,12 @@ class Renderer:
         glNewList(self._star_list, GL_COMPILE)
 
         glDisable(GL_LIGHTING)
-        glBegin(GL_POINTS)
-
         for star in self.star_vertices:
             glPointSize(point_size_from_magnitude(star.magnitude))
+            glBegin(GL_POINTS)
             glColor3f(*star.color)
             glVertex3f(*star.position)
-
-        glEnd()
+            glEnd()
         glEnable(GL_LIGHTING)
         glEndList()
 
