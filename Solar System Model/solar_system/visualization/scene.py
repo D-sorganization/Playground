@@ -224,33 +224,36 @@ class SolarSystemScene:
         self.time_nav_panel = TimeNavigationPanel(position=(20, 60))
 
         # Educational info panel
-        self.educational_panel = EducationalInfoPanel(
-            position=(self.settings.window_width - 370, 20), width=350
-        )
-
-        # Historical events panel
-        self.historical_events = HistoricalEventsPanel(
-            position=(
-                self.settings.window_width - 420,
-                self.settings.window_height - 200,
-            ),
-            width=400,
-        )
-        self.historical_events.set_date(self.time_manager.current_time.datetime_utc)
-
-        # Immersive checklist to guide educational exploration
-        self.immersion_checklist = ImmersionChecklistPanel(position=(20, 240))
+        # Educational info (Top Left)
+        self.educational_panel = EducationalInfoPanel(position=(20, 20), width=320)
         
-        # Settings Panel
-        self.settings_panel = SettingsPanel(position=(20, 500))
+        # Historical events (Right Side, Middle)
+        self.historical_events = HistoricalEventsPanel(position=(self.renderer.settings.window_width - 420, 350), width=400)
+        self.historical_events.set_date(self.time_manager.current_time.datetime_utc)
+        
+        # Time Navigation (Bottom Center)
+        time_nav_x = (self.renderer.settings.window_width // 2) - 250
+        time_nav_y = self.renderer.settings.window_height - 100
+        self.time_nav_panel = TimeNavigationPanel(position=(time_nav_x, time_nav_y))
+        
+        # Immersive checklist (Top Right)
+        self.immersion_checklist = ImmersionChecklistPanel(
+            position=(self.renderer.settings.window_width - 380, 20),
+            width=360
+        )
+        
+        # Navigation Mode Panel (Bottom Left, above Settings)
+        nav_y = self.renderer.settings.window_height - 280
+        self.nav_mode_panel = NavigationPanel(position=(20, nav_y))
+        
+        # Settings Panel (Bottom Left)
+        settings_y = self.renderer.settings.window_height - 150
+        self.settings_panel = SettingsPanel(position=(20, settings_y))
         self.settings_panel.add_checkbox("Orbits (O)", self.view_state.show_orbits, "toggle_orbits")
         self.settings_panel.add_checkbox("Labels (L)", self.view_state.show_labels, "toggle_labels")
         self.settings_panel.add_checkbox("Grid (G)", self.renderer.settings.show_grid, "toggle_grid")
         self.settings_panel.add_checkbox("Stereo (V)", self.settings.stereo_view, "toggle_stereo")
         self.settings_panel.visible = True
-        
-        # Navigation Mode Panel
-        self.nav_mode_panel = NavigationPanel(position=(20, 350))
 
     def _on_date_picker_change(self, new_date: datetime):
         """
