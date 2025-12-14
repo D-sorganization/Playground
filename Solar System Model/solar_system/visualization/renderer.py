@@ -1602,3 +1602,221 @@ class Renderer:
         glPopMatrix()
         glMatrixMode(GL_MODELVIEW)
         glPopMatrix()
+
+    def render_sidebar(self, sidebar_data: dict[str, Any], content_data: dict[str, Any]):
+        """Render the unified sidebar."""
+        if not sidebar_data.get("visible", False):
+            return
+
+        x, y = sidebar_data.get("position", (0, 0))
+        width = sidebar_data.get("width", 380)
+        height = sidebar_data.get("height", 600)
+        tabs = sidebar_data.get("tabs", [])
+        current_tab = sidebar_data.get("current_tab_index", 0)
+        content_key = sidebar_data.get("current_content_key", "")
+
+        glMatrixMode(GL_PROJECTION)
+        glPushMatrix()
+        glLoadIdentity()
+        glOrtho(0, self.settings.window_width, self.settings.window_height, 0, -1, 1)
+
+        glMatrixMode(GL_MODELVIEW)
+        glPushMatrix()
+        glLoadIdentity()
+        glDisable(GL_LIGHTING)
+        glDisable(GL_DEPTH_TEST)
+        glEnable(GL_BLEND)
+
+        # Main Background
+        glColor4f(0.05, 0.08, 0.12, 0.95)
+        glBegin(GL_QUADS)
+        glVertex2f(x, y)
+        glVertex2f(x + width, y)
+        glVertex2f(x + width, y + height)
+        glVertex2f(x, y + height)
+        glEnd()
+        
+        # Border
+        glColor4f(0.3, 0.5, 0.7, 0.5)
+        glLineWidth(2)
+        glBegin(GL_LINE_LOOP)
+        glVertex2f(x, y)
+        glVertex2f(x + width, y)
+        glVertex2f(x + width, y + height)
+        glVertex2f(x, y + height)
+        glEnd()
+
+        # Tabs Header
+        header_height = 35
+        tab_width = width / len(tabs) if tabs else 10
+        
+        for i, tab_name in enumerate(tabs):
+            tab_x = x + i * tab_width
+            is_active = (i == current_tab)
+            
+            # Tab Background
+            if is_active:
+                glColor4f(0.2, 0.3, 0.4, 0.9)
+            else:
+                glColor4f(0.1, 0.15, 0.2, 0.8)
+                
+            glBegin(GL_QUADS)
+            glVertex2f(tab_x, y)
+            glVertex2f(tab_x + tab_width, y)
+            glVertex2f(tab_x + tab_width, y + header_height)
+            glVertex2f(tab_x, y + header_height)
+            glEnd()
+            
+            # Active indicator line
+            if is_active:
+                glColor4f(0.4, 0.8, 1.0, 1.0)
+                glLineWidth(3)
+                glBegin(GL_LINES)
+                glVertex2f(tab_x, y + header_height)
+                glVertex2f(tab_x + tab_width, y + header_height)
+                glEnd()
+            
+            # Tab Text
+            color = (255, 255, 255) if is_active else (150, 150, 150)
+            text_surface = self._font.render(tab_name, True, color)
+            text_data = pygame.image.tostring(text_surface, "RGBA", True)
+            w, h = text_surface.get_size()
+            text_pos_x = tab_x + (tab_width - w) // 2
+            text_pos_y = y + (header_height - h) // 2
+            glRasterPos2i(int(text_pos_x), int(text_pos_y + h))
+            glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, text_data)
+
+        # Restore GL state for content rendering if needs special handling
+        # But for now we invoke specific renderers with adjusted position
+        # We need to hack the content renderers slightly or just render them at offset
+        glEnable(GL_DEPTH_TEST)
+        glEnable(GL_LIGHTING)
+        glMatrixMode(GL_PROJECTION)
+        glPopMatrix()
+        glMatrixMode(GL_MODELVIEW)
+        glPopMatrix()
+
+        # Render Content based on active tab
+        content_pos = (x + 10, y + header_height + 10)
+        
+        # We assume the content dictionary is passed correctly for the active tab
+        if content_data:
+            # Override position to fit in sidebar
+            content_data['position'] = content_pos
+            content_data['width'] = width - 20
+            content_data['visible'] = True # Force visible since tab is active
+            
+            if content_key == "educational":
+                self.render_educational_panel(content_data)
+            elif content_key == "checklist":
+                self.render_immersion_checklist(content_data)
+            elif content_key == "history":
+                self.render_historical_events(content_data)
+
+    def render_unified_controls(self, ctrl_data: dict[str, Any], time_data: dict[str, Any]):
+        """Render the bottom unified control panel."""
+        if not ctrl_data.get("visible", False):
+            return
+
+        x, y = ctrl_data.get("position", (0, 0))
+        width = ctrl_data.get("width", 800)
+        height = ctrl_data.get("height", 100)
+        checkboxes = ctrl_data.get("checkboxes", [])
+        modes = ctrl_data.get("modes", [])
+        curr_mode = ctrl_data.get("current_mode_index", 0)
+
+        glMatrixMode(GL_PROJECTION)
+        glPushMatrix()
+        glLoadIdentity()
+        glOrtho(0, self.settings.window_width, self.settings.window_height, 0, -1, 1)
+
+        glMatrixMode(GL_MODELVIEW)
+        glPushMatrix()
+        glLoadIdentity()
+        glDisable(GL_LIGHTING)
+        glDisable(GL_DEPTH_TEST)
+        glEnable(GL_BLEND)
+
+        # Background Gradient-ish (Solid for now)
+        glColor4f(0.05, 0.08, 0.12, 0.95)
+        glBegin(GL_QUADS)
+        glVertex2f(x, y)
+        glVertex2f(x + width, y)
+        glVertex2f(x + width, y + height)
+        glVertex2f(x, y + height)
+        glEnd()
+        
+        # Top Border
+        glColor4f(0.4, 0.8, 1.0, 0.6)
+        glLineWidth(2)
+        glBegin(GL_LINES)
+        glVertex2f(x, y)
+        glVertex2f(x + width, y)
+        glEnd()
+
+        # Layout: Left side = Modes, Middle = Time (passed in), Right = Settings
+        
+        # 1. Navigation Modes (Left)
+        mode_x = x + 20
+        mode_y = y + 20
+        title_surface = self._small_font.render("NAVIGATION", True, (100, 200, 255))
+        w, h = title_surface.get_size()
+        text_data = pygame.image.tostring(title_surface, "RGBA", True)
+        glRasterPos2i(int(mode_x), int(mode_y + h))
+        glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, text_data)
+        
+        mode_y += 25
+        for i, mode in enumerate(modes):
+            color = (100, 255, 100) if i == curr_mode else (150, 150, 150)
+            prefix = "● " if i == curr_mode else "○ "
+            label = f"{prefix}{mode}"
+            
+            s = self._small_font.render(label, True, color)
+            wd, hd = s.get_size()
+            d = pygame.image.tostring(s, "RGBA", True)
+            glRasterPos2i(int(mode_x), int(mode_y + hd))
+            glDrawPixels(wd, hd, GL_RGBA, GL_UNSIGNED_BYTE, d)
+            mode_x += 80 # horizontal layout
+
+        # 2. View Settings (Right)
+        set_x = x + width - 250
+        set_y = y + 20
+        title_surface = self._small_font.render("VIEW SETTINGS", True, (100, 200, 255))
+        w, h = title_surface.get_size()
+        text_data = pygame.image.tostring(title_surface, "RGBA", True)
+        glRasterPos2i(int(set_x), int(set_y + h))
+        glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, text_data)
+        
+        set_y += 25
+        col_1_x = set_x
+        col_2_x = set_x + 120
+        
+        for i, cb in enumerate(checkboxes):
+            # 2 columns
+            cx = col_1_x if i % 2 == 0 else col_2_x
+            cy = set_y + (i // 2) * 20
+            
+            color = (255, 255, 255) if cb.checked else (150, 150, 150)
+            marker = "[x]" if cb.checked else "[ ]"
+            label = f"{marker} {cb.label}"
+            
+            s = self._small_font.render(label, True, color)
+            wd, hd = s.get_size()
+            d = pygame.image.tostring(s, "RGBA", True)
+            glRasterPos2i(int(cx), int(cy + hd))
+            glDrawPixels(wd, hd, GL_RGBA, GL_UNSIGNED_BYTE, d)
+
+        # 3. Time Controls (Center)
+        # We render the text status here, buttons are rendered by separate call usually
+        # but let's draw a nice container for them
+        center_x = x + width // 2
+        time_msg = "Time Controls (Center)"
+        # Note: scene.py will handle calling the actual time nav renderer locally 
+        # but we provide the visual container here.
+        
+        glEnable(GL_DEPTH_TEST)
+        glEnable(GL_LIGHTING)
+        glMatrixMode(GL_PROJECTION)
+        glPopMatrix()
+        glMatrixMode(GL_MODELVIEW)
+        glPopMatrix()

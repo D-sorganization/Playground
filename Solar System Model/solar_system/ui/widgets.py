@@ -785,9 +785,93 @@ class NavigationPanel:
     def get_current_mode(self) -> str:
         return self.modes[self.current_mode_index]
         
+@dataclass
+class Tab:
+    name: str
+    content_renderer_key: str  # identify which renderer method to use
+    
+class SidebarPanel:
+    """
+    Combined Sidebar Panel (Right side)
+    Contains tabs for: Info, Checklist, History
+    """
+    def __init__(self, position: tuple[int, int] = (0, 0), height: int = 600, style: PanelStyle = None):
+        self.position = position
+        self.width = 380
+        self.height = height
+        self.style = style or PanelStyle()
+        self.visible = True
+        self.current_tab_index = 0
+        self.tabs = [
+            Tab("Info", "educational"),
+            Tab("Guide", "checklist"),
+            Tab("History", "history")
+        ]
+        
+    def set_tab(self, index: int):
+        if 0 <= index < len(self.tabs):
+            self.current_tab_index = index
+
+    def handle_click(self, rel_x: int, rel_y: int) -> str | None:
+        # Simple tab hit detection
+        tab_width = self.width // len(self.tabs)
+        header_height = 30
+        
+        if rel_y < header_height:
+            clicked_index = rel_x // tab_width
+            self.set_tab(clicked_index)
+            return "tab_changed"
+        return None
+
     def get_render_data(self) -> dict[str, Any]:
         return {
             "position": self.position,
+            "width": self.width,
+            "height": self.height,
+            "tabs": [t.name for t in self.tabs],
+            "current_tab_index": self.current_tab_index,
+            "current_content_key": self.tabs[self.current_tab_index].content_renderer_key,
+            "style": self.style,
+            "visible": self.visible
+        }
+
+class UnifiedControlPanel:
+    """
+    Combined Bottom Control Panel
+    Contains: Navigation Modes, View Settings, Time Controls
+    """
+    def __init__(self, position: tuple[int, int] = (0, 0), width: int = 800, style: PanelStyle = None):
+        self.position = position
+        self.width = width
+        self.height = 100
+        self.style = style or PanelStyle()
+        self.visible = True
+        self.checkboxes: list[Checkbox] = []
+        self.modes = ["Orbit", "Pan", "Zoom"]
+        self.current_mode_index = 0
+        
+    def add_checkbox(self, label: str, checked: bool, action: str):
+        self.checkboxes.append(Checkbox(label, checked, action))
+        
+    def toggle_checkbox(self, index: int) -> str | None:
+        if 0 <= index < len(self.checkboxes):
+            self.checkboxes[index].checked = not self.checkboxes[index].checked
+            return self.checkboxes[index].action
+        return None
+        
+    def set_mode(self, mode_name: str):
+        if mode_name in self.modes:
+            self.current_mode_index = self.modes.index(mode_name)
+
+    def get_current_mode(self) -> str:
+        return self.modes[self.current_mode_index]
+
+    def get_render_data(self) -> dict[str, Any]:
+        return {
+            "position": self.position,
+            "width": self.width,
+            "height": self.height,
+            "checkboxes": self.checkboxes,
             "modes": self.modes,
             "current_mode_index": self.current_mode_index,
             "style": self.style,

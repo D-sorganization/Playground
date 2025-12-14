@@ -41,7 +41,9 @@ from ..ui.widgets import (
     ImmersionChecklistPanel,
     NavigationPanel,
     SettingsPanel,
+    SidebarPanel,
     TimeNavigationPanel,
+    UnifiedControlPanel,
 )
 from .camera import CameraMode
 from .renderer import Renderer, RenderSettings
@@ -184,12 +186,22 @@ class SolarSystemScene:
 
         # Enhanced UI widgets
         self.date_picker: DateTimePicker | None = None
+        # self.time_nav_panel is now visually inside UnifiedControlPanel but kept for logic
         self.time_nav_panel: TimeNavigationPanel | None = None
+        
+        # New Container Panels
+        self.sidebar_panel: SidebarPanel | None = None
+        self.unified_controls: UnifiedControlPanel | None = None
+        
+        # Child panels (kept for logic/data, managed by containers for rendering state)
         self.educational_panel: EducationalInfoPanel | None = None
         self.historical_events: HistoricalEventsPanel | None = None
         self.immersion_checklist: ImmersionChecklistPanel | None = None
+        
+        # Legacy references (set to None or removed)
         self.settings_panel: SettingsPanel | None = None
         self.nav_mode_panel: NavigationPanel | None = None
+        
         self._last_ui_sync_jd: float | None = None
 
     def initialize(self) -> bool:
@@ -213,52 +225,48 @@ class SolarSystemScene:
         return True
 
     def _initialize_ui_widgets(self):
-        """Initialize enhanced UI widgets for educational features."""
+        """Initialize enhanced UI widgets with modern Unified Layout."""
+        
         # Date picker for manual time navigation
         self.date_picker = DateTimePicker(
             position=(20, 100), on_date_change=self._on_date_picker_change
         )
         self.date_picker.set_date(self.time_manager.current_time.datetime_utc)
 
-        # Time navigation panel with quick jump buttons
-        self.time_nav_panel = TimeNavigationPanel(position=(20, 60))
+        # Time navigation logic (reusing existing class for logic handling)
+        # Position is irrelevant as it is rendered by UnifiedControlPanel
+        self.time_nav_panel = TimeNavigationPanel(position=(0, 0))
 
-        # Educational info panel
-        # Educational info (Top Left)
-        self.educational_panel = EducationalInfoPanel(position=(20, 20), width=320)
-        
-        # Historical events (Top Right, below date picker/time nav height line if relevant, or just top right)
-        # Moving to Top Right to make room for Immersion Guide at Bottom Right
-        self.historical_events = HistoricalEventsPanel(
-            position=(self.renderer.settings.window_width - 420, 60),
-            width=400
+        # --- Sidebar Panel (Right) ---
+        sidebar_height = self.renderer.settings.window_height - 40
+        sidebar_x = self.renderer.settings.window_width - 380
+        self.sidebar_panel = SidebarPanel(
+            position=(sidebar_x, 20),
+            height=sidebar_height
         )
+        
+        # Initialize content panels used by Sidebar
+        # We pass dummy positions as the Sidebar will override them during render
+        self.educational_panel = EducationalInfoPanel(position=(0,0), width=360) 
+        self.immersion_checklist = ImmersionChecklistPanel(position=(0,0), width=360)
+        self.historical_events = HistoricalEventsPanel(position=(0,0), width=360)
         self.historical_events.set_date(self.time_manager.current_time.datetime_utc)
-        
-        # Time Navigation (Bottom Center)
-        time_nav_x = (self.renderer.settings.window_width // 2) - 250
-        time_nav_y = self.renderer.settings.window_height - 100
-        self.time_nav_panel = TimeNavigationPanel(position=(time_nav_x, time_nav_y))
-        
-        # Immersive checklist (Bottom Right)
-        checklist_y = self.renderer.settings.window_height - 320
-        self.immersion_checklist = ImmersionChecklistPanel(
-            position=(self.renderer.settings.window_width - 380, checklist_y),
-            width=360
+
+        # --- Unified Control Panel (Bottom) ---
+        control_height = 120
+        self.unified_controls = UnifiedControlPanel(
+            position=(0, self.renderer.settings.window_height - control_height),
+            width=self.renderer.settings.window_width
         )
         
-        # Navigation Mode Panel (Bottom Left, above Settings)
-        nav_y = self.renderer.settings.window_height - 280
-        self.nav_mode_panel = NavigationPanel(position=(20, nav_y))
+        # Add Checkboxes (formerly SettingsPanel)
+        self.unified_controls.add_checkbox("Orbits (O)", self.view_state.show_orbits, "toggle_orbits")
+        self.unified_controls.add_checkbox("Labels (L)", self.view_state.show_labels, "toggle_labels")
+        self.unified_controls.add_checkbox("Grid (G)", self.renderer.settings.show_grid, "toggle_grid")
+        self.unified_controls.add_checkbox("Stereo (V)", self.settings.stereo_view, "toggle_stereo")
         
-        # Settings Panel (Bottom Left)
-        settings_y = self.renderer.settings.window_height - 150
-        self.settings_panel = SettingsPanel(position=(20, settings_y))
-        self.settings_panel.add_checkbox("Orbits (O)", self.view_state.show_orbits, "toggle_orbits")
-        self.settings_panel.add_checkbox("Labels (L)", self.view_state.show_labels, "toggle_labels")
-        self.settings_panel.add_checkbox("Grid (G)", self.renderer.settings.show_grid, "toggle_grid")
-        self.settings_panel.add_checkbox("Stereo (V)", self.settings.stereo_view, "toggle_stereo")
-        self.settings_panel.visible = True
+        # Set initial Nav Mode
+        self.unified_controls.set_mode("Orbit")
 
     def _on_date_picker_change(self, new_date: datetime):
         """
@@ -703,7 +711,9 @@ class SolarSystemScene:
             buttons = pygame.mouse.get_pressed()
             
             mode = "Orbit"
-            if self.nav_mode_panel:
+            if self.unified_controls:
+                mode = self.unified_controls.get_current_mode()
+            elif self.nav_mode_panel:
                 mode = self.nav_mode_panel.get_current_mode()
 
             if buttons[0]:  # Left button - depends on mode
@@ -716,6 +726,34 @@ class SolarSystemScene:
 
             elif buttons[2]:  # Right button - pan camera
                 self.renderer.camera.pan(-rel[0], rel[1])
+
+    def _handle_mouse_wheel(self, y_offset: float):
+        """Handle mouse wheel events."""
+        mode = "Orbit"
+        if self.unified_controls:
+            mode = self.unified_controls.get_current_mode()
+        elif self.nav_mode_panel:
+            mode = self.nav_mode_panel.get_current_mode()
+
+        if mode == "Zoom" or mode == "Orbit":
+            # Normal orbit zoom is always available via scroll, 
+            # but now we want to zoom towards the mouse cursor
+            mx, my = pygame.mouse.get_pos()
+            # Convert to NDC (-1 to 1)
+            width = self.renderer.settings.window_width
+            height = self.renderer.settings.window_height
+            ndc_x = (mx / width) * 2.0 - 1.0
+            ndc_y = -((my / height) * 2.0 - 1.0) # Y is inverted in OpenGL
+            aspect = width / height
+            
+            # Use new zoom_at capability
+            self.renderer.camera.zoom_at(y_offset, (ndc_x, ndc_y), aspect)
+            
+        elif mode == "Pan":
+            # Maybe scroll pans up/down? for now just zoom
+            self.renderer.camera.zoom_at(y_offset, (0, 0), self.renderer.settings.window_width/self.renderer.settings.window_height)
+
+        self._mark_immersion_task("toggle_overlays")  # Close enough to 'interacting', trigger check
 
     def _cycle_camera_mode(self):
         """Cycle through camera modes."""
@@ -857,47 +895,52 @@ class SolarSystemScene:
 
     def _render_overlays(self, julian_date: float):
         renderer = self.renderer
+        
+        # 1. Sidebar Panel (Right)
+        if self.sidebar_panel:
+            # We need to prepare the content data for the active tab
+            content_key = self.sidebar_panel.tabs[self.sidebar_panel.current_tab_index].content_renderer_key
+            content_data = None
+            
+            # Helper to get info/edu data
+            if content_key == "educational" and self.educational_panel:
+                # If body selected, show it, otherwise show "Welcome" or something?
+                # The educational panel class assumes a body is set.
+                if self.selected_body:
+                     # Refresh data
+                     info = self.selected_body.get_info_dict()
+                     state = self.selected_body.get_state_at_time(julian_date)
+                     dist = np.linalg.norm(state.position) / AU
+                     info["Distance"] = f"{dist:.2f} AU"
+                     self.educational_panel.set_body(self.selected_body.name, info)
+                content_data = self.educational_panel.get_render_data()
+                
+            elif content_key == "checklist" and self.immersion_checklist:
+                content_data = self.immersion_checklist.get_render_data()
+            elif content_key == "history" and self.historical_events:
+                 content_data = self.historical_events.get_render_data()
+            
+            # Pass to sidebar renderer (which handles the sidebar frame + invokes content)
+            renderer.render_sidebar(self.sidebar_panel.get_render_data(), content_data)
 
-        status = self.time_manager.get_status_string()
-        status += f"  |  FPS: {renderer.get_fps():.0f}"
+        # 2. Unified Control Panel (Bottom)
+        if self.unified_controls:
+            # Pass TimeNav data to it
+            time_data = self.time_nav_panel.get_render_data() if self.time_nav_panel else {}
+            renderer.render_unified_controls(self.unified_controls.get_render_data(), time_data)
+
+        # 3. Floating Overlays
+        # Basic status info (FPS etc) - simplified now that we have panels?
+        status = f"FPS: {renderer.get_fps():.0f}"
         if self.selected_body:
-            status += f"  |  Selected: {self.selected_body.name}"
-        if self._action_message:
-            status += f"  |  {self._action_message}"
+             status += f"  |  Selected: {self.selected_body.name}"
         renderer.render_status_bar(status)
+        
+        if self.view_state.show_help and hasattr(self, "help_overlay") and self.help_overlay:
+            renderer.render_help_overlay(self.help_overlay.get_render_data())
 
-        if self.view_state.show_info_panel and self.selected_body:
-            info = self.selected_body.get_info_dict()
-            state = self.selected_body.get_state_at_time(julian_date)
-            distance_au = np.linalg.norm(state.position) / AU
-            speed_kms = np.linalg.norm(state.velocity) / 1000
-            info["Distance from Sun"] = f"{distance_au:.3f} AU"
-            info["Orbital Speed"] = f"{speed_kms:.1f} km/s"
-            renderer.render_info_panel(info)
-
-        if self.view_state.show_help:
-            renderer.render_help_overlay(self.controls)
-
-        if self.date_picker:
+        if self.date_picker and self.date_picker.visible:
             renderer.render_date_picker(self.date_picker.get_render_data())
-
-        if self.time_nav_panel:
-            renderer.render_time_navigation_panel(self.time_nav_panel.get_render_data())
-
-        if self.educational_panel and self.selected_body:
-            renderer.render_educational_panel(self.educational_panel.get_render_data())
-
-        if self.historical_events:
-            renderer.render_historical_events(self.historical_events.get_render_data())
-
-        if self.view_state.show_immersion_checklist and self.immersion_checklist:
-            renderer.render_immersion_checklist(self.immersion_checklist.get_render_data())
-            
-        if self.settings_panel:
-            renderer.render_settings_panel(self.settings_panel.get_render_data())
-            
-        if self.nav_mode_panel:
-            renderer.render_nav_mode_panel(self.nav_mode_panel.get_render_data())
 
     def _should_render_body(self, body: CelestialBody) -> bool:
         if body.name in INNER_PLANETS:
@@ -925,39 +968,55 @@ class SolarSystemScene:
         """Handle clicks on UI overlays."""
         x, y = pos
         
-        # Check Settings Panel
-        if self.settings_panel and self.settings_panel.visible:
-            # Simple hit test based on known layout in renderer
-            # position, width=200, height=header+items
-            px, py = self.settings_panel.position
-            width = 200
-            line_height = 24
-            header_height = 30
-            height = header_height + len(self.settings_panel.checkboxes) * line_height + 10
-            
-            if px <= x <= px + width and py <= y <= py + height:
-                # Clicked info, check items
-                if py + header_height <= y:
-                    idx = (y - (py + header_height)) // line_height
-                    action = self.settings_panel.toggle_checkbox(idx)
-                    if action:
-                        self._handle_setting_action(action)
+        # 1. Check Date Picker (Modal-ish)
+        if self.date_picker and self.date_picker.visible:
+             # Add logic if DatePicker had proper hit testing exposed
+             pass
+
+        # 2. Check Sidebar
+        if self.sidebar_panel:
+            sx, sy = self.sidebar_panel.position
+            if sx <= x <= sx + self.sidebar_panel.width and sy <= y <= sy + self.sidebar_panel.height:
+                action = self.sidebar_panel.handle_click(x - sx, y - sy)
+                if action == "tab_changed":
+                    return True
+                # Consume clicks
                 return True
+
+        # 3. Check Unified Controls
+        if self.unified_controls:
+            cx, cy = self.unified_controls.position
+            cw = self.unified_controls.width
+            ch = self.unified_controls.height
+            if cx <= x <= cx + cw and cy <= y <= cy + ch:
+                rel_x = x - cx
+                rel_y = y - cy
                 
-        # Check Navigation Panel
-        if self.nav_mode_panel and self.nav_mode_panel.visible:
-            px, py = self.nav_mode_panel.position
-            width = 150
-            line_height = 24
-            header_height = 30
-            height = header_height + len(self.nav_mode_panel.modes) * line_height + 10
-            
-            if px <= x <= px + width and py <= y <= py + height:
-                if py + header_height <= y:
-                    idx = (y - (py + header_height)) // line_height
-                    if 0 <= idx < len(self.nav_mode_panel.modes):
-                         mode = self.nav_mode_panel.modes[idx]
-                         self.nav_mode_panel.set_mode(mode)
+                # A. Navigation Modes (Left) [20, 20] -> width ~300
+                if 20 <= rel_x <= 350 and 20 <= rel_y <= 90:
+                    idx = (rel_x - 20) // 80
+                    if 0 <= idx < len(self.unified_controls.modes):
+                        self.unified_controls.set_mode(self.unified_controls.modes[idx])
+                    return True
+
+                # B. View Settings (Right)
+                set_x = cw - 250
+                if rel_x >= set_x and 20 <= rel_y <= 90:
+                    # Checkboxes
+                    # 2 columns: col1 at 0, col2 at 120 relative to set_x
+                    # row height 20 start at y=45 relative to panel
+                    if rel_y > 45:
+                        row = (rel_y - 45) // 20
+                        col = 0 if (rel_x - set_x) < 120 else 1
+                        idx = row * 2 + col
+                        action = self.unified_controls.toggle_checkbox(int(idx))
+                        if action:
+                            self._handle_setting_action(action)
+                    return True
+                
+                # C. Time Controls (Center) - Let clicks pass through or handle simpler?
+                # scene.py input handler deals with time nav via keys mostly, 
+                # but if we had buttons we'd check them here.
                 return True
 
         return False

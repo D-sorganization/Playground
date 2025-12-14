@@ -96,11 +96,11 @@ class Camera:
 
         # View bounds
         self.min_distance = 0.01
-        self.max_distance = 6000.0  # Increased to view entire solar system (Neptune ~4500 units)
+        self.max_distance = 25000.0  # Increased to view Oort cloud potential
 
         # Near/far clipping planes
         self.near = 0.0001
-        self.far = 10000.0  # Increased to prevent clipping outer planets
+        self.far = 100000.0  # Increased significantly
 
         # Animation state
         self._target_position = self.position.copy()
@@ -228,6 +228,70 @@ class Camera:
         self._distance = np.clip(self._distance, self.min_distance, self.max_distance)
         self._update_position_from_angles()
 
+    def zoom_at(self, delta: float, mouse_ndc: tuple[float, float], aspect_ratio: float):
+        """
+        Zoom towards a specific point on the screen (mouse cursor).
+
+        Args:
+           delta: Zoom amount.
+           mouse_ndc: Mouse coordinates in Normalized Device Coordinates (-1 to 1).
+           aspect_ratio: Screen aspect ratio.
+        """
+        factor = 1.0 - delta * self.zoom_speed
+        new_distance = self._distance * factor
+        new_distance = np.clip(new_distance, self.min_distance, self.max_distance)
+        
+        # Calculate how much we zoomed
+        if self._distance > 0:
+            actual_factor = new_distance / self._distance
+        else:
+            actual_factor = 1.0
+            
+        # If zooming in (factor < 1), we want to move the target towards the mouse ray
+        # If zooming out, we usually just pull back
+        
+        # Simplified "zoom to cursor" for orbit camera:
+        # We need to pan the camera so the point under cursor remains stable.
+        # This effectively shifts the 'target'
+        
+        # Calculate Right and Up vectors
+        forward = self.target - self.position
+        forward_norm = np.linalg.norm(forward)
+        if forward_norm > 0:
+            forward /= forward_norm
+            
+        right = np.cross(forward, self.up)
+        right /= np.linalg.norm(right)
+        
+        up = np.cross(right, forward)
+        
+        # Calculate viewport dimensions at the target depth
+        # box height at distance D = 2 * D * tan(fov/2)
+        fov_rad = math.radians(self.fov)
+        view_height = 2.0 * self._distance * math.tan(fov_rad / 2.0)
+        view_width = view_height * aspect_ratio
+        
+        # Mouse offset from center (0,0) in NDC
+        mx, my = mouse_ndc
+        
+        # Calculate shift in world space
+        # We want to shift the target such that the point under cursor stays fixed relative to camera frame?
+        # Actually, standard "Google Earth" style: 
+        # offset = (mouse_pos_world_on_plane - camera_pos) * (1 - scale_factor)
+        
+        # Shift amount in camera plane
+        shift_x = mx * (view_width / 2.0) * (1 - actual_factor)
+        shift_y = my * (view_height / 2.0) * (1 - actual_factor)
+        
+        offset = right * shift_x + up * shift_y
+        
+        self.target += offset
+        self.position += offset
+        
+        # Apply distance change
+        self._distance = new_distance
+        self._update_position_from_angles()
+        
     def pan(self, delta_x: float, delta_y: float):
         """
         Pan the camera (move target and position together).
