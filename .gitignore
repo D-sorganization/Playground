@@ -109,3 +109,9 @@ env/
 # OS
 .DS_Store
 Thumbs.db
+
+# Jules generated files
+.jules/bolt*
+.jules/palette*
+.jules/pallette*
+.jules/sentinel*
