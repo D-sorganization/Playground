@@ -2,7 +2,8 @@ import numpy as np
 
 from solar_system.data.asteroids import generate_belt_particles
 from solar_system.data.star_catalog import equatorial_to_cartesian, star_count
-from solar_system.visualization.scene import RenderSettings, SolarSystemScene
+from solar_system.visualization.renderer import RenderSettings
+from solar_system.visualization.scene import SolarSystemScene
 
 
 def test_star_catalog_generates_unit_vectors() -> None:

@@ -319,7 +319,7 @@ class SolarSystemScene:
 
         self._mark_immersion_task("navigate_time")
 
-    def _create_solar_system(self):
+    def _create_solar_system(self) -> None:
         # Create the Sun
         self.sun = Star("Sun")
 
