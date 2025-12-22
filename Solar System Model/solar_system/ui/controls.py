@@ -11,10 +11,45 @@ from __future__ import annotations
 from collections.abc import Callable
 from dataclasses import dataclass
 from enum import Enum
+from typing import Any
 
 try:
     import pygame
-    from pygame.locals import *
+    from pygame.locals import (
+        K_0,
+        K_1,
+        K_2,
+        K_3,
+        K_4,
+        K_5,
+        K_6,
+        K_7,
+        K_8,
+        K_9,
+        K_EQUALS,
+        K_ESCAPE,
+        K_HOME,
+        K_KP_MINUS,
+        K_KP_PLUS,
+        K_MINUS,
+        K_PLUS,
+        K_SPACE,
+        KEYDOWN,
+        MOUSEBUTTONDOWN,
+        MOUSEBUTTONUP,
+        MOUSEMOTION,
+        MOUSEWHEEL,
+        QUIT,
+        K_c,
+        K_f,
+        K_g,
+        K_h,
+        K_i,
+        K_l,
+        K_o,
+        K_r,
+        K_t,
+    )
 
     PYGAME_AVAILABLE = True
 except ImportError:

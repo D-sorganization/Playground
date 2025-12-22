@@ -2,7 +2,8 @@
 Solar System Simulation
 ========================
 
-A professional-grade, scientifically accurate solar system model for educational purposes.
+A professional-grade, scientifically accurate solar system model for educational
+purposes.
 
 Features:
 - Accurate planetary positions using Keplerian orbital mechanics

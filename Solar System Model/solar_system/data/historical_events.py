@@ -25,8 +25,8 @@ SPACE_EVENTS = [
         "day": 7,
         "title": "Galileo Discovers Jupiter's Moons",
         "description": (
-            "Galileo Galilei observes four moons orbiting Jupiter, providing evidence for "
-            "Copernican heliocentrism"
+            "Galileo Galilei observes four moons orbiting Jupiter, providing evidence"
+            " for Copernican heliocentrism"
         ),
         "category": "discovery",
     },
@@ -46,7 +46,9 @@ SPACE_EVENTS = [
         "month": 4,
         "day": 12,
         "title": "First Human in Space",
-        "description": "Yuri Gagarin becomes the first human to orbit Earth aboard Vostok 1",
+        "description": (
+            "Yuri Gagarin becomes the first human to orbit Earth aboard Vostok 1"
+        ),
         "category": "mission",
     },
     # Apollo Program
@@ -56,7 +58,8 @@ SPACE_EVENTS = [
         "day": 21,
         "title": "Apollo 8 Launch",
         "description": (
-            "First crewed mission to orbit the Moon, capturing the famous 'Earthrise' photo"
+            "First crewed mission to orbit the Moon, capturing the famous 'Earthrise'"
+            " photo"
         ),
         "category": "mission",
     },
@@ -66,7 +69,8 @@ SPACE_EVENTS = [
         "day": 16,
         "title": "Apollo 11 Launch",
         "description": (
-            "Saturn V rocket launches with Neil Armstrong, Buzz Aldrin, and Michael Collins"
+            "Saturn V rocket launches with Neil Armstrong, Buzz Aldrin, and Michael"
+            " Collins"
         ),
         "category": "mission",
     },
@@ -76,7 +80,8 @@ SPACE_EVENTS = [
         "day": 20,
         "title": "First Moon Landing",
         "description": (
-            "Apollo 11 lands in the Sea of Tranquility. 'That's one small step for man...'"
+            "Apollo 11 lands in the Sea of Tranquility. 'That's one small step for"
+            " man...'"
         ),
         "category": "mission",
     },
@@ -85,7 +90,9 @@ SPACE_EVENTS = [
         "month": 7,
         "day": 21,
         "title": "First Moonwalk",
-        "description": "Neil Armstrong and Buzz Aldrin walk on the lunar surface for 2.5 hours",
+        "description": (
+            "Neil Armstrong and Buzz Aldrin walk on the lunar surface for 2.5 hours"
+        ),
         "category": "mission",
     },
     {
@@ -93,7 +100,9 @@ SPACE_EVENTS = [
         "month": 7,
         "day": 24,
         "title": "Apollo 11 Returns",
-        "description": "Safe splashdown in Pacific Ocean, completing historic moon mission",
+        "description": (
+            "Safe splashdown in Pacific Ocean, completing historic moon mission"
+        ),
         "category": "mission",
     },
     {
@@ -101,7 +110,9 @@ SPACE_EVENTS = [
         "month": 4,
         "day": 11,
         "title": "Apollo 13 Launch",
-        "description": "Launch of Apollo 13, which would face a critical in-flight emergency",
+        "description": (
+            "Launch of Apollo 13, which would face a critical in-flight emergency"
+        ),
         "category": "mission",
     },
     {
@@ -110,7 +121,8 @@ SPACE_EVENTS = [
         "day": 13,
         "title": "Apollo 13 Accident",
         "description": (
-            "'Houston, we've had a problem' - oxygen tank explosion forces mission abort"
+            "'Houston, we've had a problem' - oxygen tank explosion forces mission"
+            " abort"
         ),
         "category": "mission",
     },
@@ -119,7 +131,9 @@ SPACE_EVENTS = [
         "month": 4,
         "day": 17,
         "title": "Apollo 13 Safe Return",
-        "description": "Crew safely returns to Earth after using lunar module as 'lifeboat'",
+        "description": (
+            "Crew safely returns to Earth after using lunar module as 'lifeboat'"
+        ),
         "category": "mission",
     },
     # Planetary Missions
@@ -128,7 +142,9 @@ SPACE_EVENTS = [
         "month": 11,
         "day": 13,
         "title": "Mariner 9 Reaches Mars",
-        "description": "First spacecraft to orbit another planet, maps 85% of Mars surface",
+        "description": (
+            "First spacecraft to orbit another planet, maps 85% of Mars surface"
+        ),
         "category": "mission",
     },
     {
@@ -192,7 +208,9 @@ SPACE_EVENTS = [
         "month": 1,
         "day": 24,
         "title": "Voyager 2 at Uranus",
-        "description": "First and only spacecraft visit to Uranus, discovers 10 new moons",
+        "description": (
+            "First and only spacecraft visit to Uranus, discovers 10 new moons"
+        ),
         "category": "mission",
     },
     {
@@ -200,7 +218,9 @@ SPACE_EVENTS = [
         "month": 2,
         "day": 9,
         "title": "Halley's Comet Return",
-        "description": "Armada of spacecraft from multiple nations study the famous comet",
+        "description": (
+            "Armada of spacecraft from multiple nations study the famous comet"
+        ),
         "category": "observation",
     },
     {
@@ -219,7 +239,9 @@ SPACE_EVENTS = [
         "month": 4,
         "day": 24,
         "title": "Hubble Space Telescope Launch",
-        "description": "Revolutionary space observatory deployed by Space Shuttle Discovery",
+        "description": (
+            "Revolutionary space observatory deployed by Space Shuttle Discovery"
+        ),
         "category": "mission",
     },
     {
@@ -252,7 +274,9 @@ SPACE_EVENTS = [
         "month": 11,
         "day": 2,
         "title": "ISS Continuous Occupation Begins",
-        "description": "First crew arrives at International Space Station for permanent habitation",
+        "description": (
+            "First crew arrives at International Space Station for permanent habitation"
+        ),
         "category": "mission",
     },
     {
@@ -268,7 +292,9 @@ SPACE_EVENTS = [
         "month": 1,
         "day": 24,
         "title": "Opportunity Rover Lands",
-        "description": "Second rover lands on opposite side of Mars, will operate for 15 years",
+        "description": (
+            "Second rover lands on opposite side of Mars, will operate for 15 years"
+        ),
         "category": "mission",
     },
     {
@@ -364,7 +390,9 @@ SPACE_EVENTS = [
         "month": 1,
         "day": 1,
         "title": "New Horizons at Arrokoth",
-        "description": "Flyby of most distant object ever visited - pristine Kuiper Belt object",
+        "description": (
+            "Flyby of most distant object ever visited - pristine Kuiper Belt object"
+        ),
         "category": "mission",
     },
     {
@@ -372,7 +400,9 @@ SPACE_EVENTS = [
         "month": 7,
         "day": 30,
         "title": "Mars 2020 Launch",
-        "description": "Perseverance rover and Ingenuity helicopter begin journey to Mars",
+        "description": (
+            "Perseverance rover and Ingenuity helicopter begin journey to Mars"
+        ),
         "category": "mission",
     },
     {
@@ -404,7 +434,9 @@ SPACE_EVENTS = [
         "month": 7,
         "day": 12,
         "title": "First JWST Images Released",
-        "description": "Revolutionary infrared telescope reveals deepest view of universe",
+        "description": (
+            "Revolutionary infrared telescope reveals deepest view of universe"
+        ),
         "category": "observation",
     },
     {
@@ -412,7 +444,9 @@ SPACE_EVENTS = [
         "month": 9,
         "day": 26,
         "title": "DART Impact Success",
-        "description": "First planetary defense test successfully alters asteroid orbit",
+        "description": (
+            "First planetary defense test successfully alters asteroid orbit"
+        ),
         "category": "mission",
     },
     {

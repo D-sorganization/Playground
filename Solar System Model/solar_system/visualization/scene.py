@@ -186,7 +186,8 @@ class SolarSystemScene:
 
         # Enhanced UI widgets
         self.date_picker: DateTimePicker | None = None
-        # self.time_nav_panel is now visually inside UnifiedControlPanel but kept for logic
+        # self.time_nav_panel is now visually inside UnifiedControlPanel
+        # but kept for logic
         self.time_nav_panel: TimeNavigationPanel | None = None
 
         # New Container Panels
@@ -1000,14 +1001,17 @@ class SolarSystemScene:
                         bodies.append(
                             {
                                 "name": name,
-                                "selected": self.selected_body == self.planets[name],
+                                "selected": self.selected_body
+                                == self.planets[name],
                             }
                         )
 
                 content_data = {"visible": True, "bodies": bodies}
 
-            # Pass to sidebar renderer (which handles the sidebar frame + invokes content)
-            renderer.render_sidebar(self.sidebar_panel.get_render_data(), content_data)
+            # Pass to sidebar renderer (handles frame + invokes content)
+            renderer.render_sidebar(
+                self.sidebar_panel.get_render_data(), content_data
+            )
 
         # 2. Unified Control Panel (Bottom)
         if self.unified_controls:
@@ -1050,8 +1054,10 @@ class SolarSystemScene:
             return self.view_state.show_dwarf_planets
         # For Moons, we might need a specific flag if we want to toggle them separately
         elif body.body_type == BodyType.MOON:
-            # For now, let's tie moon visibility to general minor bodies or parent visibility?
-            # User asked for granular. Let's start with minor bodies flag for moons/asteroids.
+            # For now, let's tie moon visibility to general minor bodies
+            # or parent visibility?
+            # User asked for granular. Let's start with minor bodies flag
+            # for moons/asteroids.
             return self.view_state.show_minor_bodies
         elif body.body_type in {BodyType.ASTEROID, BodyType.COMET}:
             return self.view_state.show_minor_bodies
@@ -1096,7 +1102,8 @@ class SolarSystemScene:
                 if current_tab.content_renderer_key == "planets":
                     # Simple list click detection matching UIRenderer layout
                     # Header ~35px + Title ~30px = ~65px offset.
-                    # Items start at y + 35 + 30 + 10 (padding) = 75px relative to sidebar
+                    # Items start at y + 35 + 30 + 10 (padding) = 75px
+                    # relative to sidebar
                     # Item height 25px
 
                     list_start_y = 75

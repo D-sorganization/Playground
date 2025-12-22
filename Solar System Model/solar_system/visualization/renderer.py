@@ -34,6 +34,7 @@ try:
         GL_AMBIENT,
         GL_AMBIENT_AND_DIFFUSE,
         GL_BLEND,
+        GL_COLOR_ARRAY,
         GL_COLOR_BUFFER_BIT,
         GL_COLOR_MATERIAL,
         GL_COMPILE,
@@ -63,16 +64,12 @@ try:
         GL_PROJECTION,
         GL_PROJECTION_MATRIX,
         GL_QUAD_STRIP,
-        GL_QUADS,
-        GL_RGBA,
         GL_SPECULAR,
         GL_SRC_ALPHA,
         GL_TEXTURE_2D,
-        GL_UNSIGNED_BYTE,
         GL_VERTEX_ARRAY,
         GL_VERTEX_SHADER,
         GL_VIEWPORT,
-        GL_COLOR_ARRAY,
         glAttachShader,
         glBegin,
         glBlendFunc,
@@ -106,17 +103,14 @@ try:
         glMatrixMode,
         glNewList,
         glNormal3f,
-        glOrtho,
         glPointSize,
         glPopMatrix,
         glPushMatrix,
-        glRasterPos2i,
         glScalef,
         glShaderSource,
         glTexCoord2f,
         glTranslatef,
         glUseProgram,
-        glVertex2f,
         glVertex3f,
         glVertexPointer,
         glViewport,
@@ -776,7 +770,8 @@ class Renderer:
     def render_info_panel(
         self, info: dict[str, Any], position: tuple[int, int] = (20, 20)
     ):
-        # Delegated but not strictly used in current Scene, kept for compatibility if needed
+        # Delegated but not strictly used in current Scene, kept for compatibility
+        # if needed
         pass  # UI Renderer handles panels now via render_sidebar or similar
 
     def render_status_bar(self, text: str):
