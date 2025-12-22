@@ -816,7 +816,7 @@ class Renderer:
         pass  # Moved to Unified
 
     def render_sidebar(
-        self, sidebar_data: dict[str, Any], content_data: dict[str, Any]
+        self, sidebar_data: dict[str, Any], content_data: dict[str, Any] | None
     ):
         self.ui_renderer.render_sidebar(sidebar_data, content_data)
 

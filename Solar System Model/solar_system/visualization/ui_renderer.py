@@ -323,7 +323,7 @@ class UIRenderer:
         self.end_2d()
 
     def render_sidebar(
-        self, sidebar_data: dict[str, Any], content_data: dict[str, Any]
+        self, sidebar_data: dict[str, Any], content_data: dict[str, Any] | None
     ):
         if not sidebar_data.get("visible", False):
             return

@@ -476,6 +476,9 @@ class SolarSystemScene:
         if key == K_ESCAPE:
             return False
 
+        if not self.renderer:
+            return True
+
         elif key == K_SPACE:
             self.time_manager.toggle_pause()
 
@@ -745,6 +748,9 @@ class SolarSystemScene:
 
     def _handle_mouse_motion(self, pos: tuple[int, int], rel: tuple[int, int]):
         """Handle mouse motion."""
+        if not self.renderer:
+            return
+
         if self._mouse_dragging:
             # Get mouse buttons
             buttons = pygame.mouse.get_pressed()
@@ -768,6 +774,9 @@ class SolarSystemScene:
 
     def _handle_mouse_wheel(self, y_offset: float):
         """Handle mouse wheel events."""
+        if not self.renderer:
+            return
+
         mode = "Orbit"
         if self.unified_controls:
             mode = self.unified_controls.get_current_mode()
@@ -803,6 +812,9 @@ class SolarSystemScene:
 
     def _cycle_camera_mode(self):
         """Cycle through camera modes."""
+        if not self.renderer:
+            return
+
         camera = self.renderer.camera
         modes = [CameraMode.FREE, CameraMode.HELIOCENTRIC, CameraMode.TOP_DOWN]
 
@@ -816,7 +828,7 @@ class SolarSystemScene:
         camera.set_mode(new_mode, self.selected_body)
 
     def _focus_on_selected(self):
-        if not self.selected_body:
+        if not self.selected_body or not self.renderer:
             return
 
         # Get body position
@@ -847,9 +859,10 @@ class SolarSystemScene:
             self._last_ui_sync_jd = current_jd
 
         # Update camera
-        self.renderer.camera.update(
-            self.time_manager.julian_date, self.renderer.distance_scale
-        )
+        if self.renderer:
+            self.renderer.camera.update(
+                self.time_manager.julian_date, self.renderer.distance_scale
+            )
 
     def _render(self):
         if not self.renderer:
