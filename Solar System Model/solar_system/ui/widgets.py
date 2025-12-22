@@ -825,6 +825,7 @@ class SidebarPanel:
         self.current_tab_index = 0
         self.tabs = [
             Tab("Info", "educational"),
+            Tab("Planets", "planets"),
             Tab("Guide", "checklist"),
             Tab("History", "history"),
         ]

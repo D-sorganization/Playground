@@ -6,6 +6,8 @@ Handles keyboard and mouse input for the simulation.
 Provides a clean interface between raw input events and simulation actions.
 """
 
+from __future__ import annotations
+
 from collections.abc import Callable
 from dataclasses import dataclass
 from enum import Enum
@@ -81,18 +83,21 @@ class InputHandler:
     Provides customizable key bindings and mouse controls.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the input handler."""
         self.mouse_state = MouseState()
-        self._action_callbacks: dict[InputAction, list[Callable]] = {}
+        self._action_callbacks: dict[InputAction, list[Callable[..., Any]]] = {}
         self._key_bindings: list[KeyBinding] = []
-        self._last_mouse_pos = (0, 0)
+        self._last_mouse_pos: tuple[int, int] = (0, 0)
 
         # Set up default bindings
         self._setup_default_bindings()
 
-    def _setup_default_bindings(self):
+    def _setup_default_bindings(self) -> None:
         """Set up default keyboard bindings."""
+        if not PYGAME_AVAILABLE:
+            return
+
         default_bindings = [
             KeyBinding(K_ESCAPE, InputAction.QUIT, description="Quit"),
             KeyBinding(K_SPACE, InputAction.PAUSE, description="Pause/Resume"),
@@ -127,7 +132,7 @@ class InputHandler:
 
         self._key_bindings = default_bindings
 
-    def register_callback(self, action: InputAction, callback: Callable):
+    def register_callback(self, action: InputAction, callback: Callable[..., Any]) -> None:
         """
         Register a callback for an input action.
 
@@ -139,7 +144,7 @@ class InputHandler:
             self._action_callbacks[action] = []
         self._action_callbacks[action].append(callback)
 
-    def unregister_callback(self, action: InputAction, callback: Callable):
+    def unregister_callback(self, action: InputAction, callback: Callable[..., Any]) -> None:
         """Remove a callback for an action."""
         if (
             action in self._action_callbacks
@@ -147,7 +152,7 @@ class InputHandler:
         ):
             self._action_callbacks[action].remove(callback)
 
-    def _trigger_action(self, action: InputAction, **kwargs):
+    def _trigger_action(self, action: InputAction, **kwargs: Any) -> None:
         """Trigger all callbacks for an action."""
         if action in self._action_callbacks:
             for callback in self._action_callbacks[action]:
@@ -208,7 +213,7 @@ class InputHandler:
 
         return True
 
-    def _handle_mouse_button_down(self, button: int, pos: tuple[int, int]):
+    def _handle_mouse_button_down(self, button: int, pos: tuple[int, int]) -> None:
         """Handle mouse button press."""
         self.mouse_state.position = pos
 
@@ -221,7 +226,7 @@ class InputHandler:
 
         self._last_mouse_pos = pos
 
-    def _handle_mouse_button_up(self, button: int, pos: tuple[int, int]):
+    def _handle_mouse_button_up(self, button: int, pos: tuple[int, int]) -> None:
         """Handle mouse button release."""
         self.mouse_state.position = pos
 
@@ -232,7 +237,7 @@ class InputHandler:
         elif button == 3:
             self.mouse_state.right_pressed = False
 
-    def _handle_mouse_motion(self, pos: tuple[int, int], rel: tuple[int, int]):
+    def _handle_mouse_motion(self, pos: tuple[int, int], rel: tuple[int, int]) -> None:
         """Handle mouse movement."""
         self.mouse_state.position = pos
         self.mouse_state.drag_delta = rel
@@ -242,7 +247,7 @@ class InputHandler:
         elif self.mouse_state.right_pressed:
             self._trigger_action(InputAction.PAN_CAMERA, delta=rel)
 
-    def _handle_mouse_wheel(self, delta: int):
+    def _handle_mouse_wheel(self, delta: int) -> None:
         """Handle mouse wheel scroll."""
         self.mouse_state.scroll_delta = delta
 
@@ -259,6 +264,9 @@ class InputHandler:
             List of (key_name, description) tuples
         """
         result = []
+
+        if not PYGAME_AVAILABLE:
+            return []
 
         for binding in self._key_bindings:
             if binding.description:

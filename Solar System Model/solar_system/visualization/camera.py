@@ -523,3 +523,8 @@ class Camera:
         """Set distance from target."""
         self._distance = np.clip(distance, self.min_distance, self.max_distance)
         self._update_position_from_angles()
+
+    @property
+    def yaw(self) -> float:
+        """Get the camera's horizontal angle (yaw) in radians."""
+        return self._azimuth
