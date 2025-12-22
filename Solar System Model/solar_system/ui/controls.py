@@ -132,7 +132,9 @@ class InputHandler:
 
         self._key_bindings = default_bindings
 
-    def register_callback(self, action: InputAction, callback: Callable[..., Any]) -> None:
+    def register_callback(
+        self, action: InputAction, callback: Callable[..., Any]
+    ) -> None:
         """
         Register a callback for an input action.
 
@@ -144,7 +146,9 @@ class InputHandler:
             self._action_callbacks[action] = []
         self._action_callbacks[action].append(callback)
 
-    def unregister_callback(self, action: InputAction, callback: Callable[..., Any]) -> None:
+    def unregister_callback(
+        self, action: InputAction, callback: Callable[..., Any]
+    ) -> None:
         """Remove a callback for an action."""
         if (
             action in self._action_callbacks

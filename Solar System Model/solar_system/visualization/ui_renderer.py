@@ -14,7 +14,6 @@ from typing import Any
 
 try:
     import pygame
-    from pygame.locals import *
 except ImportError:
     pass
 
@@ -315,11 +314,17 @@ class UIRenderer:
         self.text_cache.render(date_str, x, y + 28, "default", (200, 240, 255))
 
         self.text_cache.render(
-            "Press [ / ] to jump by day, E for events", x, y + 50, "small", (150, 150, 150)
+            "Press [ / ] to jump by day, E for events",
+            x,
+            y + 50,
+            "small",
+            (150, 150, 150),
         )
         self.end_2d()
 
-    def render_sidebar(self, sidebar_data: dict[str, Any], content_data: dict[str, Any]):
+    def render_sidebar(
+        self, sidebar_data: dict[str, Any], content_data: dict[str, Any]
+    ):
         if not sidebar_data.get("visible", False):
             return
 
@@ -425,9 +430,7 @@ class UIRenderer:
             for word in words:
                 test_line = f"{line} {word}".strip()
                 if len(test_line) > 45:
-                    self.text_cache.render(
-                        line, x, current_y, "small", (180, 220, 180)
-                    )
+                    self.text_cache.render(line, x, current_y, "small", (180, 220, 180))
                     current_y += line_height
                     line = word
                 else:
@@ -562,9 +565,7 @@ class UIRenderer:
         buttons = ctrl_data.get("buttons", [])
         for btn in buttons:
             self.draw_rect(btn_x, btn_y, btn.width, 30, (0.2, 0.4, 0.6, 0.8))
-            _, w, h = self.text_cache.get_text_data(
-                btn.label, "small", (255, 255, 255)
-            )
+            _, w, h = self.text_cache.get_text_data(btn.label, "small", (255, 255, 255))
             tx = btn_x + (btn.width - w) // 2
             ty = btn_y + (30 - h) // 2
             self.text_cache.render(
@@ -633,7 +634,9 @@ class UIRenderer:
 
         text = f"{time_warp:.0f}x"
         _, tw, th = self.text_cache.get_text_data(text, "small", (255, 255, 255))
-        self.text_cache.render(text, x + (w - tw) // 2, y - 20, "small", (255, 255, 255))
+        self.text_cache.render(
+            text, x + (w - tw) // 2, y - 20, "small", (255, 255, 255)
+        )
 
         self.end_2d()
 

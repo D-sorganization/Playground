@@ -851,6 +851,8 @@ class SolarSystemScene:
         )
 
     def _render(self):
+        if not self.renderer:
+            return
         renderer = self.renderer
         jd = self.time_manager.julian_date
 
@@ -881,6 +883,8 @@ class SolarSystemScene:
         renderer.end_frame()
 
     def _render_view_contents(self, julian_date: float):
+        if not self.renderer:
+            return
         renderer = self.renderer
 
         renderer.render_stars()
@@ -954,6 +958,8 @@ class SolarSystemScene:
                     renderer.render_label("🚀 " + spacecraft.name, pos, (0, 255, 128))
 
     def _render_overlays(self, julian_date: float):
+        if not self.renderer:
+            return
         renderer = self.renderer
 
         # 1. Sidebar Panel (Right)
@@ -985,16 +991,20 @@ class SolarSystemScene:
                 # Generate planet list data
                 bodies = []
                 # Add Sun
-                bodies.append({"name": "Sun", "selected": self.selected_body == self.sun})
+                bodies.append(
+                    {"name": "Sun", "selected": self.selected_body == self.sun}
+                )
                 # Add Planets
                 for name in PLANET_ORDER:
                     if name in self.planets:
-                        bodies.append({"name": name, "selected": self.selected_body == self.planets[name]})
+                        bodies.append(
+                            {
+                                "name": name,
+                                "selected": self.selected_body == self.planets[name],
+                            }
+                        )
 
-                content_data = {
-                    "visible": True,
-                    "bodies": bodies
-                }
+                content_data = {"visible": True, "bodies": bodies}
 
             # Pass to sidebar renderer (which handles the sidebar frame + invokes content)
             renderer.render_sidebar(self.sidebar_panel.get_render_data(), content_data)
@@ -1080,7 +1090,9 @@ class SolarSystemScene:
                     return True
 
                 # Handle content clicks
-                current_tab = self.sidebar_panel.tabs[self.sidebar_panel.current_tab_index]
+                current_tab = self.sidebar_panel.tabs[
+                    self.sidebar_panel.current_tab_index
+                ]
                 if current_tab.content_renderer_key == "planets":
                     # Simple list click detection matching UIRenderer layout
                     # Header ~35px + Title ~30px = ~65px offset.
@@ -1090,7 +1102,9 @@ class SolarSystemScene:
                     list_start_y = 75
                     if rel_y > list_start_y:
                         idx = (rel_y - list_start_y) // 25
-                        bodies = ["Sun"] + [p for p in PLANET_ORDER if p in self.planets]
+                        bodies = ["Sun"] + [
+                            p for p in PLANET_ORDER if p in self.planets
+                        ]
                         if 0 <= idx < len(bodies):
                             name = bodies[idx]
                             body = self.get_body_by_name(name)

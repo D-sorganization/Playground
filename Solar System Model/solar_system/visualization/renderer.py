@@ -247,7 +247,9 @@ class Renderer:
         self.clock = pygame.time.Clock()
 
         # Initialize UI Renderer
-        self.ui_renderer = UIRenderer(self.settings.window_width, self.settings.window_height)
+        self.ui_renderer = UIRenderer(
+            self.settings.window_width, self.settings.window_height
+        )
 
         # OpenGL setup
         self._setup_opengl()
@@ -632,7 +634,9 @@ class Renderer:
         glColor4f(*color)
 
         # Extract positions
-        pos_array = np.array([state.position * self.distance_scale for state in points], dtype=np.float32)
+        pos_array = np.array(
+            [state.position * self.distance_scale for state in points], dtype=np.float32
+        )
 
         glEnableClientState(GL_VERTEX_ARRAY)
         glVertexPointer(3, GL_FLOAT, 0, pos_array)
@@ -769,9 +773,11 @@ class Renderer:
         except Exception:
             return None
 
-    def render_info_panel(self, info: dict[str, Any], position: tuple[int, int] = (20, 20)):
+    def render_info_panel(
+        self, info: dict[str, Any], position: tuple[int, int] = (20, 20)
+    ):
         # Delegated but not strictly used in current Scene, kept for compatibility if needed
-        pass # UI Renderer handles panels now via render_sidebar or similar
+        pass  # UI Renderer handles panels now via render_sidebar or similar
 
     def render_status_bar(self, text: str):
         self.ui_renderer.render_status_bar(text)
@@ -787,7 +793,7 @@ class Renderer:
         pass
 
     def render_educational_panel(self, edu_data: dict[str, Any]):
-         self.ui_renderer.render_educational_panel(edu_data)
+        self.ui_renderer.render_educational_panel(edu_data)
 
     def render_historical_events(self, events_data: dict[str, Any]):
         self.ui_renderer.render_historical_events(events_data)
@@ -809,10 +815,10 @@ class Renderer:
         return self.clock.get_fps() if self.clock else 0.0
 
     def render_settings_panel(self, settings_data: dict[str, Any]):
-        pass # Moved to Unified
+        pass  # Moved to Unified
 
     def render_nav_mode_panel(self, nav_data: dict[str, Any]):
-        pass # Moved to Unified
+        pass  # Moved to Unified
 
     def render_sidebar(
         self, sidebar_data: dict[str, Any], content_data: dict[str, Any]
