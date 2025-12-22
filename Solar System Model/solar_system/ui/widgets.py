@@ -664,30 +664,40 @@ class ImmersionChecklistPanel:
             ImmersionTask(
                 task_id="select_body",
                 title="Pick a world",
-                description="Use number keys or click to focus a planet and open its fact sheet.",
+                description=(
+                    "Use number keys or click to focus a planet and open its"
+                    " fact sheet."
+                ),
             ),
             ImmersionTask(
                 task_id="navigate_time",
                 title="Travel through time",
                 description=(
-                    "Use the date picker or time navigation hotkeys to see planetary alignments."
+                    "Use the date picker or time navigation hotkeys to see planetary"
+                    " alignments."
                 ),
             ),
             ImmersionTask(
                 task_id="toggle_overlays",
                 title="Tune the overlays",
-                description="Toggle orbits, labels, and the grid to compare scales and visibility.",
+                description=(
+                    "Toggle orbits, labels, and the grid to compare scales and"
+                    " visibility."
+                ),
             ),
             ImmersionTask(
                 task_id="historical_events",
                 title="Explore mission history",
-                description="Open the historical events panel and jump to milestone dates.",
+                description=(
+                    "Open the historical events panel and jump to milestone dates."
+                ),
             ),
             ImmersionTask(
                 task_id="plan_transfer",
                 title="Plot a transfer",
                 description=(
-                    "Plan an Earth→Mars Hohmann transfer to visualize interplanetary travel."
+                    "Plan an Earth→Mars Hohmann transfer to visualize interplanetary"
+                    " travel."
                 ),
             ),
         ]
@@ -825,6 +835,7 @@ class SidebarPanel:
         self.current_tab_index = 0
         self.tabs = [
             Tab("Info", "educational"),
+            Tab("Planets", "planets"),
             Tab("Guide", "checklist"),
             Tab("History", "history"),
         ]

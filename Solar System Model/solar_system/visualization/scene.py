@@ -186,7 +186,8 @@ class SolarSystemScene:
 
         # Enhanced UI widgets
         self.date_picker: DateTimePicker | None = None
-        # self.time_nav_panel is now visually inside UnifiedControlPanel but kept for logic
+        # self.time_nav_panel is now visually inside UnifiedControlPanel
+        # but kept for logic
         self.time_nav_panel: TimeNavigationPanel | None = None
 
         # New Container Panels
@@ -287,6 +288,7 @@ class SolarSystemScene:
 
         # Add Action Buttons
         self.unified_controls.add_button("Reset View", "reset_view")
+        self.unified_controls.add_button("Toggle Orbits", "toggle_orbits_btn")
 
         # Set initial Nav Mode
         self.unified_controls.set_mode("Orbit")
@@ -317,7 +319,7 @@ class SolarSystemScene:
 
         self._mark_immersion_task("navigate_time")
 
-    def _create_solar_system(self):
+    def _create_solar_system(self) -> None:
         # Create the Sun
         self.sun = Star("Sun")
 
@@ -473,6 +475,9 @@ class SolarSystemScene:
         """
         if key == K_ESCAPE:
             return False
+
+        if not self.renderer:
+            return True
 
         elif key == K_SPACE:
             self.time_manager.toggle_pause()
@@ -743,6 +748,9 @@ class SolarSystemScene:
 
     def _handle_mouse_motion(self, pos: tuple[int, int], rel: tuple[int, int]):
         """Handle mouse motion."""
+        if not self.renderer:
+            return
+
         if self._mouse_dragging:
             # Get mouse buttons
             buttons = pygame.mouse.get_pressed()
@@ -766,6 +774,9 @@ class SolarSystemScene:
 
     def _handle_mouse_wheel(self, y_offset: float):
         """Handle mouse wheel events."""
+        if not self.renderer:
+            return
+
         mode = "Orbit"
         if self.unified_controls:
             mode = self.unified_controls.get_current_mode()
@@ -801,6 +812,9 @@ class SolarSystemScene:
 
     def _cycle_camera_mode(self):
         """Cycle through camera modes."""
+        if not self.renderer:
+            return
+
         camera = self.renderer.camera
         modes = [CameraMode.FREE, CameraMode.HELIOCENTRIC, CameraMode.TOP_DOWN]
 
@@ -814,7 +828,7 @@ class SolarSystemScene:
         camera.set_mode(new_mode, self.selected_body)
 
     def _focus_on_selected(self):
-        if not self.selected_body:
+        if not self.selected_body or not self.renderer:
             return
 
         # Get body position
@@ -845,11 +859,14 @@ class SolarSystemScene:
             self._last_ui_sync_jd = current_jd
 
         # Update camera
-        self.renderer.camera.update(
-            self.time_manager.julian_date, self.renderer.distance_scale
-        )
+        if self.renderer:
+            self.renderer.camera.update(
+                self.time_manager.julian_date, self.renderer.distance_scale
+            )
 
     def _render(self):
+        if not self.renderer:
+            return
         renderer = self.renderer
         jd = self.time_manager.julian_date
 
@@ -880,6 +897,8 @@ class SolarSystemScene:
         renderer.end_frame()
 
     def _render_view_contents(self, julian_date: float):
+        if not self.renderer:
+            return
         renderer = self.renderer
 
         renderer.render_stars()
@@ -953,6 +972,8 @@ class SolarSystemScene:
                     renderer.render_label("🚀 " + spacecraft.name, pos, (0, 255, 128))
 
     def _render_overlays(self, julian_date: float):
+        if not self.renderer:
+            return
         renderer = self.renderer
 
         # 1. Sidebar Panel (Right)
@@ -980,9 +1001,30 @@ class SolarSystemScene:
                 content_data = self.immersion_checklist.get_render_data()
             elif content_key == "history" and self.historical_events:
                 content_data = self.historical_events.get_render_data()
+            elif content_key == "planets":
+                # Generate planet list data
+                bodies = []
+                # Add Sun
+                bodies.append(
+                    {"name": "Sun", "selected": self.selected_body == self.sun}
+                )
+                # Add Planets
+                for name in PLANET_ORDER:
+                    if name in self.planets:
+                        bodies.append(
+                            {
+                                "name": name,
+                                "selected": self.selected_body
+                                == self.planets[name],
+                            }
+                        )
 
-            # Pass to sidebar renderer (which handles the sidebar frame + invokes content)
-            renderer.render_sidebar(self.sidebar_panel.get_render_data(), content_data)
+                content_data = {"visible": True, "bodies": bodies}
+
+            # Pass to sidebar renderer (handles frame + invokes content)
+            renderer.render_sidebar(
+                self.sidebar_panel.get_render_data(), content_data
+            )
 
         # 2. Unified Control Panel (Bottom)
         if self.unified_controls:
@@ -1011,6 +1053,10 @@ class SolarSystemScene:
         if self.date_picker and self.date_picker.visible:
             renderer.render_date_picker(self.date_picker.get_render_data())
 
+        # 4. HUD Elements
+        renderer.render_speed_indicator(self.time_manager.time_warp)
+        renderer.render_compass(renderer.camera.yaw)
+
     def _should_render_body(self, body: CelestialBody) -> bool:
         # Check granular visibility flags
         if body.name in INNER_PLANETS:
@@ -1021,8 +1067,10 @@ class SolarSystemScene:
             return self.view_state.show_dwarf_planets
         # For Moons, we might need a specific flag if we want to toggle them separately
         elif body.body_type == BodyType.MOON:
-            # For now, let's tie moon visibility to general minor bodies or parent visibility?
-            # User asked for granular. Let's start with minor bodies flag for moons/asteroids.
+            # For now, let's tie moon visibility to general minor bodies
+            # or parent visibility?
+            # User asked for granular. Let's start with minor bodies flag
+            # for moons/asteroids.
             return self.view_state.show_minor_bodies
         elif body.body_type in {BodyType.ASTEROID, BodyType.COMET}:
             return self.view_state.show_minor_bodies
@@ -1055,9 +1103,35 @@ class SolarSystemScene:
                 sx <= x <= sx + self.sidebar_panel.width
                 and sy <= y <= sy + self.sidebar_panel.height
             ):
-                action = self.sidebar_panel.handle_click(x - sx, y - sy)
+                rel_x, rel_y = x - sx, y - sy
+                action = self.sidebar_panel.handle_click(rel_x, rel_y)
                 if action == "tab_changed":
                     return True
+
+                # Handle content clicks
+                current_tab = self.sidebar_panel.tabs[
+                    self.sidebar_panel.current_tab_index
+                ]
+                if current_tab.content_renderer_key == "planets":
+                    # Simple list click detection matching UIRenderer layout
+                    # Header ~35px + Title ~30px = ~65px offset.
+                    # Items start at y + 35 + 30 + 10 (padding) = 75px
+                    # relative to sidebar
+                    # Item height 25px
+
+                    list_start_y = 75
+                    if rel_y > list_start_y:
+                        idx = (rel_y - list_start_y) // 25
+                        bodies = ["Sun"] + [
+                            p for p in PLANET_ORDER if p in self.planets
+                        ]
+                        if 0 <= idx < len(bodies):
+                            name = bodies[idx]
+                            body = self.get_body_by_name(name)
+                            if body:
+                                self.select_body(body)
+                                self._focus_on_selected()
+
                 return True
 
         # 3. Check Unified Controls
@@ -1083,6 +1157,8 @@ class SolarSystemScene:
                         if bx <= rel_x <= bx + btn.width:
                             if btn.action == "reset_view":
                                 self.renderer.camera.reset()
+                            elif btn.action == "toggle_orbits_btn":
+                                self._handle_setting_action("toggle_orbits")
                             return True
                         bx += btn.width + 10
 

@@ -90,9 +90,13 @@ class TransferTrajectory:
             "Route": f"{self.origin} → {self.destination}",
             "Transfer Type": self.transfer_type.value.replace("_", " ").title(),
             "Time of Flight": (
-                f"{self.time_of_flight:.1f} days ({self.time_of_flight/365.25:.2f} years)"
+                f"{self.time_of_flight:.1f} days "
+                f"({self.time_of_flight/365.25:.2f} years)"
             ),
-            "Total Δv": f"{self.total_delta_v:.1f} m/s ({self.total_delta_v/1000:.2f} km/s)",
+            "Total Δv": (
+                f"{self.total_delta_v:.1f} m/s "
+                f"({self.total_delta_v/1000:.2f} km/s)"
+            ),
             "Phase Angle": f"{self.phase_angle:.1f}°",
             "Maneuvers": len(self.maneuvers),
         }

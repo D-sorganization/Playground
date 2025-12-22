@@ -66,7 +66,7 @@ from .visualization.renderer import RenderSettings
 from .visualization.scene import SolarSystemScene
 
 
-def parse_arguments():
+def parse_arguments() -> argparse.Namespace:
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(
         description="Solar System Simulation - A scientifically accurate model",
@@ -101,7 +101,7 @@ def parse_arguments():
     return parser.parse_args()
 
 
-def main():
+def main() -> int:
     """Main entry point for the simulation."""
     args = parse_arguments()
 

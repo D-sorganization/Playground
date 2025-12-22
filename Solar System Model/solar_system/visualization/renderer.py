@@ -34,12 +34,14 @@ try:
         GL_AMBIENT,
         GL_AMBIENT_AND_DIFFUSE,
         GL_BLEND,
+        GL_COLOR_ARRAY,
         GL_COLOR_BUFFER_BIT,
         GL_COLOR_MATERIAL,
         GL_COMPILE,
         GL_DEPTH_BUFFER_BIT,
         GL_DEPTH_TEST,
         GL_DIFFUSE,
+        GL_FLOAT,
         GL_FRAGMENT_SHADER,
         GL_FRONT_AND_BACK,
         GL_LEQUAL,
@@ -62,12 +64,10 @@ try:
         GL_PROJECTION,
         GL_PROJECTION_MATRIX,
         GL_QUAD_STRIP,
-        GL_QUADS,
-        GL_RGBA,
         GL_SPECULAR,
         GL_SRC_ALPHA,
         GL_TEXTURE_2D,
-        GL_UNSIGNED_BYTE,
+        GL_VERTEX_ARRAY,
         GL_VERTEX_SHADER,
         GL_VIEWPORT,
         glAttachShader,
@@ -79,14 +79,17 @@ try:
         glColor3f,
         glColor4f,
         glColorMaterial,
+        glColorPointer,
         glCompileShader,
         glCreateProgram,
         glCreateShader,
         glDeleteLists,
         glDepthFunc,
         glDisable,
-        glDrawPixels,
+        glDisableClientState,
+        glDrawArrays,
         glEnable,
+        glEnableClientState,
         glEnd,
         glEndList,
         glGenLists,
@@ -100,18 +103,16 @@ try:
         glMatrixMode,
         glNewList,
         glNormal3f,
-        glOrtho,
         glPointSize,
         glPopMatrix,
         glPushMatrix,
-        glRasterPos2i,
         glScalef,
         glShaderSource,
         glTexCoord2f,
         glTranslatef,
         glUseProgram,
-        glVertex2f,
         glVertex3f,
+        glVertexPointer,
         glViewport,
     )
     from OpenGL.GLU import (
@@ -130,6 +131,7 @@ from ..data.star_catalog import iter_catalog
 from .camera import Camera, CameraState
 from .starfield import build_star_vertices, point_size_from_magnitude
 from .textures import TextureManager
+from .ui_renderer import UIRenderer
 
 
 @dataclass
@@ -162,7 +164,7 @@ class Renderer:
     - Orbital paths
     - Trajectory lines
     - Star field background
-    - UI overlays
+    - UI overlays (delegated to UIRenderer)
     """
 
     def __init__(self, settings: RenderSettings | None = None):
@@ -190,7 +192,7 @@ class Renderer:
         self._sphere_list: int | None = None
         self._ring_list: int | None = None
         self._circle_list: int | None = None
-        self._star_list: int | None = None
+        self.star_batches: list[tuple[float, int, np.ndarray, np.ndarray]] = []
         self.star_vertices = []
 
         # Scale factor for visualization
@@ -203,19 +205,13 @@ class Renderer:
         # UI state
         self.selected_body: CelestialBody | None = None
         self.hovered_body: CelestialBody | None = None
+        self.ui_renderer: UIRenderer | None = None
 
         # Textures and shaders
         assets_root = pathlib.Path(__file__).resolve().parent.parent
         self.texture_manager = TextureManager(assets_root, auto_download=True)
         self._shaders_enabled = False
         self._shader_program: int | None = None
-
-        # Fonts
-        self._font: pygame.font.Font | None = None
-        self._small_font: pygame.font.Font | None = None
-
-        # Label collision
-        self.drawn_labels: list[pygame.Rect] = []
 
     def initialize(self) -> bool:
         """
@@ -244,16 +240,10 @@ class Renderer:
 
         self.clock = pygame.time.Clock()
 
-        # Initialize fonts
-        # Initialize fonts
-        try:
-            self._font = pygame.font.SysFont("segoeui", 28, bold=True)
-            self._small_font = pygame.font.SysFont("segoeui", 20)
-            self._title_font = pygame.font.SysFont("segoeui", 32, bold=True)
-        except Exception:
-            self._font = pygame.font.Font(None, 28)
-            self._small_font = pygame.font.Font(None, 20)
-            self._title_font = pygame.font.Font(None, 32)
+        # Initialize UI Renderer
+        self.ui_renderer = UIRenderer(
+            self.settings.window_width, self.settings.window_height
+        )
 
         # OpenGL setup
         self._setup_opengl()
@@ -413,13 +403,8 @@ class Renderer:
         glEnd()
 
     def _generate_stars(self):
-        """Build a star field from the curated catalog for accurate sky matches."""
-
+        """Build a star field from the curated catalog using Vertex Arrays."""
         self.star_vertices = build_star_vertices(iter_catalog())
-        # Sort by magnitude for efficient state switching if we were using variable point sizes
-        # However, to be maximally efficient with glBegin/glEnd as requested, we should batch them.
-        # But point_size_from_magnitude returns variable sizes.
-        # We will group stars by size bin to minimize state changes.
 
         # Group stars by integer point size for batching
         stars_by_size = {}
@@ -429,24 +414,19 @@ class Renderer:
                 stars_by_size[size] = []
             stars_by_size[size].append(star)
 
-        self._star_list = glGenLists(1)
-        glNewList(self._star_list, GL_COMPILE)
-        glDisable(GL_LIGHTING)
-
+        self.star_batches = []
         for size, stars in stars_by_size.items():
-            glPointSize(float(size))
-            glBegin(GL_POINTS)
-            for star in stars:
-                glColor3f(*star.color)
-                glVertex3f(*star.position)
-            glEnd()
+            if not stars:
+                continue
 
-        glEnable(GL_LIGHTING)
-        glEndList()
+            # Prepare arrays
+            coords = np.array([s.position for s in stars], dtype=np.float32)
+            colors = np.array([s.color for s in stars], dtype=np.float32)
+            self.star_batches.append((float(size), len(stars), coords, colors))
 
     def begin_frame(self, camera_state: CameraState | None = None, clear: bool = True):
         """Begin a new frame."""
-        self.drawn_labels.clear()
+        self.ui_renderer.drawn_labels.clear()
         if clear:
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
@@ -472,8 +452,22 @@ class Renderer:
 
     def render_stars(self):
         """Render the star field background."""
-        if self._star_list:
-            glCallList(self._star_list)
+        if not self.star_batches:
+            return
+
+        glDisable(GL_LIGHTING)
+        glEnableClientState(GL_VERTEX_ARRAY)
+        glEnableClientState(GL_COLOR_ARRAY)
+
+        for size, count, coords, colors in self.star_batches:
+            glPointSize(size)
+            glVertexPointer(3, GL_FLOAT, 0, coords)
+            glColorPointer(3, GL_FLOAT, 0, colors)
+            glDrawArrays(GL_POINTS, 0, count)
+
+        glDisableClientState(GL_VERTEX_ARRAY)
+        glDisableClientState(GL_COLOR_ARRAY)
+        glEnable(GL_LIGHTING)
 
     def render_body(
         self, body: CelestialBody, julian_date: float, highlight: bool = False
@@ -578,7 +572,7 @@ class Renderer:
         color: tuple[float, float, float, float] | None = None,
     ):
         """
-        Render the orbital path of a body.
+        Render the orbital path of a body using Vertex Arrays.
 
         Args:
             body: The body whose orbit to render
@@ -591,6 +585,7 @@ class Renderer:
         # Get orbit points
         points = body.get_orbit_points(julian_date, self.settings.orbit_segments)
         points = points * self.distance_scale
+        points = points.astype(np.float32)
 
         glDisable(GL_LIGHTING)
         glLineWidth(1.0)
@@ -604,10 +599,10 @@ class Renderer:
         else:
             glColor4f(*color)
 
-        glBegin(GL_LINE_LOOP)
-        for point in points:
-            glVertex3f(*point)
-        glEnd()
+        glEnableClientState(GL_VERTEX_ARRAY)
+        glVertexPointer(3, GL_FLOAT, 0, points)
+        glDrawArrays(GL_LINE_LOOP, 0, len(points))
+        glDisableClientState(GL_VERTEX_ARRAY)
 
         glEnable(GL_LIGHTING)
 
@@ -618,7 +613,7 @@ class Renderer:
         line_width: float = 2.0,
     ):
         """
-        Render a spacecraft trajectory.
+        Render a spacecraft trajectory using Vertex Arrays.
 
         Args:
             points: List of state vectors defining the trajectory
@@ -632,11 +627,15 @@ class Renderer:
         glLineWidth(line_width)
         glColor4f(*color)
 
-        glBegin(GL_LINE_STRIP)
-        for state in points:
-            pos = state.position * self.distance_scale
-            glVertex3f(*pos)
-        glEnd()
+        # Extract positions
+        pos_array = np.array(
+            [state.position * self.distance_scale for state in points], dtype=np.float32
+        )
+
+        glEnableClientState(GL_VERTEX_ARRAY)
+        glVertexPointer(3, GL_FLOAT, 0, pos_array)
+        glDrawArrays(GL_LINE_STRIP, 0, len(pos_array))
+        glDisableClientState(GL_VERTEX_ARRAY)
 
         glEnable(GL_LIGHTING)
 
@@ -650,11 +649,14 @@ class Renderer:
         glPointSize(1.2)
         glColor4f(0.7, 0.7, 0.7, 0.35)
 
-        glBegin(GL_POINTS)
-        for point in belt_points_au:
-            scaled = point * AU * self.distance_scale
-            glVertex3f(*scaled)
-        glEnd()
+        # Use Vertex Array for belt
+        points = (belt_points_au * AU * self.distance_scale).astype(np.float32)
+
+        glEnableClientState(GL_VERTEX_ARRAY)
+        glVertexPointer(3, GL_FLOAT, 0, points)
+        glDrawArrays(GL_POINTS, 0, len(points))
+        glDisableClientState(GL_VERTEX_ARRAY)
+
         glEnable(GL_LIGHTING)
 
     def render_grid(self, size: float = 10.0, divisions: int = 20):
@@ -668,16 +670,22 @@ class Renderer:
 
         step = size / divisions
 
-        glBegin(GL_LINES)
+        # Build grid lines
+        vertices = []
         for i in range(-divisions, divisions + 1):
-            # Lines parallel to X
-            glVertex3f(-size, 0, i * step)
-            glVertex3f(size, 0, i * step)
+            # Parallel to X
+            vertices.extend([-size, 0, i * step])
+            vertices.extend([size, 0, i * step])
+            # Parallel to Z
+            vertices.extend([i * step, 0, -size])
+            vertices.extend([i * step, 0, size])
 
-            # Lines parallel to Z
-            glVertex3f(i * step, 0, -size)
-            glVertex3f(i * step, 0, size)
-        glEnd()
+        v_array = np.array(vertices, dtype=np.float32)
+
+        glEnableClientState(GL_VERTEX_ARRAY)
+        glVertexPointer(3, GL_FLOAT, 0, v_array)
+        glDrawArrays(GL_LINES, 0, len(vertices) // 3)
+        glDisableClientState(GL_VERTEX_ARRAY)
 
         glEnable(GL_LIGHTING)
 
@@ -716,13 +724,7 @@ class Renderer:
         offset: tuple[int, int] = (10, -10),
     ):
         """
-        Render a text label at a 3D position.
-
-        Args:
-            text: Text to render
-            position_3d: 3D world position
-            color: Text color (RGB 0-255)
-            offset: Pixel offset from projected position
+        Render a text label at a 3D position using UIRenderer.
         """
         if not self.settings.show_labels:
             return
@@ -737,8 +739,8 @@ class Renderer:
         x += offset[0]
         y += offset[1]
 
-        # Render text
-        self._render_text_2d(text, (x, y), color)
+        # Render text using UI renderer
+        self.ui_renderer.render_label_2d(text, (x, y), color)
 
     def _project_to_screen(self, position_3d: np.ndarray) -> tuple[int, int] | None:
         """Project 3D position to 2D screen coordinates."""
@@ -765,700 +767,34 @@ class Renderer:
         except Exception:
             return None
 
-    def _render_text_2d(
-        self,
-        text: str,
-        position: tuple[int, int],
-        color: tuple[int, int, int] = (255, 255, 255),
-    ):
-        """Render 2D text overlay."""
-        # Switch to orthographic projection for 2D
-        glMatrixMode(GL_PROJECTION)
-        glPushMatrix()
-        glLoadIdentity()
-        glOrtho(0, self.settings.window_width, self.settings.window_height, 0, -1, 1)
-
-        glMatrixMode(GL_MODELVIEW)
-        glPushMatrix()
-        glLoadIdentity()
-
-        glDisable(GL_LIGHTING)
-        glDisable(GL_DEPTH_TEST)
-
-        # Render text to surface
-        text_surface = self._font.render(text, True, color)
-        text_data = pygame.image.tostring(text_surface, "RGBA", True)
-        width, height = text_surface.get_size()
-
-        # Check for overlaps and adjust
-        rect = pygame.Rect(position[0], position[1], width, height)
-        original_y = rect.y
-
-        # Try a few offsets if overlapping
-        offsets = [0, height + 2, -(height + 2), (height + 2) * 2]
-
-        final_pos = position
-        found_spot = False
-
-        for offset in offsets:
-            test_rect = rect.copy()
-            test_rect.y = original_y + offset
-
-            # constrain to screen
-            if test_rect.top < 0 or test_rect.bottom > self.settings.window_height:
-                continue
-
-            collision = False
-            for other_rect in self.drawn_labels:
-                if test_rect.colliderect(other_rect):
-                    collision = True
-                    break
-
-            if not collision:
-                rect = test_rect
-                final_pos = (rect.x, rect.y)
-                found_spot = True
-                break
-
-        if not found_spot:
-            # If we simply can't find a spot, draw it anyway at original position
-            # This ensures labels are never missing, even if overlapping
-            final_pos = position
-
-        self.drawn_labels.append(rect)
-
-        # Draw as texture
-        glRasterPos2i(final_pos[0], final_pos[1])
-        glDrawPixels(width, height, GL_RGBA, GL_UNSIGNED_BYTE, text_data)
-
-        glEnable(GL_DEPTH_TEST)
-        glEnable(GL_LIGHTING)
-
-        glMatrixMode(GL_PROJECTION)
-        glPopMatrix()
-        glMatrixMode(GL_MODELVIEW)
-        glPopMatrix()
-
     def render_info_panel(
         self, info: dict[str, Any], position: tuple[int, int] = (20, 20)
     ):
-        """Render an information panel overlay."""
-        x, y = position
-        line_height = 20
-
-        glMatrixMode(GL_PROJECTION)
-        glPushMatrix()
-        glLoadIdentity()
-        glOrtho(0, self.settings.window_width, self.settings.window_height, 0, -1, 1)
-
-        glMatrixMode(GL_MODELVIEW)
-        glPushMatrix()
-        glLoadIdentity()
-
-        glDisable(GL_LIGHTING)
-        glDisable(GL_DEPTH_TEST)
-
-        # Draw semi-transparent background
-        glEnable(GL_BLEND)
-        glColor4f(0.0, 0.0, 0.0, 0.7)
-
-        max_width = 300
-        height = (len(info) + 1) * line_height + 10
-
-        glBegin(GL_QUADS)
-        glVertex2f(x - 5, y - 5)
-        glVertex2f(x + max_width, y - 5)
-        glVertex2f(x + max_width, y + height)
-        glVertex2f(x - 5, y + height)
-        glEnd()
-
-        # Draw text
-        current_y = y
-        for key, value in info.items():
-            text = f"{key}: {value}"
-            text_surface = self._small_font.render(text, True, (220, 220, 220))
-            text_data = pygame.image.tostring(text_surface, "RGBA", True)
-            w, h = text_surface.get_size()
-
-            glRasterPos2i(x, current_y + h)
-            glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, text_data)
-
-            current_y += line_height
-
-        glEnable(GL_DEPTH_TEST)
-        glEnable(GL_LIGHTING)
-
-        glMatrixMode(GL_PROJECTION)
-        glPopMatrix()
-        glMatrixMode(GL_MODELVIEW)
-        glPopMatrix()
+        # Delegated but not strictly used in current Scene, kept for compatibility
+        # if needed
+        pass  # UI Renderer handles panels now via render_sidebar or similar
 
     def render_status_bar(self, text: str):
-        """Render status bar at bottom of screen."""
-        y = self.settings.window_height - 30
-
-        glMatrixMode(GL_PROJECTION)
-        glPushMatrix()
-        glLoadIdentity()
-        glOrtho(0, self.settings.window_width, self.settings.window_height, 0, -1, 1)
-
-        glMatrixMode(GL_MODELVIEW)
-        glPushMatrix()
-        glLoadIdentity()
-
-        glDisable(GL_LIGHTING)
-        glDisable(GL_DEPTH_TEST)
-
-        # Background
-        glEnable(GL_BLEND)
-        glColor4f(0.0, 0.0, 0.0, 0.7)
-
-        glBegin(GL_QUADS)
-        glVertex2f(0, y - 5)
-        glVertex2f(self.settings.window_width, y - 5)
-        glVertex2f(self.settings.window_width, self.settings.window_height)
-        glVertex2f(0, self.settings.window_height)
-        glEnd()
-
-        # Text
-        text_surface = self._font.render(text, True, (200, 200, 200))
-        text_data = pygame.image.tostring(text_surface, "RGBA", True)
-        w, h = text_surface.get_size()
-
-        glRasterPos2i(10, y + h)
-        glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, text_data)
-
-        glEnable(GL_DEPTH_TEST)
-        glEnable(GL_LIGHTING)
-
-        glMatrixMode(GL_PROJECTION)
-        glPopMatrix()
-        glMatrixMode(GL_MODELVIEW)
-        glPopMatrix()
+        self.ui_renderer.render_status_bar(text)
 
     def render_help_overlay(self, help_data: dict[str, Any]):
-        """Render help overlay with control instructions."""
-        if not help_data.get("visible", False):
-            return
-
-        controls = help_data.get("controls", [])
-        if not controls:
-            return
-
-        x, y = help_data.get("position") or (self.settings.window_width - 350, 20)
-        line_height = 20
-
-        glMatrixMode(GL_PROJECTION)
-        glPushMatrix()
-        glLoadIdentity()
-        glOrtho(0, self.settings.window_width, self.settings.window_height, 0, -1, 1)
-
-        glMatrixMode(GL_MODELVIEW)
-        glPushMatrix()
-        glLoadIdentity()
-
-        glDisable(GL_LIGHTING)
-        glDisable(GL_DEPTH_TEST)
-        glEnable(GL_BLEND)
-
-        # Background with border
-        glColor4f(0.0, 0.0, 0.0, 0.85)
-        height = len(controls) * line_height + 40
-
-        glBegin(GL_QUADS)
-        glVertex2f(x - 15, y - 15)
-        glVertex2f(self.settings.window_width - 10, y - 15)
-        glVertex2f(self.settings.window_width - 10, y + height)
-        glVertex2f(x - 15, y + height)
-        glEnd()
-
-        # Border
-        glLineWidth(2.0)
-        glColor4f(0.3, 0.5, 0.7, 0.8)
-        glBegin(GL_LINE_LOOP)
-        glVertex2f(x - 15, y - 15)
-        glVertex2f(self.settings.window_width - 10, y - 15)
-        glVertex2f(self.settings.window_width - 10, y + height)
-        glVertex2f(x - 15, y + height)
-        glEnd()
-
-        # Title
-        title_surface = self._font.render(
-            "CONTROLS (Press H to hide)", True, (100, 200, 255)
-        )
-        title_data = pygame.image.tostring(title_surface, "RGBA", True)
-        w, h = title_surface.get_size()
-        glRasterPos2i(x, y + h)
-        glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, title_data)
-
-        current_y = y + 30
-        for key, action in controls:
-            # Section headers (MOUSE:, KEYBOARD:)
-            if action == "":
-                if key:  # Section header
-                    text_surface = self._font.render(key, True, (255, 200, 100))
-                else:  # Empty line for spacing
-                    current_y += line_height // 2
-                    continue
-            else:
-                # Regular control line
-                if key.strip():  # Has a key
-                    text = f"{key}: {action}"
-                    text_surface = self._small_font.render(text, True, (220, 220, 220))
-                else:  # No key, just action
-                    text_surface = self._small_font.render(
-                        action, True, (180, 180, 180)
-                    )
-
-            text_data = pygame.image.tostring(text_surface, "RGBA", True)
-            w, h = text_surface.get_size()
-
-            glRasterPos2i(x, current_y + h)
-            glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, text_data)
-            current_y += line_height
-
-        glEnable(GL_DEPTH_TEST)
-        glEnable(GL_LIGHTING)
-
-        glMatrixMode(GL_PROJECTION)
-        glPopMatrix()
-        glMatrixMode(GL_MODELVIEW)
-        glPopMatrix()
+        self.ui_renderer.render_help_overlay(help_data)
 
     def render_date_picker(self, picker_data: dict[str, Any]):
-        """
-        Render interactive date picker widget.
-
-        Args:
-            picker_data: Dictionary with picker state from DateTimePicker.get_render_data()
-        """
-        if not picker_data.get("visible", False):
-            return
-
-        x, y = picker_data.get("position", (20, 100))
-        date = picker_data.get("date")
-
-        if not date:
-            return
-
-        line_height = 22
-        width = 300
-
-        glMatrixMode(GL_PROJECTION)
-        glPushMatrix()
-        glLoadIdentity()
-        glOrtho(0, self.settings.window_width, self.settings.window_height, 0, -1, 1)
-
-        glMatrixMode(GL_MODELVIEW)
-        glPushMatrix()
-        glLoadIdentity()
-
-        glDisable(GL_LIGHTING)
-        glDisable(GL_DEPTH_TEST)
-        glEnable(GL_BLEND)
-
-        # Background
-        glColor4f(0.1, 0.1, 0.15, 0.9)
-        height = 80
-
-        glBegin(GL_QUADS)
-        glVertex2f(x - 5, y - 5)
-        glVertex2f(x + width, y - 5)
-        glVertex2f(x + width, y + height)
-        glVertex2f(x - 5, y + height)
-        glEnd()
-
-        # Title
-        title_surface = self._font.render("Jump to Date", True, (255, 255, 100))
-        title_data = pygame.image.tostring(title_surface, "RGBA", True)
-        w, h = title_surface.get_size()
-        glRasterPos2i(x, y + h)
-        glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, title_data)
-
-        # Date display
-        current_y = y + 28
-        date_str = date.strftime("%Y-%m-%d %H:%M UTC")
-        text_surface = self._font.render(date_str, True, (200, 240, 255))
-        text_data = pygame.image.tostring(text_surface, "RGBA", True)
-        w, h = text_surface.get_size()
-        glRasterPos2i(x, current_y + h)
-        glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, text_data)
-
-        # Instructions
-        current_y += line_height
-        info_text = "Press [ / ] to jump by day, E for events"
-        info_surface = self._small_font.render(info_text, True, (150, 150, 150))
-        info_data = pygame.image.tostring(info_surface, "RGBA", True)
-        w, h = info_surface.get_size()
-        glRasterPos2i(x, current_y + h)
-        glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, info_data)
-
-        glEnable(GL_DEPTH_TEST)
-        glEnable(GL_LIGHTING)
-
-        glMatrixMode(GL_PROJECTION)
-        glPopMatrix()
-        glMatrixMode(GL_MODELVIEW)
-        glPopMatrix()
+        self.ui_renderer.render_date_picker(picker_data)
 
     def render_time_navigation_panel(self, nav_data: dict[str, Any]):
-        """
-        Render time navigation buttons panel.
-
-        Args:
-            nav_data: Dictionary with panel state from TimeNavigationPanel.get_render_data()
-        """
-        if not nav_data.get("visible", False):
-            return
-
-        x, y = nav_data.get("position", (20, 60))
-        buttons = nav_data.get("buttons", [])
-
-        if not buttons:
-            return
-
-        glMatrixMode(GL_PROJECTION)
-        glPushMatrix()
-        glLoadIdentity()
-        glOrtho(0, self.settings.window_width, self.settings.window_height, 0, -1, 1)
-
-        glMatrixMode(GL_MODELVIEW)
-        glPushMatrix()
-        glLoadIdentity()
-
-        glDisable(GL_LIGHTING)
-        glDisable(GL_DEPTH_TEST)
-        glEnable(GL_BLEND)
-
-        # Just display text instructions (button rendering would need more complex UI)
-        info_text = "Time Navigation: [ ] keys for day, or press N to hide"
-        text_surface = self._small_font.render(info_text, True, (180, 200, 220))
-        text_data = pygame.image.tostring(text_surface, "RGBA", True)
-        w, h = text_surface.get_size()
-
-        # Background
-        glColor4f(0.0, 0.1, 0.15, 0.8)
-        glBegin(GL_QUADS)
-        glVertex2f(x - 5, y - 5)
-        glVertex2f(x + w + 10, y - 5)
-        glVertex2f(x + w + 10, y + h + 10)
-        glVertex2f(x - 5, y + h + 10)
-        glEnd()
-
-        glRasterPos2i(x, y + h)
-        glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, text_data)
-
-        glEnable(GL_DEPTH_TEST)
-        glEnable(GL_LIGHTING)
-
-        glMatrixMode(GL_PROJECTION)
-        glPopMatrix()
-        glMatrixMode(GL_MODELVIEW)
-        glPopMatrix()
+        # Not used directly in scene anymore (part of unified) but kept for API compat
+        pass
 
     def render_educational_panel(self, edu_data: dict[str, Any]):
-        """
-        Render educational information panel about selected body.
-
-        Args:
-            edu_data: Dictionary with panel state from EducationalInfoPanel.get_render_data()
-        """
-        if not edu_data.get("visible", False):
-            return
-
-        x, y = edu_data.get("position", (20, 20))
-        width = edu_data.get("width", 350)
-        body_name = edu_data.get("body_name")
-        properties = edu_data.get("properties", {})
-        current_fact = edu_data.get("current_fact")
-
-        if not body_name:
-            return
-
-        line_height = 18
-
-        glMatrixMode(GL_PROJECTION)
-        glPushMatrix()
-        glLoadIdentity()
-        glOrtho(0, self.settings.window_width, self.settings.window_height, 0, -1, 1)
-
-        glMatrixMode(GL_MODELVIEW)
-        glPushMatrix()
-        glLoadIdentity()
-
-        glDisable(GL_LIGHTING)
-        glDisable(GL_DEPTH_TEST)
-        glEnable(GL_BLEND)
-
-        # Calculate height
-        num_lines = 2 + len(properties) + (3 if current_fact else 0)
-        height = num_lines * line_height + 20
-
-        # Background
-        glColor4f(0.05, 0.1, 0.15, 0.85)
-        glBegin(GL_QUADS)
-        glVertex2f(x - 5, y - 5)
-        glVertex2f(x + width, y - 5)
-        glVertex2f(x + width, y + height)
-        glVertex2f(x - 5, y + height)
-        glEnd()
-
-        # Border
-        glColor4f(0.3, 0.5, 0.7, 0.6)
-        glLineWidth(2)
-        glBegin(GL_LINE_LOOP)
-        glVertex2f(x - 5, y - 5)
-        glVertex2f(x + width, y - 5)
-        glVertex2f(x + width, y + height)
-        glVertex2f(x - 5, y + height)
-        glEnd()
-
-        # Title
-        current_y = y
-        title_surface = self._font.render(body_name, True, (100, 200, 255))
-        title_data = pygame.image.tostring(title_surface, "RGBA", True)
-        w, h = title_surface.get_size()
-        glRasterPos2i(x, current_y + h)
-        glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, title_data)
-        current_y += line_height + 5
-
-        # Properties
-        for key, value in properties.items():
-            text = f"{key}: {value}"
-            # Wrap text if too long
-            if len(text) > 45:
-                text = text[:42] + "..."
-
-            text_surface = self._small_font.render(text, True, (220, 220, 220))
-            text_data = pygame.image.tostring(text_surface, "RGBA", True)
-            w, h = text_surface.get_size()
-            glRasterPos2i(x, current_y + h)
-            glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, text_data)
-            current_y += line_height
-
-        # Fun fact
-        if current_fact:
-            current_y += 5
-            fact_title = self._small_font.render("Did you know?", True, (255, 255, 100))
-            fact_data = pygame.image.tostring(fact_title, "RGBA", True)
-            w, h = fact_title.get_size()
-            glRasterPos2i(x, current_y + h)
-            glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, fact_data)
-            current_y += line_height
-
-            # Word wrap the fact
-            words = current_fact.split()
-            line = ""
-            for word in words:
-                test_line = f"{line} {word}".strip()
-                if len(test_line) > 45:
-                    fact_surface = self._small_font.render(line, True, (180, 220, 180))
-                    fact_data = pygame.image.tostring(fact_surface, "RGBA", True)
-                    w, h = fact_surface.get_size()
-                    glRasterPos2i(x, current_y + h)
-                    glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, fact_data)
-                    current_y += line_height
-                    line = word
-                else:
-                    line = test_line
-
-            if line:
-                fact_surface = self._small_font.render(line, True, (180, 220, 180))
-                fact_data = pygame.image.tostring(fact_surface, "RGBA", True)
-                w, h = fact_surface.get_size()
-                glRasterPos2i(x, current_y + h)
-                glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, fact_data)
-
-        glEnable(GL_DEPTH_TEST)
-        glEnable(GL_LIGHTING)
-
-        glMatrixMode(GL_PROJECTION)
-        glPopMatrix()
-        glMatrixMode(GL_MODELVIEW)
-        glPopMatrix()
+        self.ui_renderer.render_educational_panel(edu_data)
 
     def render_historical_events(self, events_data: dict[str, Any]):
-        """
-        Render historical events panel.
-
-        Args:
-            events_data: Dictionary with events from HistoricalEventsPanel.get_render_data()
-        """
-        if not events_data.get("visible", False):
-            return
-
-        x, y = events_data.get("position", (20, 450))
-        width = events_data.get("width", 400)
-        events = events_data.get("events", [])
-
-        if not events:
-            return
-
-        line_height = 18
-
-        glMatrixMode(GL_PROJECTION)
-        glPushMatrix()
-        glLoadIdentity()
-        glOrtho(0, self.settings.window_width, self.settings.window_height, 0, -1, 1)
-
-        glMatrixMode(GL_MODELVIEW)
-        glPushMatrix()
-        glLoadIdentity()
-
-        glDisable(GL_LIGHTING)
-        glDisable(GL_DEPTH_TEST)
-        glEnable(GL_BLEND)
-
-        # Calculate height based on events
-        num_lines = 2 + sum(3 for _ in events)  # Title + each event (date, title, desc)
-        height = num_lines * line_height + 20
-
-        # Background
-        glColor4f(0.15, 0.05, 0.1, 0.9)
-        glBegin(GL_QUADS)
-        glVertex2f(x - 5, y - 5)
-        glVertex2f(x + width, y - 5)
-        glVertex2f(x + width, y + height)
-        glVertex2f(x - 5, y + height)
-        glEnd()
-
-        # Border
-        glColor4f(0.7, 0.3, 0.5, 0.6)
-        glLineWidth(2)
-        glBegin(GL_LINE_LOOP)
-        glVertex2f(x - 5, y - 5)
-        glVertex2f(x + width, y - 5)
-        glVertex2f(x + width, y + height)
-        glVertex2f(x - 5, y + height)
-        glEnd()
-
-        # Title
-        current_y = y
-        title_surface = self._font.render("Historical Events", True, (255, 200, 100))
-        title_data = pygame.image.tostring(title_surface, "RGBA", True)
-        w, h = title_surface.get_size()
-        glRasterPos2i(x, current_y + h)
-        glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, title_data)
-        current_y += line_height + 5
-
-        # Events
-        for event in events[:5]:  # Limit to 5 events
-            # Event date and title
-            event_title = f"{event.get('year', '')}: {event.get('title', 'Unknown')}"
-            if len(event_title) > 50:
-                event_title = event_title[:47] + "..."
-
-            title_surface = self._small_font.render(event_title, True, (255, 255, 100))
-            title_data = pygame.image.tostring(title_surface, "RGBA", True)
-            w, h = title_surface.get_size()
-            glRasterPos2i(x, current_y + h)
-            glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, title_data)
-            current_y += line_height
-
-            # Description (wrapped)
-            description = event.get("description", "")
-            if len(description) > 55:
-                description = description[:52] + "..."
-
-            desc_surface = self._small_font.render(description, True, (200, 200, 200))
-            desc_data = pygame.image.tostring(desc_surface, "RGBA", True)
-            w, h = desc_surface.get_size()
-            glRasterPos2i(x + 10, current_y + h)
-            glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, desc_data)
-            current_y += line_height + 3
-
-        glEnable(GL_DEPTH_TEST)
-        glEnable(GL_LIGHTING)
-
-        glMatrixMode(GL_PROJECTION)
-        glPopMatrix()
-        glMatrixMode(GL_MODELVIEW)
-        glPopMatrix()
+        self.ui_renderer.render_historical_events(events_data)
 
     def render_immersion_checklist(self, checklist_data: dict[str, Any]):
-        """Render the immersive learning checklist."""
-        if not checklist_data.get("visible", False):
-            return
-
-        tasks = checklist_data.get("tasks", [])
-        if not tasks:
-            return
-
-        x, y = checklist_data.get("position", (20, 240))
-        width = checklist_data.get("width", 360)
-        completed, total = checklist_data.get("progress", (0, len(tasks)))
-        line_height = 18
-
-        glMatrixMode(GL_PROJECTION)
-        glPushMatrix()
-        glLoadIdentity()
-        glOrtho(0, self.settings.window_width, self.settings.window_height, 0, -1, 1)
-
-        glMatrixMode(GL_MODELVIEW)
-        glPushMatrix()
-        glLoadIdentity()
-
-        glDisable(GL_LIGHTING)
-        glDisable(GL_DEPTH_TEST)
-        glEnable(GL_BLEND)
-
-        num_lines = 2 + len(tasks) * 2
-        height = num_lines * line_height + 20
-
-        glColor4f(0.08, 0.12, 0.16, 0.88)
-        glBegin(GL_QUADS)
-        glVertex2f(x - 5, y - 5)
-        glVertex2f(x + width, y - 5)
-        glVertex2f(x + width, y + height)
-        glVertex2f(x - 5, y + height)
-        glEnd()
-
-        glColor4f(0.35, 0.55, 0.75, 0.65)
-        glLineWidth(2)
-        glBegin(GL_LINE_LOOP)
-        glVertex2f(x - 5, y - 5)
-        glVertex2f(x + width, y - 5)
-        glVertex2f(x + width, y + height)
-        glVertex2f(x - 5, y + height)
-        glEnd()
-
-        current_y = y
-        title = f"Immersion Guide ({completed}/{total})"
-        title_surface = self._font.render(title, True, (160, 230, 255))
-        title_data = pygame.image.tostring(title_surface, "RGBA", True)
-        w, h = title_surface.get_size()
-        glRasterPos2i(x, current_y + h)
-        glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, title_data)
-        current_y += line_height + 4
-
-        for task in tasks:
-            marker = "✓" if task.get("completed") else "•"
-            marker_color = (140, 220, 170) if task.get("completed") else (240, 210, 160)
-            text_color = (200, 220, 240) if task.get("completed") else (230, 230, 230)
-
-            title_text = f"{marker} {task.get('title', '')}"
-            title_surface = self._small_font.render(title_text, True, marker_color)
-            title_data = pygame.image.tostring(title_surface, "RGBA", True)
-            w, h = title_surface.get_size()
-            glRasterPos2i(x, current_y + h)
-            glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, title_data)
-            current_y += line_height
-
-            description = task.get("description", "")
-            desc_surface = self._small_font.render(description, True, text_color)
-            desc_data = pygame.image.tostring(desc_surface, "RGBA", True)
-            w, h = desc_surface.get_size()
-            glRasterPos2i(x + 14, current_y + h)
-            glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, desc_data)
-            current_y += line_height
-
-        glEnable(GL_DEPTH_TEST)
-        glEnable(GL_LIGHTING)
-
-        glMatrixMode(GL_PROJECTION)
-        glPopMatrix()
-        glMatrixMode(GL_MODELVIEW)
-        glPopMatrix()
+        self.ui_renderer.render_immersion_checklist(checklist_data)
 
     def cleanup(self):
         """Clean up OpenGL resources."""
@@ -1466,8 +802,6 @@ class Renderer:
             glDeleteLists(self._sphere_list, 1)
         if self._circle_list:
             glDeleteLists(self._circle_list, 1)
-        if self._star_list:
-            glDeleteLists(self._star_list, 1)
 
         pygame.quit()
 
@@ -1476,407 +810,25 @@ class Renderer:
         return self.clock.get_fps() if self.clock else 0.0
 
     def render_settings_panel(self, settings_data: dict[str, Any]):
-        """Render the settings panel."""
-        if not settings_data.get("visible", False):
-            return
-
-        x, y = settings_data.get("position", (20, 500))
-        checkboxes = settings_data.get("checkboxes", [])
-
-        # Dimensions
-        width = 200
-        line_height = 24
-        header_height = 30
-        height = header_height + len(checkboxes) * line_height + 10
-
-        glMatrixMode(GL_PROJECTION)
-        glPushMatrix()
-        glLoadIdentity()
-        glOrtho(0, self.settings.window_width, self.settings.window_height, 0, -1, 1)
-
-        glMatrixMode(GL_MODELVIEW)
-        glPushMatrix()
-        glLoadIdentity()
-
-        glDisable(GL_LIGHTING)
-        glDisable(GL_DEPTH_TEST)
-        glEnable(GL_BLEND)
-
-        # Background
-        glColor4f(0.1, 0.1, 0.15, 0.9)
-        glBegin(GL_QUADS)
-        glVertex2f(x - 5, y - 5)
-        glVertex2f(x + width, y - 5)
-        glVertex2f(x + width, y + height)
-        glVertex2f(x - 5, y + height)
-        glEnd()
-
-        # Border
-        glColor4f(0.5, 0.5, 0.6, 0.8)
-        glLineWidth(1)
-        glBegin(GL_LINE_LOOP)
-        glVertex2f(x - 5, y - 5)
-        glVertex2f(x + width, y - 5)
-        glVertex2f(x + width, y + height)
-        glVertex2f(x - 5, y + height)
-        glEnd()
-
-        # Title
-        title_surface = self._font.render("Settings", True, (255, 255, 100))
-        title_data = pygame.image.tostring(title_surface, "RGBA", True)
-        w, h = title_surface.get_size()
-        glRasterPos2i(x, y + 20)
-        glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, title_data)
-
-        # Checkboxes
-        current_y = y + header_height
-        for cb in checkboxes:
-            # Draw box
-            text_color = (255, 255, 255) if cb.checked else (180, 180, 180)
-
-            marker = "[x]" if cb.checked else "[ ]"
-            label = f"{marker} {cb.label}"
-
-            text_surface = self._small_font.render(label, True, text_color)
-            text_data = pygame.image.tostring(text_surface, "RGBA", True)
-            w, h = text_surface.get_size()
-
-            glRasterPos2i(x + 5, current_y + 15)
-            glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, text_data)
-
-            current_y += line_height
-
-        glEnable(GL_DEPTH_TEST)
-        glEnable(GL_LIGHTING)
-
-        glMatrixMode(GL_PROJECTION)
-        glPopMatrix()
-        glMatrixMode(GL_MODELVIEW)
-        glPopMatrix()
+        pass  # Moved to Unified
 
     def render_nav_mode_panel(self, nav_data: dict[str, Any]):
-        """Render the navigation mode panel."""
-        if not nav_data.get("visible", False):
-            return
-
-        x, y = nav_data.get("position", (20, 300))
-        modes = nav_data.get("modes", [])
-        current_index = nav_data.get("current_mode_index", 0)
-
-        # Dimensions
-        width = 150
-        line_height = 24
-        header_height = 30
-        height = header_height + len(modes) * line_height + 10
-
-        glMatrixMode(GL_PROJECTION)
-        glPushMatrix()
-        glLoadIdentity()
-        glOrtho(0, self.settings.window_width, self.settings.window_height, 0, -1, 1)
-
-        glMatrixMode(GL_MODELVIEW)
-        glPushMatrix()
-        glLoadIdentity()
-
-        glDisable(GL_LIGHTING)
-        glDisable(GL_DEPTH_TEST)
-        glEnable(GL_BLEND)
-
-        # Background
-        glColor4f(0.1, 0.1, 0.15, 0.9)
-        glBegin(GL_QUADS)
-        glVertex2f(x - 5, y - 5)
-        glVertex2f(x + width, y - 5)
-        glVertex2f(x + width, y + height)
-        glVertex2f(x - 5, y + height)
-        glEnd()
-
-        # Border
-        glColor4f(0.5, 0.5, 0.6, 0.8)
-        glLineWidth(1)
-        glBegin(GL_LINE_LOOP)
-        glVertex2f(x - 5, y - 5)
-        glVertex2f(x + width, y - 5)
-        glVertex2f(x + width, y + height)
-        glVertex2f(x - 5, y + height)
-        glEnd()
-
-        # Title
-        title_surface = self._font.render("Mouse Control", True, (255, 255, 100))
-        title_data = pygame.image.tostring(title_surface, "RGBA", True)
-        w, h = title_surface.get_size()
-        glRasterPos2i(x, y + 20)
-        glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, title_data)
-
-        # Modes
-        current_y = y + header_height
-        for i, mode in enumerate(modes):
-            is_active = i == current_index
-            text_color = (100, 255, 100) if is_active else (180, 180, 180)
-            prefix = ">> " if is_active else "   "
-
-            label = f"{prefix}{mode}"
-
-            text_surface = self._small_font.render(label, True, text_color)
-            text_data = pygame.image.tostring(text_surface, "RGBA", True)
-            w, h = text_surface.get_size()
-
-            glRasterPos2i(x + 5, current_y + 15)
-            glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, text_data)
-
-            current_y += line_height
-
-        glEnable(GL_DEPTH_TEST)
-        glEnable(GL_LIGHTING)
-
-        glMatrixMode(GL_PROJECTION)
-        glPopMatrix()
-        glMatrixMode(GL_MODELVIEW)
-        glPopMatrix()
+        pass  # Moved to Unified
 
     def render_sidebar(
-        self, sidebar_data: dict[str, Any], content_data: dict[str, Any]
+        self, sidebar_data: dict[str, Any], content_data: dict[str, Any] | None
     ):
-        """Render the unified sidebar."""
-        if not sidebar_data.get("visible", False):
-            return
-
-        x, y = sidebar_data.get("position", (0, 0))
-        width = sidebar_data.get("width", 380)
-        height = sidebar_data.get("height", 600)
-        tabs = sidebar_data.get("tabs", [])
-        current_tab = sidebar_data.get("current_tab_index", 0)
-        content_key = sidebar_data.get("current_content_key", "")
-
-        glMatrixMode(GL_PROJECTION)
-        glPushMatrix()
-        glLoadIdentity()
-        glOrtho(0, self.settings.window_width, self.settings.window_height, 0, -1, 1)
-
-        glMatrixMode(GL_MODELVIEW)
-        glPushMatrix()
-        glLoadIdentity()
-        glDisable(GL_LIGHTING)
-        glDisable(GL_DEPTH_TEST)
-        glEnable(GL_BLEND)
-
-        # Main Background
-        glColor4f(0.05, 0.08, 0.12, 0.95)
-        glBegin(GL_QUADS)
-        glVertex2f(x, y)
-        glVertex2f(x + width, y)
-        glVertex2f(x + width, y + height)
-        glVertex2f(x, y + height)
-        glEnd()
-
-        # Border
-        glColor4f(0.3, 0.5, 0.7, 0.5)
-        glLineWidth(2)
-        glBegin(GL_LINE_LOOP)
-        glVertex2f(x, y)
-        glVertex2f(x + width, y)
-        glVertex2f(x + width, y + height)
-        glVertex2f(x, y + height)
-        glEnd()
-
-        # Tabs Header
-        header_height = 35
-        tab_width = width / len(tabs) if tabs else 10
-
-        for i, tab_name in enumerate(tabs):
-            tab_x = x + i * tab_width
-            is_active = i == current_tab
-
-            # Tab Background
-            if is_active:
-                glColor4f(0.2, 0.3, 0.4, 0.9)
-            else:
-                glColor4f(0.1, 0.15, 0.2, 0.8)
-
-            glBegin(GL_QUADS)
-            glVertex2f(tab_x, y)
-            glVertex2f(tab_x + tab_width, y)
-            glVertex2f(tab_x + tab_width, y + header_height)
-            glVertex2f(tab_x, y + header_height)
-            glEnd()
-
-            # Active indicator line
-            if is_active:
-                glColor4f(0.4, 0.8, 1.0, 1.0)
-                glLineWidth(3)
-                glBegin(GL_LINES)
-                glVertex2f(tab_x, y + header_height)
-                glVertex2f(tab_x + tab_width, y + header_height)
-                glEnd()
-
-            # Tab Text
-            color = (255, 255, 255) if is_active else (150, 150, 150)
-            text_surface = self._font.render(tab_name, True, color)
-            text_data = pygame.image.tostring(text_surface, "RGBA", True)
-            w, h = text_surface.get_size()
-            text_pos_x = tab_x + (tab_width - w) // 2
-            text_pos_y = y + (header_height - h) // 2
-            glRasterPos2i(int(text_pos_x), int(text_pos_y + h))
-            glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, text_data)
-
-        # Restore GL state for content rendering if needs special handling
-        # But for now we invoke specific renderers with adjusted position
-        # We need to hack the content renderers slightly or just render them at offset
-        glEnable(GL_DEPTH_TEST)
-        glEnable(GL_LIGHTING)
-        glMatrixMode(GL_PROJECTION)
-        glPopMatrix()
-        glMatrixMode(GL_MODELVIEW)
-        glPopMatrix()
-
-        # Render Content based on active tab
-        content_pos = (x + 10, y + header_height + 10)
-
-        # We assume the content dictionary is passed correctly for the active tab
-        if content_data:
-            # Override position to fit in sidebar
-            content_data["position"] = content_pos
-            content_data["width"] = width - 20
-            content_data["visible"] = True  # Force visible since tab is active
-
-            if content_key == "educational":
-                self.render_educational_panel(content_data)
-            elif content_key == "checklist":
-                self.render_immersion_checklist(content_data)
-            elif content_key == "history":
-                self.render_historical_events(content_data)
+        self.ui_renderer.render_sidebar(sidebar_data, content_data)
 
     def render_unified_controls(
         self, ctrl_data: dict[str, Any], time_data: dict[str, Any]
     ):
-        """Render the bottom unified control panel."""
-        if not ctrl_data.get("visible", False):
-            return
+        self.ui_renderer.render_unified_controls(ctrl_data, time_data)
 
-        x, y = ctrl_data.get("position", (0, 0))
-        width = ctrl_data.get("width", 800)
-        height = ctrl_data.get("height", 100)
-        checkboxes = ctrl_data.get("checkboxes", [])
-        modes = ctrl_data.get("modes", [])
-        curr_mode = ctrl_data.get("current_mode_index", 0)
+    def render_speed_indicator(self, time_warp: float):
+        """Render speed indicator bar."""
+        self.ui_renderer.render_speed_indicator(time_warp)
 
-        glMatrixMode(GL_PROJECTION)
-        glPushMatrix()
-        glLoadIdentity()
-        glOrtho(0, self.settings.window_width, self.settings.window_height, 0, -1, 1)
-
-        glMatrixMode(GL_MODELVIEW)
-        glPushMatrix()
-        glLoadIdentity()
-        glDisable(GL_LIGHTING)
-        glDisable(GL_DEPTH_TEST)
-        glEnable(GL_BLEND)
-
-        # Background Gradient-ish (Solid for now)
-        glColor4f(0.05, 0.08, 0.12, 0.95)
-        glBegin(GL_QUADS)
-        glVertex2f(x, y)
-        glVertex2f(x + width, y)
-        glVertex2f(x + width, y + height)
-        glVertex2f(x, y + height)
-        glEnd()
-
-        # Top Border
-        glColor4f(0.4, 0.8, 1.0, 0.6)
-        glLineWidth(2)
-        glBegin(GL_LINES)
-        glVertex2f(x, y)
-        glVertex2f(x + width, y)
-        glEnd()
-
-        # Layout: Left side = Modes, Middle = Time (passed in), Right = Settings
-
-        # 1. Navigation Modes (Left)
-        mode_x = x + 20
-        mode_y = y + 20
-        title_surface = self._small_font.render("NAVIGATION", True, (100, 200, 255))
-        w, h = title_surface.get_size()
-        text_data = pygame.image.tostring(title_surface, "RGBA", True)
-        glRasterPos2i(int(mode_x), int(mode_y + h))
-        glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, text_data)
-
-        mode_y += 25
-        for i, mode in enumerate(modes):
-            color = (100, 255, 100) if i == curr_mode else (150, 150, 150)
-            prefix = "● " if i == curr_mode else "○ "
-            label = f"{prefix}{mode}"
-
-            s = self._small_font.render(label, True, color)
-            wd, hd = s.get_size()
-            d = pygame.image.tostring(s, "RGBA", True)
-            glRasterPos2i(int(mode_x), int(mode_y + hd))
-            glDrawPixels(wd, hd, GL_RGBA, GL_UNSIGNED_BYTE, d)
-            mode_x += 80  # horizontal layout
-
-        # 2. View Settings (Right)
-        # Shift slightly left to accommodate more content
-        set_x = x + width - 350
-        set_y = y + 20
-        title_surface = self._small_font.render("VIEW SETTINGS", True, (100, 200, 255))
-        w, h = title_surface.get_size()
-        text_data = pygame.image.tostring(title_surface, "RGBA", True)
-        glRasterPos2i(int(set_x), int(set_y + h))
-        glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, text_data)
-
-        set_y += 35  # More spacing
-        col_1_x = set_x
-        col_2_x = set_x + 160  # Wider column spacing
-
-        for i, cb in enumerate(checkboxes):
-            # 2 columns
-            cx = col_1_x if i % 2 == 0 else col_2_x
-            cy = set_y + (i // 2) * 30  # Increased row height
-
-            color = (255, 255, 255) if cb.checked else (150, 150, 150)
-            marker = "☑" if cb.checked else "☐"
-            label = f"{marker} {cb.label}"
-
-            s = self._small_font.render(label, True, color)
-            wd, hd = s.get_size()
-            d = pygame.image.tostring(s, "RGBA", True)
-            glRasterPos2i(int(cx), int(cy + hd))
-            glDrawPixels(wd, hd, GL_RGBA, GL_UNSIGNED_BYTE, d)
-
-        # 3. Action Buttons (e.g. Reset View) - placed near Modes or Time
-        btn_x = x + 20
-        btn_y = y + 80
-
-        buttons = ctrl_data.get("buttons", [])
-        for btn in buttons:
-            # Draw Button BG
-            glColor4f(0.2, 0.4, 0.6, 0.8)
-            glBegin(GL_QUADS)
-            glVertex2f(btn_x, btn_y)
-            glVertex2f(btn_x + btn.width, btn_y)
-            glVertex2f(btn_x + btn.width, btn_y + 30)
-            glVertex2f(btn_x, btn_y + 30)
-            glEnd()
-
-            # Text
-            s = self._small_font.render(btn.label, True, (255, 255, 255))
-            wd, hd = s.get_size()
-            d = pygame.image.tostring(s, "RGBA", True)
-            text_pos_x = btn_x + (btn.width - wd) // 2
-            text_pos_y = btn_y + (30 - hd) // 2
-            glRasterPos2i(int(text_pos_x), int(text_pos_y + hd))
-            glDrawPixels(wd, hd, GL_RGBA, GL_UNSIGNED_BYTE, d)
-
-            btn_x += btn.width + 10
-
-        # 3. Time Controls (Center)
-        # We render the text status here, buttons are rendered by separate call usually
-        # but let's draw a nice container for them
-        # Note: scene.py will handle calling the actual time nav renderer locally
-        # but we provide the visual container here.
-
-        glEnable(GL_DEPTH_TEST)
-        glEnable(GL_LIGHTING)
-        glMatrixMode(GL_PROJECTION)
-        glPopMatrix()
-        glMatrixMode(GL_MODELVIEW)
-        glPopMatrix()
+    def render_compass(self, camera_yaw: float):
+        """Render compass."""
+        self.ui_renderer.render_compass(camera_yaw)

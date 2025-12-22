@@ -11,13 +11,13 @@ from solar_system.visualization.starfield import (
 )
 
 
-def test_catalog_density_and_unit_vectors():
+def test_catalog_density_and_unit_vectors() -> None:
     assert star_count() >= 80
     pole_vector = np.array(equatorial_to_cartesian(0.0, 90.0))
     assert np.isclose(np.linalg.norm(pole_vector), 1.0)
 
 
-def test_vertices_sorted_and_colored():
+def test_vertices_sorted_and_colored() -> None:
     vertices = build_star_vertices(iter_catalog(), radius=10.0)
     magnitudes = [v.magnitude for v in vertices]
     assert magnitudes == sorted(magnitudes)
@@ -25,7 +25,7 @@ def test_vertices_sorted_and_colored():
     assert all(np.isclose(np.linalg.norm(v.position), 10.0) for v in vertices)
 
 
-def test_point_size_scaling():
+def test_point_size_scaling() -> None:
     bright = point_size_from_magnitude(-1.0)
     dim = point_size_from_magnitude(5.0)
     assert bright > dim
