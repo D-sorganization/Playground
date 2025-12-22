@@ -17,7 +17,7 @@ from launcher import (
 class LauncherTests(unittest.TestCase):
     """Validate helper functions used by the launcher."""
 
-    def test_build_launch_command_defaults(self):
+    def test_build_launch_command_defaults(self) -> None:
         """Defaults should create a windowed command with default dimensions."""
 
         command = build_launch_command()
@@ -28,7 +28,7 @@ class LauncherTests(unittest.TestCase):
         self.assertNotIn("--fullscreen", command)
         self.assertNotIn("--no-antialiasing", command)
 
-    def test_build_launch_command_with_options(self):
+    def test_build_launch_command_with_options(self) -> None:
         """Optional settings should be reflected in the command list."""
 
         command = build_launch_command(
@@ -45,10 +45,10 @@ class LauncherTests(unittest.TestCase):
         self.assertIn("1024", command)
         self.assertIn("768", command)
 
-    def test_dependency_check_reports_missing(self):
+    def test_dependency_check_reports_missing(self) -> None:
         """Missing modules should be reported with guidance."""
 
-        def fake_spec_finder(name: str):
+        def fake_spec_finder(name: str) -> object | None:
             return None if name == "pygame" else object()
 
         status = check_dependencies(spec_finder=fake_spec_finder)
@@ -57,7 +57,7 @@ class LauncherTests(unittest.TestCase):
         self.assertIn("pygame", status.missing)
         self.assertIn("pygame", status.guidance)
 
-    def test_dependency_check_success(self):
+    def test_dependency_check_success(self) -> None:
         """When all modules are present, status should be OK."""
 
         status = check_dependencies(spec_finder=lambda name: object())

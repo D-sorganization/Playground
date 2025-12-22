@@ -19,7 +19,7 @@ from solar_system.physics.trajectory_planner import TrajectoryPlanner
 class TestOrbitalMechanics(unittest.TestCase):
     """Test orbital mechanics calculations."""
 
-    def test_circular_velocity_earth(self):
+    def test_circular_velocity_earth(self) -> None:
         """Test circular velocity at Earth's orbit."""
         # Earth's average orbital velocity is about 29.78 km/s
         r = 1.0 * AU  # 1 AU
@@ -29,7 +29,7 @@ class TestOrbitalMechanics(unittest.TestCase):
         v_kms = v / 1000
         self.assertAlmostEqual(v_kms, 29.78, delta=0.5)
 
-    def test_escape_velocity_earth_orbit(self):
+    def test_escape_velocity_earth_orbit(self) -> None:
         """Test escape velocity at Earth's orbit from the Sun."""
         r = 1.0 * AU
         v_esc = OrbitalMechanics.escape_velocity(r, GM["Sun"])
@@ -38,7 +38,7 @@ class TestOrbitalMechanics(unittest.TestCase):
         v_circ = OrbitalMechanics.circular_velocity(r, GM["Sun"])
         self.assertAlmostEqual(v_esc, v_circ * math.sqrt(2), delta=1)
 
-    def test_orbital_period_earth(self):
+    def test_orbital_period_earth(self) -> None:
         """Test Earth's orbital period calculation."""
         a = 1.0 * AU
         t = OrbitalMechanics.orbital_period(a, GM["Sun"])
@@ -47,7 +47,7 @@ class TestOrbitalMechanics(unittest.TestCase):
         t_days = t / 86400
         self.assertAlmostEqual(t_days, 365.25, delta=1)
 
-    def test_vis_viva_at_perihelion(self):
+    def test_vis_viva_at_perihelion(self) -> None:
         """Test vis-viva equation at perihelion."""
         # For an orbit with a=1 AU and e=0.5
         a = 1.0 * AU
@@ -60,7 +60,7 @@ class TestOrbitalMechanics(unittest.TestCase):
         v_circ = OrbitalMechanics.circular_velocity(r_peri, GM["Sun"])
         self.assertGreater(v, v_circ)
 
-    def test_kepler_third_law(self):
+    def test_kepler_third_law(self) -> None:
         """Verify Kepler's third law: T² ∝ a³."""
         # Compare Earth and Mars
         a_earth = 1.0 * AU
@@ -75,7 +75,7 @@ class TestOrbitalMechanics(unittest.TestCase):
 
         self.assertAlmostEqual(ratio_earth, ratio_mars, places=10)
 
-    def test_eccentricity_from_apsides(self):
+    def test_eccentricity_from_apsides(self) -> None:
         """Test eccentricity calculation from apsides."""
         # Earth's orbit: perihelion ~0.983 AU, aphelion ~1.017 AU
         r_peri = 0.983 * AU
@@ -86,7 +86,7 @@ class TestOrbitalMechanics(unittest.TestCase):
         # Earth's eccentricity is about 0.0167
         self.assertAlmostEqual(e, 0.017, delta=0.002)
 
-    def test_sphere_of_influence_earth(self):
+    def test_sphere_of_influence_earth(self) -> None:
         """Test Earth's sphere of influence calculation."""
         a_earth = 1.0 * AU
         m_earth = PHYSICAL_PROPERTIES["Earth"].mass
@@ -98,7 +98,7 @@ class TestOrbitalMechanics(unittest.TestCase):
         soi_km = soi / 1000
         self.assertAlmostEqual(soi_km, 925000, delta=50000)
 
-    def test_synodic_period_earth_mars(self):
+    def test_synodic_period_earth_mars(self) -> None:
         """Test synodic period calculation for Earth-Mars."""
         t_earth = 365.25  # days
         t_mars = 687.0  # days
@@ -108,7 +108,7 @@ class TestOrbitalMechanics(unittest.TestCase):
         # Earth-Mars synodic period is about 780 days
         self.assertAlmostEqual(synodic, 780, delta=10)
 
-    def test_velocity_at_true_anomaly(self):
+    def test_velocity_at_true_anomaly(self) -> None:
         """Test velocity vector components at true anomaly."""
         # For circular orbit, v_r=0, v_t = v_circ
         r = 1.0 * AU
@@ -121,7 +121,7 @@ class TestOrbitalMechanics(unittest.TestCase):
         self.assertAlmostEqual(v_r, 0.0)
         self.assertAlmostEqual(v_t, v_circ)
 
-    def test_time_of_flight_half_orbit(self):
+    def test_time_of_flight_half_orbit(self) -> None:
         """Test time of flight for half orbit."""
         a = 1.0 * AU
         e = 0.0
@@ -135,33 +135,33 @@ class TestOrbitalMechanics(unittest.TestCase):
 class TestCelestialBodies(unittest.TestCase):
     """Test celestial body classes."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test fixtures."""
         self.sun = Star("Sun")
         self.earth = Planet("Earth", parent=self.sun)
         self.mars = Planet("Mars", parent=self.sun)
 
-    def test_planet_creation(self):
+    def test_planet_creation(self) -> None:
         """Test planet is created with correct properties."""
         self.assertEqual(self.earth.name, "Earth")
         self.assertIsNotNone(self.earth.orbital_elements)
         self.assertIsNotNone(self.earth.physical_properties)
 
-    def test_earth_orbital_period(self):
+    def test_earth_orbital_period(self) -> None:
         """Test Earth's orbital period from orbital elements."""
         period_days = self.earth.get_orbital_period_days()
 
         # Should be approximately 365.25 days
         self.assertAlmostEqual(period_days, 365.25, delta=1)
 
-    def test_mars_orbital_period(self):
+    def test_mars_orbital_period(self) -> None:
         """Test Mars's orbital period."""
         period_days = self.mars.get_orbital_period_days()
 
         # Mars orbital period is about 687 days
         self.assertAlmostEqual(period_days, 687, delta=5)
 
-    def test_earth_position_at_j2000(self):
+    def test_earth_position_at_j2000(self) -> None:
         """Test Earth's position at J2000 epoch."""
         state = self.earth.get_state_at_time(J2000)
 
@@ -169,7 +169,7 @@ class TestCelestialBodies(unittest.TestCase):
         distance_au = np.linalg.norm(state.position) / AU
         self.assertAlmostEqual(distance_au, 1.0, delta=0.02)
 
-    def test_planet_position_continuity(self):
+    def test_planet_position_continuity(self) -> None:
         """Test that planet positions change smoothly over time."""
         jd1 = J2000
         jd2 = J2000 + 1  # 1 day later
@@ -187,14 +187,14 @@ class TestCelestialBodies(unittest.TestCase):
 class TestTrajectoryPlanner(unittest.TestCase):
     """Test trajectory planning calculations."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test fixtures."""
         self.planner = TrajectoryPlanner()
         self.sun = Star("Sun")
         self.earth = Planet("Earth", parent=self.sun)
         self.mars = Planet("Mars", parent=self.sun)
 
-    def test_hohmann_earth_mars(self):
+    def test_hohmann_earth_mars(self) -> None:
         """Test Hohmann transfer from Earth to Mars."""
         r1 = 1.0 * AU  # Earth orbit
         r2 = 1.524 * AU  # Mars orbit
@@ -210,7 +210,7 @@ class TestTrajectoryPlanner(unittest.TestCase):
         tof_days = tof / 86400
         self.assertAlmostEqual(tof_days, 259, delta=10)
 
-    def test_hohmann_phase_angle(self):
+    def test_hohmann_phase_angle(self) -> None:
         """Test phase angle calculation for Hohmann transfer."""
         r1 = 1.0 * AU
         r2 = 1.524 * AU
@@ -220,7 +220,7 @@ class TestTrajectoryPlanner(unittest.TestCase):
         # Phase angle for Earth-Mars should be about 44 degrees
         self.assertAlmostEqual(phase, 44, delta=5)
 
-    def test_synodic_period(self):
+    def test_synodic_period(self) -> None:
         """Test synodic period between planets."""
         synodic = self.planner.synodic_period_planets(self.earth, self.mars)
 
@@ -231,20 +231,20 @@ class TestTrajectoryPlanner(unittest.TestCase):
 class TestStateVector(unittest.TestCase):
     """Test state vector operations."""
 
-    def test_state_vector_creation(self):
+    def test_state_vector_creation(self) -> None:
         """Test state vector initialization."""
         state = StateVector(position=[1e11, 0, 0], velocity=[0, 30000, 0], time=J2000)
 
         self.assertEqual(state.position[0], 1e11)
         self.assertEqual(state.velocity[1], 30000)
 
-    def test_state_vector_distance(self):
+    def test_state_vector_distance(self) -> None:
         """Test distance calculation."""
         state = StateVector(position=[3e8, 4e8, 0], velocity=[0, 0, 0], time=J2000)
 
         self.assertAlmostEqual(state.distance, 5e8)
 
-    def test_state_vector_copy(self):
+    def test_state_vector_copy(self) -> None:
         """Test state vector copy."""
         original = StateVector(position=[1, 2, 3], velocity=[4, 5, 6], time=J2000)
 

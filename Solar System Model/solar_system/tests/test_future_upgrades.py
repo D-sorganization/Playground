@@ -5,20 +5,20 @@ from solar_system.data.star_catalog import equatorial_to_cartesian, star_count
 from solar_system.visualization.scene import RenderSettings, SolarSystemScene
 
 
-def test_star_catalog_generates_unit_vectors():
+def test_star_catalog_generates_unit_vectors() -> None:
     vector = np.array(equatorial_to_cartesian(0.0, 0.0))
     assert np.isclose(np.linalg.norm(vector), 1.0)
     assert star_count() >= 80
 
 
-def test_asteroid_belt_is_deterministic():
+def test_asteroid_belt_is_deterministic() -> None:
     belt_a = generate_belt_particles(10)
     belt_b = generate_belt_particles(10)
     assert np.allclose(belt_a, belt_b)
     assert belt_a.shape == (10, 3)
 
 
-def test_scene_builds_moons_and_minors_without_renderer():
+def test_scene_builds_moons_and_minors_without_renderer() -> None:
     scene = SolarSystemScene(RenderSettings())
     scene._create_solar_system()
 
@@ -27,7 +27,7 @@ def test_scene_builds_moons_and_minors_without_renderer():
     assert len(scene.comets) >= 3
 
 
-def test_gravity_assist_reduces_delta_v():
+def test_gravity_assist_reduces_delta_v() -> None:
     scene = SolarSystemScene(RenderSettings())
     scene._create_solar_system()
 
