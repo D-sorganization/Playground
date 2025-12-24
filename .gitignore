@@ -115,3 +115,6 @@ Thumbs.db
 .jules/palette*
 .jules/pallette*
 .jules/sentinel*
+
+# Enforce NPM
+pnpm-lock.yaml
