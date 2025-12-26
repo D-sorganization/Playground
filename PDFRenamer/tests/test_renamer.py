@@ -9,8 +9,10 @@ def test_generate_new_filename() -> None:
     name = renamer.generate_new_filename("Jane Smith", "The art of war")
     assert name == "Smith - The Art of War.pdf"
 
+
 def test_renamer_collision_logic(tmp_path: object) -> None:
     from pathlib import Path
+
     assert isinstance(tmp_path, Path)
     # Setup
     renamer = Renamer(dry_run=False)

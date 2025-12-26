@@ -30,6 +30,7 @@ def extract_metadata(file_path: Path) -> tuple[str | None, str | None]:
             if not title or not author:
                 try:
                     import re
+
                     if len(pdf.pages) > 0:
                         first_page = pdf.pages[0]
                         text = first_page.extract_text() if first_page else ""
@@ -38,7 +39,7 @@ def extract_metadata(file_path: Path) -> tuple[str | None, str | None]:
                         if not title:
                             lines = [
                                 line.strip()
-                                for line in text.split('\n')
+                                for line in text.split("\n")
                                 if line.strip()
                             ]
                             if lines:

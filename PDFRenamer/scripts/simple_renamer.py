@@ -2,6 +2,7 @@
 Simple PDF Renamer script using PyPDF2.
 Acts as a secondary/fallback option to the main PDFRenamer tool.
 """
+
 import logging
 import os
 import re
