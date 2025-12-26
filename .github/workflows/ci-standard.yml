@@ -57,7 +57,8 @@ jobs:
       # TODO detection now BLOCKING - Jules Auto-Repair will fix
       - name: Verify No Placeholders
         run: |
-          if grep -rE "TODO|FIXME" . --exclude-dir=vendor --exclude-dir=.git --exclude-dir=node_modules --exclude-dir=.github --exclude-dir=.ruff_cache --exclude=*.md; then
+          EXCLUDE_ARGS='--exclude-dir=vendor --exclude-dir=.git --exclude-dir=node_modules --exclude-dir=.github --exclude-dir=.ruff_cache --exclude=*.md'
+          if grep -rE "TODO|FIXME" . $EXCLUDE_ARGS; then
              echo "::error::Placeholders found. Remove TODOs/FIXMEs or create tracked GitHub issues."
              exit 1
           fi
