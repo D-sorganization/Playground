@@ -1,5 +1,6 @@
 from pdf_renamer.utils import get_last_name, sanitize_filename, to_title_case
 
+
 def test_to_title_case() -> None:
     assert to_title_case("the lord of the rings") == "The Lord of the Rings"
     assert to_title_case("a tale of two cities") == "A Tale of Two Cities"

@@ -1,5 +1,7 @@
 from unittest.mock import MagicMock, patch
+
 from pdf_renamer.extractor import extract_metadata
+
 
 def test_extract_metadata(tmp_path: object) -> None:
     # Create a dummy PDF file (empty)

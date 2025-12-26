@@ -1,5 +1,6 @@
 from pdf_renamer.renamer import Renamer
 
+
 def test_generate_new_filename() -> None:
     renamer = Renamer()
     name = renamer.generate_new_filename("John Doe", "introduction to python")

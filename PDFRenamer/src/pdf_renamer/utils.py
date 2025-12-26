@@ -69,3 +69,26 @@ def get_last_name(full_name: str) -> str:
         return "Unknown"
 
     return parts[-1]
+
+
+def to_snake_case(text: str) -> str:
+    """
+    Converts text to snake_case (lowercase, underscores).
+    """
+    if not text:
+        return ""
+    # Remove non-alphanumeric chars (replace with space first to separate words)
+    s = re.sub(r"[^a-zA-Z0-9\s]", " ", text)
+    # Collapse spaces and replace with underscore
+    s = re.sub(r"\s+", "_", s).strip().lower()
+    return s
+
+
+def to_kebab_case(text: str) -> str:
+    """
+    Converts text to kebab-case (lowercase, hyphens).
+    """
+    if not text:
+        return ""
+    s = to_snake_case(text)
+    return s.replace("_", "-")

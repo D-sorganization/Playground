@@ -1,7 +1,13 @@
 import logging
 from pathlib import Path
 
-from .utils import get_last_name, sanitize_filename, to_title_case
+from .utils import (
+    get_last_name,
+    sanitize_filename,
+    to_kebab_case,
+    to_snake_case,
+    to_title_case,
+)
 
 # Import extractor later to avoid circular dependency issues if any, but ideally here.
 # For now, I'll assume extractor is passed or imported.
@@ -10,20 +16,38 @@ logger = logging.getLogger(__name__)
 
 
 class Renamer:
-    def __init__(self, dry_run: bool = False):
+    def __init__(self, dry_run: bool = False, style: str = "standard"):
         self.dry_run = dry_run
+        self.style = style
 
     def generate_new_filename(self, author: str, title: str) -> str:
         last_name = get_last_name(author)
-        clean_title = sanitize_filename(to_title_case(title))
-        clean_author = sanitize_filename(last_name)
+
+        if self.style == "snake_case":
+            # author_last_title.pdf
+            clean_title = to_snake_case(title)
+            clean_author = to_snake_case(last_name)
+            sep = "_"
+        elif self.style == "kebab_case":
+            # author-last-title.pdf
+            clean_title = to_kebab_case(title)
+            clean_author = to_kebab_case(last_name)
+            sep = "-"
+        else:
+            # Standard: Author Last - Title.pdf
+            clean_title = sanitize_filename(to_title_case(title))
+            clean_author = sanitize_filename(last_name)
+            sep = " - "
 
         if not clean_title:
-            clean_title = "Untitled"
-        if not clean_author:
-            clean_author = "Unknown"
+            is_computer_friendly = self.style in ("snake_case", "kebab_case")
+            clean_title = "untitled" if is_computer_friendly else "Untitled"
 
-        return f"{clean_author} - {clean_title}.pdf"
+        if not clean_author:
+            is_computer_friendly = self.style in ("snake_case", "kebab_case")
+            clean_author = "unknown" if is_computer_friendly else "Unknown"
+
+        return f"{clean_author}{sep}{clean_title}.pdf"
 
     def rename_file(self, original_path: Path, new_filename: str) -> None:
         if not original_path.exists():

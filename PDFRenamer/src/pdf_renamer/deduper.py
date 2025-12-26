@@ -29,7 +29,7 @@ class DuplicateFinder:
         # 2. Check hashes for files with same size
         duplicates: dict[str, list[Path]] = {}
 
-        for size, files in size_map.items():
+        for files in size_map.values():
             if len(files) < 2:
                 continue
 

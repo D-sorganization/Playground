@@ -29,6 +29,12 @@ def main() -> None:
         action="store_true",
         help="Delete duplicate files automatically",
     )
+    parser.add_argument(
+        "--style",
+        choices=["standard", "snake_case", "kebab_case"],
+        default="standard",
+        help="Naming style for renamed files (default: standard)",
+    )
 
     args = parser.parse_args()
 
@@ -72,8 +78,8 @@ def main() -> None:
         logger.info("No duplicates found.")
 
     # 2. Rename Files
-    logger.info("Starting renaming process...")
-    renamer = Renamer(dry_run=args.dry_run)
+    logger.info(f"Starting renaming process using style: {args.style}...")
+    renamer = Renamer(dry_run=args.dry_run, style=args.style)
 
     # scan again in case files were deleted
     for file_path in directory.glob("**/*.pdf"):
@@ -84,7 +90,8 @@ def main() -> None:
 
         if not author or not title:
             logger.warning(
-                f"Skipping {file_path.name}: Missing metadata (Author: {author}, Title: {title})"
+                f"Skipping {file_path.name}: Missing metadata "
+                f"(Author: {author}, Title: {title})"
             )
             continue
 
