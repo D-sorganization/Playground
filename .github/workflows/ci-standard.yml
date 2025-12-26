@@ -89,6 +89,7 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - run: pip install -r requirements.txt
+      - run: pip install -r PDFRenamer/requirements.txt
       - run: pytest tests/ --cov=. --cov-report=xml
       - uses: codecov/codecov-action@v4
         env:
