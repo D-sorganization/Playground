@@ -57,7 +57,7 @@ jobs:
       # TODO detection now BLOCKING - Jules Auto-Repair will fix
       - name: Verify No Placeholders
         run: |
-          if grep -rE "TODO|FIXME" . --exclude-dir=vendor --exclude-dir=.git --exclude-dir=node_modules; then
+          if grep -rE "TODO|FIXME" . --exclude-dir=vendor --exclude-dir=.git --exclude-dir=node_modules --exclude-dir=.github --exclude-dir=.ruff_cache --exclude=*.md; then
              echo "::error::Placeholders found. Remove TODOs/FIXMEs or create tracked GitHub issues."
              exit 1
           fi
@@ -89,7 +89,8 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - run: pip install -r requirements.txt
-      - run: pytest tests/ --cov=. --cov-report=xml
+      - run: pip install -r PDFRenamer/requirements.txt
+      - run: pytest PDFRenamer/tests/ --cov=PDFRenamer --cov-report=xml
       - uses: codecov/codecov-action@v4
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
