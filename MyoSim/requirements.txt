@@ -1,0 +1,5 @@
+mujoco
+PyQt6
+numpy
+matplotlib
+pyopengl
