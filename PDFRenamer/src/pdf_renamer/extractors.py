@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 MIN_TITLE_FONT_SIZE = 10.0
 TOP_PAGE_FRACTION = 0.35
 
+
 # ---------- Layer 0: metadata ----------
 def title_from_metadata(pdf_path: Path) -> TitleResult:
     try:

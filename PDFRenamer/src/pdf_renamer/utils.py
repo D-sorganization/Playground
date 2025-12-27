@@ -36,6 +36,7 @@ def looks_like_title(s: str) -> bool:
         return False
     return True
 
+
 def sanitize_filename(s: str) -> str:
     """Removes characters invalid in filenames."""
     s = re.sub(r'[\\/*?:"<>|]', "", s)
