@@ -69,7 +69,7 @@ repos:
         # Only target the files we care about
         types_or: [yaml, markdown, json, css, javascript]
         # explicitly exclude python/matlab just in case
-        exclude: '\.(py|m)$'
+        exclude: '\.(py|m)$'$'
 
 # Global settings
 default_language_version:

@@ -118,3 +118,8 @@ Thumbs.db
 
 # Enforce NPM
 pnpm-lock.yaml
+
+# MATLAB
+*.asv
+*.m~
+*.autosave
