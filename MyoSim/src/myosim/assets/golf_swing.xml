@@ -1,0 +1,54 @@
+<mujoco model="golf_swing_simplified">
+  <compiler angle="degree" coordinate="local" inertiafromgeom="true"/>
+  <option timestep="0.002" gravity="0 0 -9.81"/>
+
+  <visual>
+    <headlight ambient="0.4 0.4 0.4" diffuse="0.8 0.8 0.8" specular="0.1 0.1 0.1"/>
+    <map fogstart="3" fogend="10"/>
+    <quality shadowsize="2048"/>
+  </visual>
+
+  <default>
+    <geom conaffinity="1" condim="3" friction="1 0.5 0.5" solref="0.02 1" solimp="0.9 0.95 0.001"/>
+    <joint stiffness="0" damping="0.1" armature="0.01"/>
+  </default>
+
+  <worldbody>
+    <light pos="0 0 3" dir="0 0 -1" directional="true"/>
+    <geom name="floor" type="plane" size="5 5 0.1" rgba="0.2 0.8 0.2 1"/>
+
+    <!-- Torso / Shoulder anchor -->
+    <body name="torso" pos="0 0 1.5">
+      <geom type="sphere" size="0.1" rgba="0.8 0.2 0.2 1"/>
+
+      <!-- Upper Arm -->
+      <body name="upper_arm" pos="0 0 0">
+        <joint name="shoulder_joint" type="hinge" axis="0 1 0" range="-180 180" damping="1.0"/>
+        <geom type="capsule" fromto="0 0 0 0 0 -0.3" size="0.04" rgba="0.2 0.2 0.8 1"/>
+
+        <!-- Forearm -->
+        <body name="forearm" pos="0 0 -0.3">
+          <joint name="elbow_joint" type="hinge" axis="0 1 0" range="-150 0" damping="1.0"/>
+          <geom type="capsule" fromto="0 0 0 0 0 -0.25" size="0.03" rgba="0.2 0.2 0.8 1"/>
+
+          <!-- Club -->
+          <body name="club" pos="0 0 -0.25">
+             <joint name="wrist_joint" type="hinge" axis="0 1 0" range="-90 90" damping="0.5"/>
+             <!-- Shaft -->
+             <geom type="cylinder" fromto="0 0 0 0 0 -1.0" size="0.01" rgba="0.7 0.7 0.7 1"/>
+             <!-- Club Head -->
+             <body name="club_head" pos="0 0 -1.0">
+                <geom type="box" size="0.05 0.02 0.03" rgba="0.3 0.3 0.3 1"/>
+             </body>
+          </body>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+
+  <actuator>
+    <motor name="shoulder_motor" joint="shoulder_joint" gear="100"/>
+    <motor name="elbow_motor" joint="elbow_joint" gear="50"/>
+    <motor name="wrist_motor" joint="wrist_joint" gear="20"/>
+  </actuator>
+</mujoco>
