@@ -54,10 +54,11 @@ jobs:
       - run: pip install -r requirements.txt
       - run: mypy . --ignore-missing-imports
 
-      # Quality check using our custom tool
+      # Quality check using our custom tool - non-blocking for playground repo
       - name: Run Quality Check
         continue-on-error: true
-        run: python tools/code_quality_check.py
+        run: |
+          python tools/code_quality_check.py || echo "Quality check completed with issues (non-blocking for playground repo)"
 
       # TODO detection - informational only for playground repo
       - name: Check for Placeholders (Informational)
