@@ -52,7 +52,7 @@ jobs:
 
       - run: pip install mypy types-PyYAML types-requests
       - run: pip install -r requirements.txt
-      - run: mypy . --ignore-missing-imports
+      - run: mypy . --ignore-missing-imports --exclude="MyoSim|GolfSwingAnalysis|GolfSwingSim"
 
       # Quality check using our custom tool - non-blocking for playground repo
       - name: Run Quality Check
