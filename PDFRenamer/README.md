@@ -36,7 +36,7 @@ A robust tool to rename PDF files using a layered approach: local metadata, layo
 python -m src.pdf_renamer.main /path/to/pdfs --dry-run
 
 # Run with Gemini fallback
-python -m src.pdf_renamer.main /path/to/pdfs --provider gemini --rename
+python -m src.pdf_renamer.main /path/to/pdfs --provider gemini
 
 # Change naming style and use custom DB
 python -m src.pdf_renamer.main /path/to/pdfs --style snake_case --db my_cache.sqlite

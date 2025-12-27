@@ -49,7 +49,7 @@ The tool is run via the command line. You must run it as a module from the `src`
 ### Basic Syntax
 
 ```powershell
-python -m src.pdf_renamer.main [DIRECTORY] [OPTIONS]
+python -m pdf_renamer.main [DIRECTORY] [OPTIONS]
 ```
 
 ### Common Scenarios

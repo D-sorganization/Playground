@@ -11,9 +11,9 @@ logger = logging.getLogger(__name__)
 class ResultCache:
     def __init__(self, db_path: Path):
         self.db_path = db_path
-        self._init_db()
+        self._initialize_database()
 
-    def _init_db(self):
+    def _initialize_database(self) -> None:
         with sqlite3.connect(self.db_path) as conn:
             conn.execute(
                 """

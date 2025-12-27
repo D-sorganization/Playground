@@ -10,8 +10,19 @@ from .utils import clean_title, looks_like_title
 logger = logging.getLogger(__name__)
 
 
+
 MIN_TITLE_FONT_SIZE = 10.0
+# Use 10pt as a lower bound for "title-like" text: typical body text is
+# around 9-11pt, and titles/headings are usually at least this large or larger.
+
 TOP_PAGE_FRACTION = 0.35
+# Heuristic: treat roughly the top third of the first page as the title region.
+# 0.35 is slightly more generous than 1/3 to account for varying layouts.
+
+BASE_CONFIDENCE = 0.75
+MAX_BONUS = 0.2
+MIN_FONT_THRESHOLD = 12
+FONT_SCALE_FACTOR = 40.0
 
 
 # ---------- Layer 0: metadata ----------
@@ -84,7 +95,9 @@ def title_from_first_page(pdf_path: Path) -> TitleResult:
             return TitleResult(None, 0.2, "heuristic", f"weak guess: {guess!r}")
 
         # Confidence: higher if very large font and near top
-        conf = 0.75 + min(0.2, (best_size - 12) / 40.0)
+        conf = BASE_CONFIDENCE + min(
+            MAX_BONUS, (best_size - MIN_FONT_THRESHOLD) / FONT_SCALE_FACTOR
+        )
         return TitleResult(
             guess, min(conf, 0.9), "heuristic", "largest-font spans near top"
         )

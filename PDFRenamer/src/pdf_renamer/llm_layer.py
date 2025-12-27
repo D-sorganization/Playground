@@ -10,7 +10,9 @@ logger = logging.getLogger(__name__)
 
 
 class GeminiTitleLLM:
-    def __init__(self, api_key: str | None = None):
+    DEFAULT_MODEL = "gemini-1.5-flash"
+
+    def __init__(self, api_key: str | None = None, model_name: str = DEFAULT_MODEL):
         try:
             import google.generativeai as genai
 
@@ -20,7 +22,7 @@ class GeminiTitleLLM:
                 logger.warning("GEMINI_API_KEY not found in environment")
             else:
                 genai.configure(api_key=key)
-            self.model = genai.GenerativeModel("gemini-1.5-flash")
+            self.model = genai.GenerativeModel(model_name)
         except ImportError:
             self.genai = None
             logger.error("google-generativeai package not installed")
