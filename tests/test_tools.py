@@ -106,10 +106,7 @@ class TestMatlabQualityChecker(unittest.TestCase):
         # Create a function file
         func_file = self.temp_path / "myfunction.m"
         func_content = (
-            "function result = myfunction(x)\n"
-            "% A test function\n"
-            "result = x * 2;\n"
-            "end"
+            "function result = myfunction(x)\n% A test function\nresult = x * 2;\nend"
         )
         func_file.write_text(func_content)
 

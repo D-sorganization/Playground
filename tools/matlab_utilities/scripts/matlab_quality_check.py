@@ -73,7 +73,7 @@ class MatlabQualityChecker:
 
         return file_info
 
-    def _determine_file_type(self, lines: list[str], file_info: dict) -> None:
+    def _determine_file_type(self, lines: list[str], file_info: dict[str, Any]) -> None:
         """Determine if file is a function or script."""
         for i, line in enumerate(lines):
             line_clean = line.strip()
@@ -177,7 +177,6 @@ class MatlabQualityChecker:
                     for keyword in ["if", "for", "while", "function", "end"]
                 )
             ):
-
                 file_info["issues"].append(
                     {
                         "type": "style",
@@ -187,7 +186,9 @@ class MatlabQualityChecker:
                     }
                 )
 
-    def _check_best_practices(self, lines: list[str], file_info: dict[str, Any]) -> None:
+    def _check_best_practices(
+        self, lines: list[str], file_info: dict[str, Any]
+    ) -> None:
         """Check for MATLAB best practices."""
         for i, line in enumerate(lines, 1):
             line_clean = line.strip().lower()
@@ -249,7 +250,11 @@ class MatlabQualityChecker:
             return "\n".join(report_lines)
 
         # Group issues by severity
-        by_severity: dict[str, list[tuple[str, Any]]] = {"error": [], "warning": [], "info": []}
+        by_severity: dict[str, list[tuple[str, Any]]] = {
+            "error": [],
+            "warning": [],
+            "info": [],
+        }
 
         for file_info in files_info:
             for issue in file_info["issues"]:
