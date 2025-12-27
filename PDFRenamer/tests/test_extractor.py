@@ -17,6 +17,7 @@ def test_title_from_metadata(tmp_path: Path):
         assert result.title == "Metadata Title"
         assert result.method == "metadata"
 
+
 def test_title_from_metadata_missing(tmp_path: Path):
     pdf_path = tmp_path / "test.pdf"
     pdf_path.touch()
@@ -29,6 +30,7 @@ def test_title_from_metadata_missing(tmp_path: Path):
         result = title_from_metadata(pdf_path)
         assert result.title is None
         assert result.method == "metadata"
+
 
 def test_title_from_first_page(tmp_path: Path):
     pdf_path = tmp_path / "test.pdf"
@@ -65,6 +67,7 @@ def test_title_from_first_page(tmp_path: Path):
         result = title_from_first_page(pdf_path)
         assert result.title == "Big Title"
         assert result.method == "heuristic"
+
 
 def test_title_from_first_page_empty(tmp_path: Path):
     pdf_path = tmp_path / "test.pdf"
