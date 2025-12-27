@@ -4,7 +4,7 @@ from unittest.mock import MagicMock, patch
 from pdf_renamer.extractors import title_from_first_page, title_from_metadata
 
 
-def test_title_from_metadata(tmp_path: Path):
+def test_title_from_metadata(tmp_path: Path) -> None:
     pdf_path = tmp_path / "test.pdf"
     pdf_path.touch()
 
@@ -18,7 +18,7 @@ def test_title_from_metadata(tmp_path: Path):
         assert result.method == "metadata"
 
 
-def test_title_from_metadata_missing(tmp_path: Path):
+def test_title_from_metadata_missing(tmp_path: Path) -> None:
     pdf_path = tmp_path / "test.pdf"
     pdf_path.touch()
 
@@ -32,7 +32,7 @@ def test_title_from_metadata_missing(tmp_path: Path):
         assert result.method == "metadata"
 
 
-def test_title_from_first_page(tmp_path: Path):
+def test_title_from_first_page(tmp_path: Path) -> None:
     pdf_path = tmp_path / "test.pdf"
     pdf_path.touch()
 
@@ -69,7 +69,7 @@ def test_title_from_first_page(tmp_path: Path):
         assert result.method == "heuristic"
 
 
-def test_title_from_first_page_empty(tmp_path: Path):
+def test_title_from_first_page_empty(tmp_path: Path) -> None:
     pdf_path = tmp_path / "test.pdf"
     pdf_path.touch()
 
