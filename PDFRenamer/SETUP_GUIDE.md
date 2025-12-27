@@ -42,7 +42,7 @@ set GEMINI_API_KEY=your_actual_api_key_here
 export GEMINI_API_KEY="your_actual_api_key_here"
 ```
 
-## detailed Usage
+## Detailed Usage
 
 The tool is run via the command line. You must run it as a module from the `src` directory.
 

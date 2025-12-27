@@ -11,7 +11,7 @@ A robust tool to rename PDF files using a layered approach: local metadata, layo
 ## Features
 
 - **Robust Extraction**: Tries multiple methods to find the best title.
-- **Smart Caching**: specific results are stored in SQLite by file hash to avoid re-processing.
+- **Smart Caching**: Specific results are stored in SQLite by file hash to avoid re-processing.
 - **AI Integration**: Seamlessly offloads difficult PDFs to Gemini.
 - **Result Styles**: Standard, snake_case, or kebab_case.
 - **Concurrency**: Process multiple files in parallel.

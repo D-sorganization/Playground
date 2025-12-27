@@ -10,6 +10,9 @@ from .utils import clean_title, looks_like_title
 logger = logging.getLogger(__name__)
 
 
+MIN_TITLE_FONT_SIZE = 10.0
+TOP_PAGE_FRACTION = 0.35
+
 # ---------- Layer 0: metadata ----------
 def title_from_metadata(pdf_path: Path) -> TitleResult:
     try:
@@ -59,7 +62,7 @@ def title_from_first_page(pdf_path: Path) -> TitleResult:
         # Take top candidates, join adjacent large spans
         candidates = []
         for size, bbox, text in spans[:40]:
-            if size < 10:  # crude floor; tune per corpus
+            if size < MIN_TITLE_FONT_SIZE:  # crude floor; tune per corpus
                 continue
             if looks_like_title(text):
                 candidates.append((size, bbox[1], text))
@@ -71,7 +74,7 @@ def title_from_first_page(pdf_path: Path) -> TitleResult:
         best_size = max(c[0] for c in candidates)
         top = [c for c in candidates if c[0] >= best_size - 0.5]
         # Keep ones near top third of page
-        top = [c for c in top if c[1] < page.rect.height * 0.35]
+        top = [c for c in top if c[1] < page.rect.height * TOP_PAGE_FRACTION]
         if not top:
             top = candidates[:5]
 

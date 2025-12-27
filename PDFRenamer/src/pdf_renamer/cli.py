@@ -119,8 +119,14 @@ def main() -> None:
     logger.info(f"Found {len(files)} PDFs in {target_dir}")
 
     with ThreadPoolExecutor(max_workers=args.workers) as exe:
-        for f in files:
-            exe.submit(process_file, f, cache, llm, args.dry_run, args.style)
+        # Utilize map to ensure order and cleaner execution.
+        from functools import partial
+
+        process_func = partial(
+            process_file, cache=cache, llm=llm, dry_run=args.dry_run, style=args.style
+        )
+        # Force execution
+        list(exe.map(process_func, files))
 
 
 if __name__ == "__main__":

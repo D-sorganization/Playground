@@ -1,8 +1,11 @@
+import logging
 import sqlite3
 from datetime import datetime
 from pathlib import Path
 
 from .types import TitleResult
+
+logger = logging.getLogger(__name__)
 
 
 class ResultCache:
@@ -40,8 +43,8 @@ class ResultCache:
                 if row:
                     title, conf, method, error = row
                     return TitleResult(title, conf, method, error or "")
-        except sqlite3.Error:
-            pass
+        except sqlite3.Error as e:
+            logger.debug(f"Cache get error: {e}")
         return None
 
     def save(
@@ -58,7 +61,7 @@ class ResultCache:
                 conn.execute(
                     """
                     INSERT OR REPLACE INTO results (
-                        sha256, file_path, title, confidence, method, 
+                        sha256, file_path, title, confidence, method,
                         provider, model, timestamp, error
                     )
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -75,5 +78,5 @@ class ResultCache:
                         error_msg,
                     ),
                 )
-        except sqlite3.Error:
-            pass
+        except sqlite3.Error as e:
+            logger.debug(f"Cache save error: {e}")
