@@ -89,7 +89,6 @@ jobs:
   tests:
     needs: quality-gate
     runs-on: ubuntu-latest
-    continue-on-error: true  # Non-blocking for playground repo
     strategy:
       matrix:
         python: ["3.11"]
