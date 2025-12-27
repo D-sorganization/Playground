@@ -2,3 +2,9 @@ flask==3.0.3
 sympy==1.13.1
 pytest
 pytest-cov
+numpy
+matplotlib
+# GUI dependencies for golf swing tools (optional)
+# mujoco  # Commented out - requires special installation
+# PyQt6   # Commented out - large dependency
+# PySide6 # Commented out - large dependency
