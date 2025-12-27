@@ -11,6 +11,7 @@ class MujocoViewer(QWidget):
     """
     A widget to render the MuJoCo simulation.
     """
+
     def __init__(self, model_wrapper: Any, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.model_wrapper = model_wrapper

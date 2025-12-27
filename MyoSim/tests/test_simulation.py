@@ -12,6 +12,7 @@ def model_path() -> str:
         os.getcwd(), "MyoSim", "src", "myosim", "assets", "golf_swing.xml"
     )
 
+
 def test_model_loading(model_path: str) -> None:
     """Test that the MuJoCo model loads without error."""
     try:
@@ -23,6 +24,7 @@ def test_model_loading(model_path: str) -> None:
 
     assert model.model is not None
     assert model.data is not None
+
 
 def test_simulation_step(model_path: str) -> None:
     """Test that the simulation can step forward."""
@@ -36,6 +38,7 @@ def test_simulation_step(model_path: str) -> None:
     model.step()
 
     assert model.get_time() > initial_time
+
 
 def test_actuator_control(model_path: str) -> None:
     """Test setting actuator controls."""

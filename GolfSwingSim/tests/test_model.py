@@ -3,15 +3,16 @@ Tests for GolfSwingSim
 """
 
 import numpy as np
-import pytest
 from golf_swing_sim.simulation.model import GolfSwingModel
 
-def test_model_initialization():
+
+def test_model_initialization() -> None:
     model = GolfSwingModel()
     assert model.use_opensim is False
     assert model.gravity == -9.81
 
-def test_simulation_run():
+
+def test_simulation_run() -> None:
     model = GolfSwingModel()
     # Reduced duration for faster test
     model.duration = 0.1
@@ -28,7 +29,8 @@ def test_simulation_run():
     # Initial state is backswing.
     assert not np.all(result.marker_positions["ClubHead"] == 0)
 
-def test_parameter_update():
+
+def test_parameter_update() -> None:
     model = GolfSwingModel()
     original_torque = model.shoulder_torque
     model.shoulder_torque = 100.0

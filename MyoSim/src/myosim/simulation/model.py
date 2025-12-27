@@ -7,10 +7,12 @@ import mujoco
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
 class MujocoModel:
     """
     Wrapper for MuJoCo simulation model and data.
     """
+
     def __init__(self, model_path: str) -> None:
         if not os.path.exists(model_path):
             raise FileNotFoundError(f"Model file not found: {model_path}")

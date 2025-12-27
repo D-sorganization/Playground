@@ -13,6 +13,7 @@ from myosim.simulation.model import MujocoModel
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
 class MainWindow(QMainWindow):
     def __init__(self) -> None:
         super().__init__()

@@ -38,7 +38,8 @@ class GolfSwingModel:
         Initialize the model.
 
         Args:
-            model_path: Path to an OpenSim .osim file. If None, uses internal demo model.
+            model_path: Path to an OpenSim .osim file. If None, uses
+                internal demo model.
         """
         self.model_path = model_path
         self.use_opensim = False
@@ -76,7 +77,8 @@ class GolfSwingModel:
                 )
             except Exception as e:
                 logger.error(
-                    f"Failed to load OpenSim model: {e}. Falling back to internal demo model."
+                    f"Failed to load OpenSim model: {e}. "
+                    f"Falling back to internal demo model."
                 )
 
     def run_simulation(self) -> SimulationResult:
@@ -94,8 +96,9 @@ class GolfSwingModel:
     def _run_opensim_simulation(self) -> SimulationResult:
         """Run simulation using OpenSim (Placeholder for actual implementation)."""
         # This would involve setting up the manager, controls, and integrating.
-        # For now, we'll raise NotImplementedError or return dummy data if this path were
-        # active. Since we likely don't have OpenSim in this env, we focus on the demo model.
+        # For now, we'll raise NotImplementedError or return dummy data if this
+        # path were active. Since we likely don't have OpenSim in this env, we
+        # focus on the demo model.
         raise NotImplementedError("OpenSim integration pending environment setup.")
 
     def _run_demo_simulation(self) -> SimulationResult:
@@ -153,7 +156,8 @@ class GolfSwingModel:
             muscle_forces[i] = [tau1 / 0.05, tau2 / 0.02]  # Approx moment arms
 
             # Physics (Simplified decoupled + gravity)
-            # Real golf swing physics is complex; this is a visual approximation for the GUI.
+            # Real golf swing physics is complex; this is a visual
+            # approximation for the GUI.
 
             # Angular acceleration alpha = Torque / Inertia
             # Inertia approx

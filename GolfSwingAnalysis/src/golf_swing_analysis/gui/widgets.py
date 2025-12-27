@@ -36,9 +36,7 @@ class VideoWidget(QWidget):
         bytes_per_line = ch * w
 
         # Convert numpy array to QImage
-        qt_image = QImage(
-            frame.data, w, h, bytes_per_line, QImage.Format.Format_RGB888
-        )
+        qt_image = QImage(frame.data, w, h, bytes_per_line, QImage.Format.Format_RGB888)
 
         # Draw keypoints on QPixmap
         pixmap = QPixmap.fromImage(qt_image)
