@@ -10,24 +10,41 @@ from .utils import clean_title, looks_like_title
 logger = logging.getLogger(__name__)
 
 
-MIN_TITLE_FONT_SIZE = 10.0
-# Use 10pt as a lower bound for "title-like" text: typical body text is
-# around 9-11pt, and titles/headings are usually at least this large or larger.
+MIN_TITLE_FONT_SIZE = 12.0
+# Use 12pt as a lower bound for "title-like" text: typical body text is
+# around 9-11pt, so 12pt and above is treated as heading/title-sized. This
+# aligns with MIN_FONT_THRESHOLD below to keep font-size heuristics consistent.
 
 TOP_PAGE_FRACTION = 0.35
 # Heuristic: treat roughly the top third of the first page as the title region.
 # 0.35 is slightly more generous than 1/3 to account for varying layouts.
 
 BASE_CONFIDENCE = 0.75
+# Baseline confidence assigned to a candidate title that meets the minimum
+# structural heuristics (position, cleanliness, etc.) before any font-size
+# or layout-based bonuses are applied.
+
 MAX_BONUS = 0.2
+# Upper bound on the additional confidence that can be added on top of
+# BASE_CONFIDENCE from font- and layout-derived heuristics, so the total
+# confidence never exceeds BASE_CONFIDENCE + MAX_BONUS.
+
 MIN_FONT_THRESHOLD = 12
+# Minimum font size (in points) at which we start granting font-size-based
+# bonus confidence. This is intentionally higher than MIN_TITLE_FONT_SIZE:
+# text slightly above body size can still be considered as a title candidate,
+# but only clearly larger fonts (>= MIN_FONT_THRESHOLD) earn extra confidence.
+
 FONT_SCALE_FACTOR = 40.0
+# Scaling factor used when converting relative font size (above
+# MIN_FONT_THRESHOLD) into a bonus confidence fraction; larger values make
+# font-size differences contribute more strongly to the total confidence.
 
 
 # ---------- Layer 0: metadata ----------
 def title_from_metadata(pdf_path: Path) -> TitleResult:
     try:
-        from pypdf import PdfReader  # type: ignore
+        from pypdf import PdfReader
 
         r = PdfReader(str(pdf_path))
         md = r.metadata
@@ -44,7 +61,7 @@ def title_from_metadata(pdf_path: Path) -> TitleResult:
 # ---------- Layer 1: first-page heuristic (layout-aware) ----------
 def title_from_first_page(pdf_path: Path) -> TitleResult:
     try:
-        import fitz  # type: ignore
+        import fitz
 
         doc = fitz.open(str(pdf_path))
         if doc.page_count == 0:

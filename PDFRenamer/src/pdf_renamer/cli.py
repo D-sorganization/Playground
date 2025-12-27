@@ -44,12 +44,13 @@ def process_file(
             # 3. Extract
             result = extract_title(file_path, llm)
             # 4. Save to Cache
-            provider_name = getattr(llm, "DEFAULT_MODEL", "unknown") if llm else "local"
+            model_name = getattr(llm, "DEFAULT_MODEL", "unknown") if llm else "local"
             cache.save(
                 file_hash,
                 file_path,
                 result,
-                provider=provider_name,
+                provider="gemini" if llm else "local",
+                model=model_name if llm else "heuristic",
             )
             logger.info(
                 f"[{result.method.upper()}] {file_path.name} -> {result.title} "
