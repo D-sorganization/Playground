@@ -10,7 +10,6 @@ from .utils import clean_title, looks_like_title
 logger = logging.getLogger(__name__)
 
 
-
 MIN_TITLE_FONT_SIZE = 10.0
 # Use 10pt as a lower bound for "title-like" text: typical body text is
 # around 9-11pt, and titles/headings are usually at least this large or larger.
