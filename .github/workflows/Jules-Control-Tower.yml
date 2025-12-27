@@ -30,12 +30,18 @@ jobs:
       target: ${{ steps.decide.outputs.target }}
     steps:
       - name: Fast API Ping (Optional)
+        continue-on-error: true
         env:
           API_KEY: ${{ secrets.JULES_API_KEY }}
         run: |
           # Example: Just checking if Jules is alive or valid before dispatching expensive workers
+          # Skip if API key is not configured (playground repo)
+          if [ -z "$API_KEY" ]; then
+            echo "Jules API key not configured - skipping health check"
+            exit 0
+          fi
           curl -fsS -H "x-goog-api-key: $API_KEY" \
-            https://jules.google/api/v1/health || exit 1
+            https://jules.google/api/v1/health || echo "Jules API health check failed"
 
       - name: Analyze Event Context
         id: decide

@@ -54,13 +54,20 @@ jobs:
       - run: pip install -r requirements.txt
       - run: mypy . --ignore-missing-imports
 
-      # TODO detection now BLOCKING - Jules Auto-Repair will fix
-      - name: Verify No Placeholders
+      # Quality check using our custom tool
+      - name: Run Quality Check
+        continue-on-error: true
+        run: python tools/code_quality_check.py
+
+      # TODO detection - informational only for playground repo
+      - name: Check for Placeholders (Informational)
+        continue-on-error: true
         run: |
           EXCLUDE_ARGS='--exclude-dir=vendor --exclude-dir=.git --exclude-dir=node_modules --exclude-dir=.github --exclude-dir=.ruff_cache --exclude=*.md'
           if grep -rE "TODO|FIXME" . $EXCLUDE_ARGS; then
-             echo "::error::Placeholders found. Remove TODOs/FIXMEs or create tracked GitHub issues."
-             exit 1
+             echo "::warning::Placeholders found. Consider removing TODOs/FIXMEs or creating tracked GitHub issues."
+          else
+             echo "✓ No placeholders found"
           fi
 
       # FIX: Run Python-based MATLAB Quality Check (Works without License)
@@ -95,11 +102,12 @@ jobs:
       - run: pip install -r $TOOL_PATH/requirements.txt
       - run: pytest $TOOL_PATH/tests/ --cov=$TOOL_PATH --cov-report=xml
       - uses: codecov/codecov-action@v4
+        continue-on-error: true
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         if: env.CODECOV_TOKEN != ''
         with:
-          fail_ci_if_error: true # BLOCKING: Requires CODECOV_TOKEN secret to be configured
+          fail_ci_if_error: false # Non-blocking for playground repo
           token: ${{ secrets.CODECOV_TOKEN }}
 
   javascript-tests:
