@@ -11,6 +11,7 @@ import logging
 import re
 import sys
 from pathlib import Path
+from typing import Any
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
@@ -45,9 +46,7 @@ class MatlabQualityChecker:
 
         return matlab_files
 
-    def analyze_file(
-        self, file_path: Path
-    ) -> dict[str, str | int | list[dict[str, str | int]]]:
+    def analyze_file(self, file_path: Path) -> dict[str, Any]:
         """Analyze a single MATLAB file."""
         try:
             with open(file_path, encoding="utf-8", errors="ignore") as f:
@@ -57,7 +56,7 @@ class MatlabQualityChecker:
             logger.warning(f"Could not read {file_path}: {e}")
             return {"type": "error", "issues": []}
 
-        file_info = {
+        file_info: dict[str, Any] = {
             "path": str(file_path),
             "type": "unknown",
             "issues": [],
@@ -103,7 +102,7 @@ class MatlabQualityChecker:
                 self.stats["scripts_found"] += 1
                 return
 
-    def _check_documentation(self, lines: list[str], file_info: dict) -> None:
+    def _check_documentation(self, lines: list[str], file_info: dict[str, Any]) -> None:
         """Check for proper documentation."""
         # Look for help text (comments at the beginning)
         help_lines = 0
@@ -151,7 +150,7 @@ class MatlabQualityChecker:
                     }
                 )
 
-    def _check_style_issues(self, lines: list[str], file_info: dict) -> None:
+    def _check_style_issues(self, lines: list[str], file_info: dict[str, Any]) -> None:
         """Check for style and formatting issues."""
         for i, line in enumerate(lines, 1):
             # Check line length (MATLAB convention is often 75-80 chars)
@@ -188,7 +187,7 @@ class MatlabQualityChecker:
                     }
                 )
 
-    def _check_best_practices(self, lines: list[str], file_info: dict) -> None:
+    def _check_best_practices(self, lines: list[str], file_info: dict[str, Any]) -> None:
         """Check for MATLAB best practices."""
         for i, line in enumerate(lines, 1):
             line_clean = line.strip().lower()
@@ -222,7 +221,7 @@ class MatlabQualityChecker:
                 )
 
     def generate_report(
-        self, files_info: list[dict], output_format: str = "text"
+        self, files_info: list[dict[str, Any]], output_format: str = "text"
     ) -> str:
         """Generate quality report."""
         if output_format == "text":
@@ -234,7 +233,7 @@ class MatlabQualityChecker:
         else:
             raise ValueError(f"Unsupported output format: {output_format}")
 
-    def _generate_text_report(self, files_info: list[dict]) -> str:
+    def _generate_text_report(self, files_info: list[dict[str, Any]]) -> str:
         """Generate text format report."""
         report_lines = []
         report_lines.append("MATLAB Quality Check Report")
@@ -250,7 +249,7 @@ class MatlabQualityChecker:
             return "\n".join(report_lines)
 
         # Group issues by severity
-        by_severity = {"error": [], "warning": [], "info": []}
+        by_severity: dict[str, list[tuple[str, Any]]] = {"error": [], "warning": [], "info": []}
 
         for file_info in files_info:
             for issue in file_info["issues"]:
@@ -286,7 +285,9 @@ class MatlabQualityChecker:
         for file_path in matlab_files:
             file_info = self.analyze_file(file_path)
             files_info.append(file_info)
-            self.stats["issues_found"] += len(file_info["issues"])
+            issues_list = file_info["issues"]
+            if isinstance(issues_list, list):
+                self.stats["issues_found"] += len(issues_list)
 
         return self.generate_report(files_info, output_format)
 

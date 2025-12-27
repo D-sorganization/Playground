@@ -19,19 +19,19 @@ from matlab_utilities.scripts.matlab_quality_check import MatlabQualityChecker
 class TestQualityChecker(unittest.TestCase):
     """Test the Python code quality checker."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test fixtures."""
         self.checker = QualityChecker()
         self.temp_dir = tempfile.mkdtemp()
         self.temp_path = Path(self.temp_dir)
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         """Clean up test fixtures."""
         import shutil
 
         shutil.rmtree(self.temp_dir)
 
-    def test_placeholder_detection(self):
+    def test_placeholder_detection(self) -> None:
         """Test that placeholders are detected correctly."""
         # Create a file with a TODO
         test_file = self.temp_path / "test.py"
@@ -45,7 +45,7 @@ class TestQualityChecker(unittest.TestCase):
         ]
         self.assertEqual(len(placeholder_issues), 1)
 
-    def test_wildcard_import_detection(self):
+    def test_wildcard_import_detection(self) -> None:
         """Test that wildcard imports are detected."""
         test_file = self.temp_path / "test.py"
         test_file.write_text("from os import *\nprint('hello')")
@@ -58,7 +58,7 @@ class TestQualityChecker(unittest.TestCase):
         ]
         self.assertEqual(len(import_issues), 1)
 
-    def test_should_skip_file(self):
+    def test_should_skip_file(self) -> None:
         """Test file skipping logic."""
         # Should skip .git files
         git_file = Path(".git/config")
@@ -76,19 +76,19 @@ class TestQualityChecker(unittest.TestCase):
 class TestMatlabQualityChecker(unittest.TestCase):
     """Test the MATLAB code quality checker."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test fixtures."""
         self.checker = MatlabQualityChecker()
         self.temp_dir = tempfile.mkdtemp()
         self.temp_path = Path(self.temp_dir)
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         """Clean up test fixtures."""
         import shutil
 
         shutil.rmtree(self.temp_dir)
 
-    def test_find_matlab_files(self):
+    def test_find_matlab_files(self) -> None:
         """Test MATLAB file discovery."""
         # Create some test files
         (self.temp_path / "test.m").write_text("% MATLAB function")
@@ -101,7 +101,7 @@ class TestMatlabQualityChecker(unittest.TestCase):
         self.assertEqual(len(matlab_files), 1)
         self.assertEqual(matlab_files[0].name, "test.m")
 
-    def test_function_detection(self):
+    def test_function_detection(self) -> None:
         """Test function vs script detection."""
         # Create a function file
         func_file = self.temp_path / "myfunction.m"
@@ -119,7 +119,7 @@ class TestMatlabQualityChecker(unittest.TestCase):
         self.assertEqual(len(file_info["functions"]), 1)
         self.assertEqual(file_info["functions"][0]["name"], "myfunction")
 
-    def test_script_detection(self):
+    def test_script_detection(self) -> None:
         """Test script detection."""
         # Create a script file
         script_file = self.temp_path / "myscript.m"

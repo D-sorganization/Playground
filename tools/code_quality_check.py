@@ -160,15 +160,15 @@ class QualityChecker:
 
             # Group by issue type
             by_type: dict[str, list[tuple[str, int, str]]] = {}
-            for file_path, issue_type, line_num, message in self.issues:
+            for file_path_str, issue_type, line_num, message in self.issues:
                 if issue_type not in by_type:
                     by_type[issue_type] = []
-                by_type[issue_type].append((file_path, line_num, message))
+                by_type[issue_type].append((file_path_str, line_num, message))
 
             for issue_type, issues in by_type.items():
                 print(f"\n{issue_type.upper()} ISSUES ({len(issues)}):")
-                for file_path, line_num, message in issues[:10]:  # Limit output
-                    print(f"  {file_path}:{line_num} - {message}")
+                for file_path_str, line_num, message in issues[:10]:  # Limit output
+                    print(f"  {file_path_str}:{line_num} - {message}")
                 if len(issues) > 10:
                     print(f"  ... and {len(issues) - 10} more")
 
