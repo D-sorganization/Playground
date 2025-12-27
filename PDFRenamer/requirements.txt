@@ -1,4 +1,5 @@
-pdfplumber
+pypdf
+pymupdf
+google-generativeai
 pytest
 types-setuptools
-PyPDF2
