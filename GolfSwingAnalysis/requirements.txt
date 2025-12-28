@@ -1,4 +1,0 @@
-PySide6
-opencv-python-headless
-numpy
-matplotlib
