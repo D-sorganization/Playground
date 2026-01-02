@@ -89,19 +89,17 @@ jobs:
   tests:
     needs: quality-gate
     runs-on: ubuntu-latest
+    if: false # Disabled - no active Python projects in template playground
     strategy:
       matrix:
         python: ["3.11"]
-    env:
-      TOOL_PATH: "PDFRenamer"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
       - run: pip install -r requirements.txt
-      - run: pip install -r $TOOL_PATH/requirements.txt
-      - run: pytest $TOOL_PATH/tests/ --cov=$TOOL_PATH --cov-report=xml
+      - run: pytest tests/ --cov=. --cov-report=xml
       - uses: codecov/codecov-action@v4
         continue-on-error: true
         env:
