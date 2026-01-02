@@ -1,1 +1,0 @@
-"""Golf Swing Analysis Package."""
