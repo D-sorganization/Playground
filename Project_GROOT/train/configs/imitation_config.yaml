@@ -1,0 +1,60 @@
+# Imitation Learning Training Configuration
+
+# Data settings
+data:
+  sequence_length: 90  # frames (~3 seconds at 30 fps)
+  augmentation: false  # future: time warping, noise injection
+
+# Model architecture
+model:
+  type: mlp  # Multi-layer perceptron
+  hidden_dims: [256, 256, 128]
+  activation: relu
+  use_layer_norm: true
+  dropout: 0.0
+
+# Training settings
+train:
+  num_epochs: 500
+  batch_size: 64
+  learning_rate: 0.001
+  weight_decay: 0.00001
+  grad_clip: 1.0
+
+  # Optimizer
+  optimizer: adam
+  betas: [0.9, 0.999]
+
+  # Learning rate schedule
+  lr_schedule: cosine
+  warmup_epochs: 10
+  min_lr: 0.00001
+
+  # Logging
+  log_freq: 10  # epochs
+  save_freq: 50  # epochs
+
+  # Data loading
+  num_workers: 4
+  pin_memory: true
+
+# Loss function
+loss:
+  type: mse  # Mean squared error
+  # Future: Add diversity loss, temporal smoothness
+
+# Evaluation
+eval:
+  eval_freq: 50  # epochs
+  num_eval_samples: 10
+
+# Weights & Biases (optional)
+wandb:
+  enabled: false
+  project: groot-golf
+  entity: null
+  tags: [imitation, golf, isaac_lab]
+
+# Reproducibility
+seed: 42
+deterministic: true

@@ -1,0 +1,75 @@
+# Robot Configuration: Upper Body Humanoid for Golf Swing
+# This configuration focuses on torso + arms for vertical slice
+
+name: humanoid_upper_body
+
+# Degrees of Freedom (DOFs)
+# Simplified upper body: torso (3) + left arm (4) + right arm (4) = 11 DOFs
+dof_names:
+  - torso_pitch      # 0: forward/backward tilt
+  - torso_yaw        # 1: left/right rotation
+  - torso_roll       # 2: side bend
+  - left_shoulder_pitch   # 3
+  - left_shoulder_roll    # 4
+  - left_shoulder_yaw     # 5
+  - left_elbow            # 6
+  - right_shoulder_pitch  # 7
+  - right_shoulder_roll   # 8
+  - right_shoulder_yaw    # 9
+  - right_elbow           # 10
+
+# Joint limits (radians)
+joint_limits:
+  lower: [-0.5, -1.57, -0.3, -3.14, -1.57, -3.14, 0.0, -3.14, -1.57, -3.14, 0.0]
+  upper: [0.5, 1.57, 0.3, 3.14, 1.57, 3.14, 2.8, 3.14, 1.57, 3.14, 2.8]
+
+# Velocity limits (rad/s)
+velocity_limits: [10.0, 10.0, 10.0, 15.0, 15.0, 15.0, 20.0, 15.0, 15.0, 15.0, 20.0]
+
+# Acceleration limits (rad/s^2)
+acceleration_limits: [50.0, 50.0, 50.0, 80.0, 80.0, 80.0, 100.0, 80.0, 80.0, 80.0, 100.0]
+
+# Default/neutral pose (radians)
+default_pose: [0.0, 0.0, 0.0, 0.5, -0.3, 0.0, 0.5, 0.5, 0.3, 0.0, 0.5]
+
+# End effectors
+end_effectors:
+  right_hand:
+    link_name: right_hand_link
+    offset: [0.0, 0.0, 1.15]  # Club length offset
+  left_hand:
+    link_name: left_hand_link
+    offset: [0.0, 0.0, 0.0]
+
+# Club properties
+club:
+  length: 1.15  # meters (driver)
+  mass: 0.31    # kg (driver)
+  grip_to_head: 1.15
+  shaft_radius: 0.012  # meters
+
+# PD controller gains (for position control)
+pd_gains:
+  kp: [200.0, 200.0, 200.0, 150.0, 150.0, 150.0, 100.0, 150.0, 150.0, 150.0, 100.0]
+  kd: [20.0, 20.0, 20.0, 15.0, 15.0, 15.0, 10.0, 15.0, 15.0, 15.0, 10.0]
+
+# Physics properties
+physics:
+  link_mass_scale: 1.0
+  friction: 0.8
+  restitution: 0.1
+
+# Observation configuration
+observations:
+  include_joint_pos: true
+  include_joint_vel: true
+  include_joint_acc: false
+  include_clubhead_pos: true
+  include_clubhead_vel: true
+  include_phase: true
+
+# Visualization
+visualization:
+  skeleton_color: [0.2, 0.6, 0.8]
+  club_color: [0.8, 0.2, 0.2]
+  trajectory_color: [0.2, 0.8, 0.2]

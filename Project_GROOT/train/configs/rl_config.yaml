@@ -1,0 +1,109 @@
+# Reinforcement Learning (PPO) Fine-tuning Configuration
+
+# Environment settings
+env:
+  name: GolfSwing-v0
+  num_envs: 256
+  episode_length_s: 3.0
+  action_scale: 1.0
+
+# PPO Algorithm settings
+train:
+  # Training duration
+  num_steps: 10000000  # 10M total environment steps
+
+  # PPO hyperparameters
+  learning_rate: 0.0003
+  gamma: 0.99          # Discount factor
+  gae_lambda: 0.95     # GAE parameter
+  clip_param: 0.2      # PPO clip range
+
+  # Value function
+  value_loss_coef: 0.5
+  entropy_coef: 0.01   # Entropy bonus for exploration
+
+  # Optimization
+  num_epochs: 5        # PPO epochs per batch
+  batch_size: 256      # Minibatch size
+  max_grad_norm: 1.0   # Gradient clipping
+
+  # Buffer
+  num_steps_per_update: 24  # Steps before update
+
+  # Logging and saving
+  eval_freq: 10000     # Evaluate every N steps
+  save_freq: 50000     # Save checkpoint every N steps
+  log_freq: 100        # Log to tensorboard every N steps
+
+# Reward function weights
+reward:
+  tracking_weight: 1.0         # Match demo trajectory
+  clubhead_speed_weight: 0.5   # Maximize clubhead speed
+  clubhead_path_weight: 0.3    # Match clubhead trajectory
+  smoothness_weight: 0.1       # Smooth motions
+  joint_limits_weight: -0.5    # Penalize limit violations
+
+  # Target metrics
+  target_clubhead_speed: 40.0  # m/s
+  target_swing_duration: 1.4   # seconds
+
+# Domain randomization (for robustness)
+domain_randomization:
+  enabled: false
+
+  # Physical parameters
+  mass_scale: 0.1          # +/- 10% mass variation
+  friction_scale: 0.2      # +/- 20% friction variation
+  club_length_scale: 0.05  # +/- 5% club length
+
+  # Dynamics
+  motor_strength_scale: 0.1
+  joint_damping_scale: 0.2
+
+  # Observation noise
+  joint_pos_noise: 0.01   # rad
+  joint_vel_noise: 0.05   # rad/s
+
+# Network architecture
+policy:
+  type: mlp
+  hidden_dims: [256, 256, 128]
+  activation: elu
+  use_layer_norm: true
+
+value:
+  type: mlp
+  hidden_dims: [256, 256, 128]
+  activation: elu
+  use_layer_norm: true
+
+# Curriculum learning (optional)
+curriculum:
+  enabled: false
+  stages:
+    - stage: 1
+      duration_steps: 1000000
+      reward_weights:
+        tracking_weight: 2.0  # Emphasize tracking first
+        clubhead_speed_weight: 0.1
+    - stage: 2
+      duration_steps: 5000000
+      reward_weights:
+        tracking_weight: 1.0
+        clubhead_speed_weight: 0.5  # Then add speed
+    - stage: 3
+      duration_steps: 4000000
+      reward_weights:
+        tracking_weight: 0.5
+        clubhead_speed_weight: 1.0  # Finally maximize speed
+
+# Weights & Biases
+wandb:
+  enabled: false
+  project: groot-golf-rl
+  entity: null
+  tags: [rl, ppo, golf, isaac_lab]
+
+# Reproducibility
+seed: 42
+deterministic: false  # Allow stochasticity for RL exploration
