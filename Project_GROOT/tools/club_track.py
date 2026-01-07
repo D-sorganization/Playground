@@ -17,7 +17,6 @@ Usage:
 import argparse
 import json
 from pathlib import Path
-from typing import Dict, Optional, Tuple
 
 import numpy as np
 
@@ -29,7 +28,9 @@ except ImportError:
 try:
     from tqdm import tqdm
 except ImportError:
-    tqdm = lambda x, **kwargs: x
+
+    def tqdm(x, **kwargs):
+        return x
 
 
 class ClubTracker:
@@ -48,8 +49,8 @@ class ClubTracker:
         self,
         skeleton: np.ndarray,
         confidence: np.ndarray,
-        video_path: Optional[str] = None,
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        video_path: str | None = None,
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         """
         Track club trajectory.
 
@@ -76,7 +77,7 @@ class ClubTracker:
         self,
         skeleton: np.ndarray,
         confidence: np.ndarray,
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         """
         Baseline: fit line through hands, extend to estimate clubhead.
 
@@ -89,7 +90,7 @@ class ClubTracker:
         Returns:
             club_grip, club_head, club_face
         """
-        T = len(skeleton)
+        len(skeleton)
 
         # MediaPipe wrist indices
         left_wrist_idx = 15
@@ -107,7 +108,9 @@ class ClubTracker:
 
         # Normalize
         wrist_direction_norm = np.linalg.norm(wrist_direction, axis=1, keepdims=True)
-        wrist_direction_norm = np.clip(wrist_direction_norm, 1e-6, None)  # Avoid div by zero
+        wrist_direction_norm = np.clip(
+            wrist_direction_norm, 1e-6, None
+        )  # Avoid div by zero
         wrist_direction_unit = wrist_direction / wrist_direction_norm
 
         # Extend line from grip through hands to estimate clubhead
@@ -132,7 +135,7 @@ class ClubTracker:
         skeleton: np.ndarray,
         confidence: np.ndarray,
         video_path: str,
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         """
         Track clubhead using optical flow (future implementation).
 
@@ -144,7 +147,7 @@ class ClubTracker:
         self,
         pose_file: str,
         output_file: str,
-        video_path: Optional[str] = None,
+        video_path: str | None = None,
     ):
         """
         Add club tracking data to existing pose .npz file.
@@ -169,13 +172,15 @@ class ClubTracker:
 
         # Create updated data dict
         new_data = {key: data[key] for key in data.keys()}
-        new_data.update({
-            "club_grip": club_grip,
-            "club_head": club_head,
-            "club_face": club_face,
-            "club_speed": club_speed,
-            "club_path": club_path,
-        })
+        new_data.update(
+            {
+                "club_grip": club_grip,
+                "club_head": club_head,
+                "club_face": club_face,
+                "club_speed": club_speed,
+                "club_path": club_path,
+            }
+        )
 
         # Save
         np.savez(output_file, **new_data)
@@ -190,7 +195,9 @@ class ClubTracker:
             "total_path_length": float(club_path[-1]),
         }
 
-    def _compute_clubhead_speed(self, club_head: np.ndarray, timestamps: np.ndarray) -> np.ndarray:
+    def _compute_clubhead_speed(
+        self, club_head: np.ndarray, timestamps: np.ndarray
+    ) -> np.ndarray:
         """
         Compute clubhead speed from trajectory.
 
@@ -201,7 +208,7 @@ class ClubTracker:
         Returns:
             speed: (T,) instantaneous speed in m/s
         """
-        T = len(club_head)
+        len(club_head)
 
         # Compute displacement
         displacement = np.diff(club_head, axis=0)  # (T-1, 3)
@@ -308,14 +315,20 @@ def main():
             stats = tracker.add_club_to_pose_file(
                 pose_file=str(pose_file),
                 output_file=str(output_file),
-                video_path=video_entry.get("video_path") if args.method == "optical_flow" else None,
+                video_path=(
+                    video_entry.get("video_path")
+                    if args.method == "optical_flow"
+                    else None
+                ),
             )
 
-            all_stats.append({
-                "video_id": video_id,
-                "golfer": video_entry["golfer"],
-                **stats,
-            })
+            all_stats.append(
+                {
+                    "video_id": video_id,
+                    "golfer": video_entry["golfer"],
+                    **stats,
+                }
+            )
 
             print(f"{video_id}: max speed = {stats['max_clubhead_speed']:.1f} m/s")
 
@@ -332,7 +345,9 @@ def main():
     if all_stats:
         max_speeds = [s["max_clubhead_speed"] for s in all_stats]
         print(f"\n✓ Processed {len(all_stats)} videos")
-        print(f"  Clubhead speed range: {min(max_speeds):.1f} - {max(max_speeds):.1f} m/s")
+        print(
+            f"  Clubhead speed range: {min(max_speeds):.1f} - {max(max_speeds):.1f} m/s"
+        )
         print(f"  Mean max speed: {np.mean(max_speeds):.1f} m/s")
         print(f"  Stats saved to {stats_file}")
 

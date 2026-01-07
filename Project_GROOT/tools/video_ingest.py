@@ -17,11 +17,9 @@ Usage:
 """
 
 import argparse
-import json
-import os
-from pathlib import Path
-from typing import Dict, List, Optional
 import hashlib
+import json
+from pathlib import Path
 
 try:
     import cv2
@@ -35,18 +33,18 @@ class VideoIngester:
 
     def __init__(self, output_path: str):
         self.output_path = Path(output_path)
-        self.videos: List[Dict] = []
+        self.videos: list[dict] = []
 
     def add_video(
         self,
         video_path: str,
         golfer_name: str = "Unknown",
         video_source: str = "unknown",
-        start_time: Optional[float] = None,
-        end_time: Optional[float] = None,
+        start_time: float | None = None,
+        end_time: float | None = None,
         swing_type: str = "driver",
-        metadata: Optional[Dict] = None,
-    ) -> Dict:
+        metadata: dict | None = None,
+    ) -> dict:
         """
         Add a video to the manifest.
 
@@ -73,7 +71,7 @@ class VideoIngester:
         # Calculate frame indices
         fps = props["fps"]
         total_frames = props["frame_count"]
-        duration = props["duration"]
+        props["duration"]
 
         start_frame = 0 if start_time is None else int(start_time * fps)
         end_frame = total_frames if end_time is None else int(end_time * fps)
@@ -100,7 +98,9 @@ class VideoIngester:
         }
 
         self.videos.append(entry)
-        print(f"Added: {video_id} ({entry['duration']:.2f}s, {end_frame - start_frame} frames)")
+        print(
+            f"Added: {video_id} ({entry['duration']:.2f}s, {end_frame - start_frame} frames)"
+        )
 
         return entry
 
@@ -160,10 +160,12 @@ class VideoIngester:
 
         print(f"\n✓ Manifest saved: {self.output_path}")
         print(f"  Total videos: {len(self.videos)}")
-        print(f"  Total frames: {sum(v['end_frame'] - v['start_frame'] for v in self.videos)}")
+        print(
+            f"  Total frames: {sum(v['end_frame'] - v['start_frame'] for v in self.videos)}"
+        )
         print(f"  Total duration: {sum(v['duration'] for v in self.videos):.2f}s")
 
-    def _get_video_properties(self, video_path: Path) -> Dict:
+    def _get_video_properties(self, video_path: Path) -> dict:
         """Extract video properties using OpenCV."""
         if cv2 is None:
             # Fallback: return dummy values
@@ -203,7 +205,9 @@ class VideoIngester:
             "height": height,
         }
 
-    def _generate_video_id(self, video_path: Path, start_frame: int, end_frame: int) -> str:
+    def _generate_video_id(
+        self, video_path: Path, start_frame: int, end_frame: int
+    ) -> str:
         """Generate unique video ID."""
         # Use stem + hash of path + frame range for uniqueness
         stem = video_path.stem

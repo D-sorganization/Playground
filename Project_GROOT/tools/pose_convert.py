@@ -16,9 +16,8 @@ Usage:
 
 import argparse
 import json
-from pathlib import Path
-from typing import Dict, List, Optional, Tuple
 import warnings
+from pathlib import Path
 
 import numpy as np
 
@@ -31,7 +30,9 @@ except ImportError:
 try:
     from tqdm import tqdm
 except ImportError:
-    tqdm = lambda x, **kwargs: x  # Fallback
+
+    def tqdm(x, **kwargs):
+        return x  # Fallback
 
 
 class PoseExtractor:
@@ -40,7 +41,7 @@ class PoseExtractor:
     def __init__(self, confidence_threshold: float = 0.5):
         self.confidence_threshold = confidence_threshold
 
-    def extract(self, frame: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+    def extract(self, frame: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         """
         Extract pose from a single frame.
 
@@ -53,7 +54,7 @@ class PoseExtractor:
         """
         raise NotImplementedError
 
-    def get_keypoint_names(self) -> List[str]:
+    def get_keypoint_names(self) -> list[str]:
         """Return list of keypoint names in order."""
         raise NotImplementedError
 
@@ -67,7 +68,9 @@ class MediaPipePoseExtractor(PoseExtractor):
         try:
             import mediapipe as mp
         except ImportError:
-            raise ImportError("MediaPipe not installed. Install with: pip install mediapipe")
+            raise ImportError(
+                "MediaPipe not installed. Install with: pip install mediapipe"
+            ) from None
 
         self.mp_pose = mp.solutions.pose
         self.pose = self.mp_pose.Pose(
@@ -78,7 +81,7 @@ class MediaPipePoseExtractor(PoseExtractor):
             min_tracking_confidence=confidence_threshold,
         )
 
-    def extract(self, frame: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+    def extract(self, frame: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         """Extract pose using MediaPipe."""
         results = self.pose.process(frame)
 
@@ -99,34 +102,66 @@ class MediaPipePoseExtractor(PoseExtractor):
             num_joints = 33  # MediaPipe has 33 landmarks
             return np.zeros((num_joints, 3)), np.zeros(num_joints)
 
-    def get_keypoint_names(self) -> List[str]:
+    def get_keypoint_names(self) -> list[str]:
         """Return MediaPipe keypoint names."""
         return [
-            "nose", "left_eye_inner", "left_eye", "left_eye_outer",
-            "right_eye_inner", "right_eye", "right_eye_outer",
-            "left_ear", "right_ear", "mouth_left", "mouth_right",
-            "left_shoulder", "right_shoulder", "left_elbow", "right_elbow",
-            "left_wrist", "right_wrist", "left_pinky", "right_pinky",
-            "left_index", "right_index", "left_thumb", "right_thumb",
-            "left_hip", "right_hip", "left_knee", "right_knee",
-            "left_ankle", "right_ankle", "left_heel", "right_heel",
-            "left_foot_index", "right_foot_index"
+            "nose",
+            "left_eye_inner",
+            "left_eye",
+            "left_eye_outer",
+            "right_eye_inner",
+            "right_eye",
+            "right_eye_outer",
+            "left_ear",
+            "right_ear",
+            "mouth_left",
+            "mouth_right",
+            "left_shoulder",
+            "right_shoulder",
+            "left_elbow",
+            "right_elbow",
+            "left_wrist",
+            "right_wrist",
+            "left_pinky",
+            "right_pinky",
+            "left_index",
+            "right_index",
+            "left_thumb",
+            "right_thumb",
+            "left_hip",
+            "right_hip",
+            "left_knee",
+            "right_knee",
+            "left_ankle",
+            "right_ankle",
+            "left_heel",
+            "right_heel",
+            "left_foot_index",
+            "right_foot_index",
         ]
 
 
 class MMPosePoseExtractor(PoseExtractor):
     """MMPose extractor (placeholder - requires full MMPose setup)."""
 
-    def __init__(self, confidence_threshold: float = 0.5, config: str = None, checkpoint: str = None):
+    def __init__(
+        self,
+        confidence_threshold: float = 0.5,
+        config: str = None,
+        checkpoint: str = None,
+    ):
         super().__init__(confidence_threshold)
         # TODO: Implement MMPose integration
         # This requires mmpose, mmdet, mmcv installation
-        warnings.warn("MMPose backend not fully implemented yet. Use MediaPipe for now.")
+        warnings.warn(
+            "MMPose backend not fully implemented yet. Use MediaPipe for now.",
+            stacklevel=2,
+        )
 
-    def extract(self, frame: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+    def extract(self, frame: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         raise NotImplementedError("MMPose backend coming soon")
 
-    def get_keypoint_names(self) -> List[str]:
+    def get_keypoint_names(self) -> list[str]:
         raise NotImplementedError
 
 
@@ -158,7 +193,7 @@ class PoseConverter:
         start_frame: int,
         end_frame: int,
         output_path: str,
-    ) -> Dict:
+    ) -> dict:
         """
         Process a single video and extract poses.
 
@@ -234,7 +269,9 @@ class PoseConverter:
         )
 
         # Compute statistics
-        valid_frames = (confidences.mean(axis=1) > self.extractor.confidence_threshold).sum()
+        valid_frames = (
+            confidences.mean(axis=1) > self.extractor.confidence_threshold
+        ).sum()
         stats = {
             "total_frames": num_frames,
             "valid_frames": int(valid_frames),
@@ -244,7 +281,9 @@ class PoseConverter:
 
         return stats
 
-    def _compute_swing_phases(self, skeletons: np.ndarray, confidences: np.ndarray) -> np.ndarray:
+    def _compute_swing_phases(
+        self, skeletons: np.ndarray, confidences: np.ndarray
+    ) -> np.ndarray:
         """
         Compute swing phases based on wrist trajectory.
 
@@ -275,6 +314,7 @@ class PoseConverter:
 
         # Find peaks (top of backswing and follow-through)
         from scipy.signal import find_peaks
+
         try:
             peaks, _ = find_peaks(wrist_y, distance=10)
 
@@ -288,8 +328,8 @@ class PoseConverter:
                 # Find impact (lowest point after backswing peak)
                 if backswing_peak < T - 1:
                     impact_idx = backswing_peak + np.argmin(wrist_y[backswing_peak:])
-                    phase_labels[impact_idx:impact_idx+3] = 3  # impact (3 frames)
-                    phase_labels[impact_idx+3:] = 4  # follow-through
+                    phase_labels[impact_idx : impact_idx + 3] = 3  # impact (3 frames)
+                    phase_labels[impact_idx + 3 :] = 4  # follow-through
 
                 # Address (first few frames)
                 phase_labels[:5] = 0
@@ -300,12 +340,14 @@ class PoseConverter:
 
         return phase_labels
 
-    def _visualize_pose(self, frame: np.ndarray, keypoints: np.ndarray, confidence: np.ndarray):
+    def _visualize_pose(
+        self, frame: np.ndarray, keypoints: np.ndarray, confidence: np.ndarray
+    ):
         """Draw pose on frame for visualization."""
         # Simple visualization: draw keypoints
         h, w = frame.shape[:2]
 
-        for i, (kp, conf) in enumerate(zip(keypoints, confidence)):
+        for _i, (kp, conf) in enumerate(zip(keypoints, confidence, strict=False)):
             if conf > self.extractor.confidence_threshold:
                 # MediaPipe outputs normalized coords, scale to image
                 x = int(kp[0] * w)
@@ -418,11 +460,6 @@ def main():
 
 
 if __name__ == "__main__":
-    # Add scipy to imports for peak finding
-    try:
-        import scipy.signal
-    except ImportError:
-        print("Warning: scipy not installed. Phase detection will be simplified.")
-        print("Install with: pip install scipy")
+
 
     main()

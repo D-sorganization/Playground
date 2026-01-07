@@ -2,7 +2,8 @@
 """
 Imitation Learning Training Script for Project GROOT
 
-Trains a policy to imitate retargeted golf swing demonstrations using behavioral cloning.
+Trains a policy to imitate retargeted golf swing demonstrations using
+behavioral cloning.
 
 Usage:
     python train/imitation_train.py --config train/configs/imitation_config.yaml \
@@ -10,22 +11,22 @@ Usage:
 """
 
 import argparse
-import json
 from pathlib import Path
-from typing import Dict, List
 
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torch.utils.data import Dataset, DataLoader
-from torch.utils.tensorboard import SummaryWriter
 import yaml
+from torch.utils.data import DataLoader, Dataset
+from torch.utils.tensorboard import SummaryWriter
 
 try:
     from tqdm import tqdm
 except ImportError:
-    tqdm = lambda x, **kwargs: x
+
+    def tqdm(x, **kwargs):
+        return x
 
 
 class SwingDemonstrationDataset(Dataset):
@@ -46,12 +47,14 @@ class SwingDemonstrationDataset(Dataset):
 
         for demo_file in self.demo_files:
             data = np.load(demo_file)
-            self.demos.append({
-                "q": data["q"],  # (T, num_dofs)
-                "qdot": data["qdot"],  # (T, num_dofs)
-                "ee_pos": data["ee_pos"],  # (T, 3)
-                "timestamps": data["timestamps"],  # (T,)
-            })
+            self.demos.append(
+                {
+                    "q": data["q"],  # (T, num_dofs)
+                    "qdot": data["qdot"],  # (T, num_dofs)
+                    "ee_pos": data["ee_pos"],  # (T, 3)
+                    "timestamps": data["timestamps"],  # (T,)
+                }
+            )
 
         print(f"Loaded {len(self.demos)} demonstrations")
 
@@ -86,7 +89,9 @@ class SwingDemonstrationDataset(Dataset):
         time_steps = np.linspace(0, 1, self.sequence_length)
 
         # State: q + qdot + time
-        state = np.concatenate([q, qdot, time_steps[:, None]], axis=1)  # (T, num_dofs*2 + 1)
+        state = np.concatenate(
+            [q, qdot, time_steps[:, None]], axis=1
+        )  # (T, num_dofs*2 + 1)
 
         # Action: q (position control)
         action = q
@@ -105,8 +110,10 @@ class PolicyNetwork(nn.Module):
         self,
         state_dim: int,
         action_dim: int,
-        hidden_dims: List[int] = [256, 256, 128],
+        hidden_dims: list[int] = None,
     ):
+        if hidden_dims is None:
+            hidden_dims = [256, 256, 128]
         super().__init__()
 
         layers = []
@@ -133,7 +140,7 @@ class ImitationTrainer:
 
     def __init__(
         self,
-        config: Dict,
+        config: dict,
         demo_dir: str,
         output_dir: str,
         device: str = "cuda",
@@ -194,7 +201,7 @@ class ImitationTrainer:
         self.epoch = 0
         self.best_loss = float("inf")
 
-    def train_epoch(self) -> Dict:
+    def train_epoch(self) -> dict:
         """Train for one epoch."""
         self.policy.train()
 
@@ -279,7 +286,9 @@ class ImitationTrainer:
             self.writer.add_scalar("train/loss", metrics["loss"], epoch)
             self.writer.add_scalar("train/lr", metrics["lr"], epoch)
 
-            print(f"Epoch {epoch}/{num_epochs}: loss={metrics['loss']:.6f}, lr={metrics['lr']:.6f}")
+            print(
+                f"Epoch {epoch}/{num_epochs}: loss={metrics['loss']:.6f}, lr={metrics['lr']:.6f}"
+            )
 
             # Save checkpoint
             is_best = metrics["loss"] < self.best_loss
@@ -289,7 +298,7 @@ class ImitationTrainer:
             if epoch % self.config["train"].get("save_freq", 50) == 0 or is_best:
                 self.save_checkpoint(is_best=is_best)
 
-        print(f"\n✓ Training complete!")
+        print("\n✓ Training complete!")
         print(f"  Best loss: {self.best_loss:.6f}")
         print(f"  Checkpoints saved to: {self.output_dir / 'checkpoints'}")
 

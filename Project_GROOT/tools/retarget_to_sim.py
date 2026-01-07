@@ -15,7 +15,6 @@ Usage:
 import argparse
 import json
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 import yaml
@@ -23,11 +22,14 @@ import yaml
 try:
     from tqdm import tqdm
 except ImportError:
-    tqdm = lambda x, **kwargs: x
+
+    def tqdm(x, **kwargs):
+        return x
+
 
 try:
-    from scipy.ndimage import gaussian_filter1d
     from scipy.interpolate import interp1d
+    from scipy.ndimage import gaussian_filter1d
 except ImportError:
     print("Warning: scipy not installed. Install with: pip install scipy")
     gaussian_filter1d = None
@@ -51,8 +53,12 @@ class RobotConfig:
         self.joint_upper = np.array(config["joint_limits"]["upper"])
 
         # Velocity/acceleration limits
-        self.velocity_limits = np.array(config.get("velocity_limits", [10.0] * self.num_dofs))
-        self.acceleration_limits = np.array(config.get("acceleration_limits", [50.0] * self.num_dofs))
+        self.velocity_limits = np.array(
+            config.get("velocity_limits", [10.0] * self.num_dofs)
+        )
+        self.acceleration_limits = np.array(
+            config.get("acceleration_limits", [50.0] * self.num_dofs)
+        )
 
         # End-effector mappings
         self.ee_links = config.get("end_effectors", {})
@@ -86,7 +92,7 @@ class PoseRetargeter:
         skeleton: np.ndarray,
         club_head: np.ndarray,
         timestamps: np.ndarray,
-    ) -> Dict[str, np.ndarray]:
+    ) -> dict[str, np.ndarray]:
         """
         Retarget human pose sequence to robot joint trajectory.
 
@@ -149,7 +155,9 @@ class PoseRetargeter:
             "timestamps": timestamps,
         }
 
-    def _simple_ik_mapping(self, skeleton: np.ndarray, club_head: np.ndarray) -> np.ndarray:
+    def _simple_ik_mapping(
+        self, skeleton: np.ndarray, club_head: np.ndarray
+    ) -> np.ndarray:
         """
         Simplified IK: heuristic mapping from human joints to robot DOFs.
 
@@ -180,8 +188,6 @@ class PoseRetargeter:
         RIGHT_ELBOW = 14
         LEFT_WRIST = 15
         RIGHT_WRIST = 16
-        LEFT_HIP = 23
-        RIGHT_HIP = 24
 
         # Extract key joints
         left_shoulder = skeleton[:, LEFT_SHOULDER, :]
@@ -249,7 +255,7 @@ def validate_trajectory(
     q: np.ndarray,
     qdot: np.ndarray,
     robot_config: RobotConfig,
-) -> Dict[str, any]:
+) -> dict[str, any]:
     """
     Validate retargeted trajectory for joint limits, velocity, etc.
 
@@ -278,7 +284,9 @@ def validate_trajectory(
 
     # Check velocity limits
     max_velocities = np.abs(qdot).max(axis=0)
-    for i, (max_vel, limit) in enumerate(zip(max_velocities, robot_config.velocity_limits)):
+    for i, (max_vel, limit) in enumerate(
+        zip(max_velocities, robot_config.velocity_limits, strict=False)
+    ):
         if max_vel > limit:
             report["warnings"].append(
                 f"Velocity limit exceeded: {robot_config.dof_names[i]} "
@@ -415,11 +423,13 @@ def main():
 
         except Exception as e:
             print(f"  ✗ {pose_file.name}: {e}")
-            all_reports.append({
-                "file": pose_file.name,
-                "valid": False,
-                "errors": [str(e)],
-            })
+            all_reports.append(
+                {
+                    "file": pose_file.name,
+                    "valid": False,
+                    "errors": [str(e)],
+                }
+            )
 
     # Save validation report
     report_file = output_dir / "retargeting_report.json"
@@ -428,7 +438,7 @@ def main():
 
     # Summary
     num_valid = sum(1 for r in all_reports if r["valid"])
-    print(f"\n✓ Retargeting complete")
+    print("\n✓ Retargeting complete")
     print(f"  Valid demos: {num_valid}/{len(all_reports)}")
     print(f"  Output: {output_dir}")
     print(f"  Report: {report_file}")

@@ -25,12 +25,14 @@ def test_gpu():
         if torch.cuda.is_available():
             print(f"✓ CUDA available: {torch.version.cuda}")
             print(f"✓ GPU: {torch.cuda.get_device_name(0)}")
-            print(f"✓ GPU memory: {torch.cuda.get_device_properties(0).total_memory / 1e9:.1f} GB")
+            print(
+                f"✓ GPU memory: {torch.cuda.get_device_properties(0).total_memory / 1e9:.1f} GB"
+            )
 
             # Simple GPU test
             x = torch.randn(1000, 1000, device="cuda")
-            y = x @ x
-            print(f"✓ GPU computation test passed")
+            x @ x
+            print("✓ GPU computation test passed")
 
             return True
         else:
@@ -63,7 +65,7 @@ def test_isaac_sim():
         if python_sh.exists():
             print(f"✓ Isaac Sim Python found: {python_sh}")
         else:
-            print(f"⚠ python.sh not found at expected location")
+            print("⚠ python.sh not found at expected location")
 
         return True
     else:

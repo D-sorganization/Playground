@@ -14,7 +14,6 @@ Usage:
 
 import argparse
 from pathlib import Path
-from typing import Dict
 
 import numpy as np
 import torch
@@ -40,8 +39,8 @@ class SimplePPOTrainer:
 
     def __init__(
         self,
-        config: Dict,
-        env_config: Dict,
+        config: dict,
+        env_config: dict,
         pretrained_policy: str,
         output_dir: str,
         device: str = "cuda",
@@ -52,7 +51,7 @@ class SimplePPOTrainer:
         self.device = device
 
         print("Initializing RL trainer...")
-        print(f"  Environment: GolfSwing-v0")
+        print("  Environment: GolfSwing-v0")
         print(f"  Num envs: {config['env']['num_envs']}")
         print(f"  Total steps: {config['train']['num_steps']}")
 
@@ -68,7 +67,6 @@ class SimplePPOTrainer:
     def train(self):
         """Run RL training loop."""
         num_steps = self.config["train"]["num_steps"]
-        eval_freq = self.config["train"].get("eval_freq", 10000)
 
         print(f"\nStarting RL fine-tuning for {num_steps} steps")
         print(f"Output directory: {self.output_dir}")
@@ -100,7 +98,7 @@ class SimplePPOTrainer:
             yaml.dump(self.config, f)
 
         print(f"\n✓ RL training template ready at {self.output_dir}")
-        print(f"  Integrate with Isaac Lab to enable full training")
+        print("  Integrate with Isaac Lab to enable full training")
 
 
 def create_rl_config_template():
