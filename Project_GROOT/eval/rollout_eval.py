@@ -11,7 +11,8 @@ Metrics:
 - Joint limit violations
 
 Usage:
-    python eval/rollout_eval.py --policy train/outputs/imitation_policy/checkpoints/best.pth \  # noqa: E501
+    python eval/rollout_eval.py \
+        --policy train/outputs/imitation_policy/checkpoints/best.pth \
         --config sim/configs/humanoid_upper.yaml --num-rollouts 50 \
         --output-dir eval/outputs/eval_results
 """
@@ -292,7 +293,10 @@ class PolicyEvaluator:
         </tr>
         <tr>
             <td>Range</td>
-            <td>{summary['clubhead_speed']['max_min']:.2f} - {summary['clubhead_speed']['max_max']:.2f} m/s</td>  # noqa: E501
+            <td>
+                {summary['clubhead_speed']['max_min']:.2f} -
+                {summary['clubhead_speed']['max_max']:.2f} m/s
+            </td>
         </tr>
     </table>
 
@@ -304,7 +308,10 @@ class PolicyEvaluator:
         </tr>
         <tr>
             <td>Mean Duration</td>
-            <td>{summary['swing_duration']['mean']:.3f} ± {summary['swing_duration']['std']:.3f} s</td>  # noqa: E501
+            <td>
+                {summary['swing_duration']['mean']:.3f} ±
+                {summary['swing_duration']['std']:.3f} s
+            </td>
         </tr>
     </table>
 
@@ -316,7 +323,10 @@ class PolicyEvaluator:
         </tr>
         <tr>
             <td>Trajectory Smoothness</td>
-            <td>{summary['trajectory_smoothness']['mean']:.3f} ± {summary['trajectory_smoothness']['std']:.3f}</td>  # noqa: E501
+            <td>
+                {summary['trajectory_smoothness']['mean']:.3f} ±
+                {summary['trajectory_smoothness']['std']:.3f}
+            </td>
         </tr>
         <tr>
             <td>Joint Limit Violations</td>

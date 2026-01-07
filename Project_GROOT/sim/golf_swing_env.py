@@ -305,7 +305,7 @@ class GolfSwingEnv(DirectRLEnv):
 
 
 # Register environment
-import gymnasium as gym
+import gymnasium as gym  # noqa: E402
 
 gym.register(
     id="GolfSwing-v0",

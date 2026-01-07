@@ -79,16 +79,16 @@ def test_isaac_lab():
     print("\n=== Isaac Lab Test ===")
 
     try:
-        # Try importing Isaac Lab
-        import omni.isaac.lab
+        import importlib.util
 
-        print("✓ Isaac Lab imported successfully")
-        return True
+        if importlib.util.find_spec("omni.isaac.lab") is not None:
+            print("✓ Isaac Lab imported successfully")
+            return True
+        else:
+            print("✗ Cannot import omni.isaac.lab")
+            print("  Install Isaac Lab (see docs/SETUP.md)")
+            return False
 
-    except ImportError:
-        print("✗ Cannot import omni.isaac.lab")
-        print("  Install Isaac Lab (see docs/SETUP.md)")
-        return False
     except Exception as e:
         print(f"✗ Isaac Lab test failed: {e}")
         return False

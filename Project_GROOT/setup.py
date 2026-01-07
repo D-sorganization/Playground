@@ -69,5 +69,6 @@ setup(
         "Topic :: Scientific/Engineering :: Robotics",
         "Programming Language :: Python :: 3.10",
     ],
-    keywords="robotics, golf, isaac-sim, isaac-lab, groot, imitation-learning, reinforcement-learning",
+    keywords="robotics, golf, isaac-sim, isaac-lab, groot, "
+             "imitation-learning, reinforcement-learning",
 )
