@@ -72,7 +72,6 @@ class VideoIngester:
         # Calculate frame indices
         fps = props["fps"]
         total_frames = props["frame_count"]
-        props["duration"]
 
         start_frame = 0 if start_time is None else int(start_time * fps)
         end_frame = total_frames if end_time is None else int(end_time * fps)

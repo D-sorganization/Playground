@@ -90,7 +90,7 @@ class ClubTracker:
         Returns:
             club_grip, club_head, club_face
         """
-        len(skeleton)
+        assert len(skeleton) > 0, "Skeleton must contain frames"
 
         # MediaPipe wrist indices
         left_wrist_idx = 15
@@ -208,7 +208,7 @@ class ClubTracker:
         Returns:
             speed: (T,) instantaneous speed in m/s
         """
-        len(club_head)
+        assert len(club_head) > 0, "Club head data must contain frames"
 
         # Compute displacement
         displacement = np.diff(club_head, axis=0)  # (T-1, 3)

@@ -2,6 +2,8 @@
 # Python 3.10.12 recommended
 
 # Core ML/RL
+# PyTorch: use CUDA 12.1 wheels (see VERSION_PINNING.md or https://pytorch.org/get-started/locally/)
+# Example: pip install --index-url https://download.pytorch.org/whl/cu121 torch==2.1.0 torchvision==0.16.0
 torch==2.1.0
 torchvision==0.16.0
 numpy==1.24.3

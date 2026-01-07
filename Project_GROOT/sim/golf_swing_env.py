@@ -230,8 +230,6 @@ class GolfSwingEnv(DirectRLEnv):
         if env_ids is None:
             env_ids = torch.arange(self.num_envs, device=self.device)
 
-        len(env_ids)
-
         # Reset robot to default pose
         default_joint_pos = self.robot.data.default_joint_pos[env_ids]
         default_joint_vel = torch.zeros_like(default_joint_pos)

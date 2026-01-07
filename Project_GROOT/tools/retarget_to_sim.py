@@ -15,6 +15,7 @@ Usage:
 import argparse
 import json
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 import yaml
@@ -255,7 +256,7 @@ def validate_trajectory(
     q: np.ndarray,
     qdot: np.ndarray,
     robot_config: RobotConfig,
-) -> dict[str, any]:
+) -> dict[str, Any]:
     """
     Validate retargeted trajectory for joint limits, velocity, etc.
 

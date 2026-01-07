@@ -31,7 +31,7 @@ def test_gpu():
 
             # Simple GPU test
             x = torch.randn(1000, 1000, device="cuda")
-            x @ x
+            _ = x @ x
             print("✓ GPU computation test passed")
 
             return True

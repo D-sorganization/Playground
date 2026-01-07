@@ -122,7 +122,6 @@ class PolicyEvaluator:
         """Compute summary statistics across all rollouts."""
         # Extract metrics
         max_speeds = [s["max_clubhead_speed"] for s in rollout_stats]
-        [s["mean_clubhead_speed"] for s in rollout_stats]
         durations = [s["swing_duration"] for s in rollout_stats]
         smoothness = [s["trajectory_smoothness"] for s in rollout_stats]
         violations = [s["joint_limit_violations"] for s in rollout_stats]
