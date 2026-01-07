@@ -26,7 +26,7 @@ def test_gpu():
             print(f"✓ CUDA available: {torch.version.cuda}")
             print(f"✓ GPU: {torch.cuda.get_device_name(0)}")
             print(
-                f"✓ GPU memory: {torch.cuda.get_device_properties(0).total_memory / 1e9:.1f} GB"
+                f"✓ GPU memory: {torch.cuda.get_device_properties(0).total_memory / 1e9:.1f} GB"  # noqa: E501
             )
 
             # Simple GPU test

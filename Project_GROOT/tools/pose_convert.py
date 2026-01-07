@@ -2,7 +2,7 @@
 """
 Pose Conversion Tool for Project GROOT
 
-Extracts 3D skeleton poses from golf swing videos using various pose estimation backends.
+Extracts 3D skeleton poses from golf swing videos using various pose estimation backends.  # noqa: E501
 
 Supported backends:
 - mediapipe: Fast, CPU-friendly, good for prototyping
@@ -10,7 +10,7 @@ Supported backends:
 - openpose: Classic, GPU accelerated
 
 Usage:
-    python pose_convert.py --manifest data/manifest.json --output-dir data/processed_pose \
+    python pose_convert.py --manifest data/manifest.json --output-dir data/processed_pose \  # noqa: E501
         --pose-backend mediapipe --visualize
 """
 

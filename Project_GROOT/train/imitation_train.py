@@ -287,7 +287,7 @@ class ImitationTrainer:
             self.writer.add_scalar("train/lr", metrics["lr"], epoch)
 
             print(
-                f"Epoch {epoch}/{num_epochs}: loss={metrics['loss']:.6f}, lr={metrics['lr']:.6f}"
+                f"Epoch {epoch}/{num_epochs}: loss={metrics['loss']:.6f}, lr={metrics['lr']:.6f}"  # noqa: E501
             )
 
             # Save checkpoint

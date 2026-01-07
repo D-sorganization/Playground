@@ -6,7 +6,8 @@ Builds a manifest of golf swing videos with metadata for downstream processing.
 
 Usage:
     # Single video
-    python video_ingest.py --input-file data/raw_video/swing.mp4 --output data/manifest.json
+    python video_ingest.py --input-file data/raw_video/swing.mp4 \\
+        --output data/manifest.json
 
     # Directory of videos
     python video_ingest.py --input-dir data/raw_video --output data/manifest.json
@@ -99,7 +100,8 @@ class VideoIngester:
 
         self.videos.append(entry)
         print(
-            f"Added: {video_id} ({entry['duration']:.2f}s, {end_frame - start_frame} frames)"
+            f"Added: {video_id} ({entry['duration']:.2f}s, "
+            f"{end_frame - start_frame} frames)"
         )
 
         return entry
@@ -161,7 +163,8 @@ class VideoIngester:
         print(f"\n✓ Manifest saved: {self.output_path}")
         print(f"  Total videos: {len(self.videos)}")
         print(
-            f"  Total frames: {sum(v['end_frame'] - v['start_frame'] for v in self.videos)}"
+            f"  Total frames: "
+            f"{sum(v['end_frame'] - v['start_frame'] for v in self.videos)}"
         )
         print(f"  Total duration: {sum(v['duration'] for v in self.videos):.2f}s")
 
