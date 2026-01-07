@@ -1,0 +1,63 @@
+# Project GROOT Requirements
+# Python 3.10.12 recommended
+
+# Core ML/RL
+# PyTorch: use CUDA 12.1 wheels (see VERSION_PINNING.md or https://pytorch.org/get-started/locally/)
+# Example: pip install --index-url https://download.pytorch.org/whl/cu121 torch==2.1.0 torchvision==0.16.0
+torch==2.1.0
+torchvision==0.16.0
+numpy==1.24.3
+scipy==1.11.2
+
+# Robotics and Simulation
+# Note: Isaac Sim and Isaac Lab installed separately (see docs/SETUP.md)
+
+# Pose Estimation (choose one or more)
+mediapipe==0.10.7        # Fast, CPU-friendly
+# mmpose==1.2.0          # More accurate, requires mmdet/mmcv
+# openpose-python==0.0.1 # Classic, GPU accelerated
+
+# Video Processing
+opencv-python==4.8.1.78
+pillow==10.0.1
+mediapy==1.1.9
+
+# Data Processing
+pandas==2.1.1
+h5py==3.9.0
+
+# Visualization
+matplotlib==3.8.0
+seaborn==0.12.2
+
+# Configuration
+pyyaml==6.0.1
+hydra-core==1.3.2
+
+# Utilities
+tqdm==4.66.1
+wandb==0.16.0  # Optional: experiment tracking
+tensorboard==2.14.0
+
+# RL Libraries (optional, for PPO)
+# stable-baselines3==2.1.0
+# rl-games==1.6.1
+
+# Development and Testing
+pytest==7.4.2
+pytest-cov==4.1.0
+black==23.9.1
+flake8==6.1.0
+mypy==1.5.1
+isort==5.12.0
+
+# Documentation
+sphinx==7.2.6
+sphinx-rtd-theme==1.3.0
+
+# Jupyter (for experiments)
+jupyter==1.0.0
+ipywidgets==8.1.1
+
+# System utilities
+psutil==5.9.5

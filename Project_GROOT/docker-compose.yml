@@ -1,0 +1,89 @@
+version: '3.8'
+
+services:
+  groot:
+    build:
+      context: .
+      dockerfile: .devcontainer/Dockerfile
+    image: project-groot:latest
+    container_name: project-groot
+
+    # GPU access (requires nvidia-docker)
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=all
+
+    # Shared memory for large batches
+    shm_size: '8gb'
+
+    # Volumes
+    volumes:
+      # Mount project code for development
+      - .:/workspace/Project_GROOT
+
+      # Mount Isaac Lab (adjust path)
+      - ${HOME}/isaac_workspace/IsaacLab:/workspace/IsaacLab
+
+      # Mount Isaac GR00T (adjust path)
+      - ${HOME}/isaac_workspace/isaac-groot:/workspace/isaac-groot
+
+      # Mount data directory
+      - ./data:/workspace/Project_GROOT/data
+
+      # Mount output directories
+      - ./train/outputs:/workspace/Project_GROOT/train/outputs
+      - ./eval/outputs:/workspace/Project_GROOT/eval/outputs
+
+      # X11 for visualization (optional)
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+
+    environment:
+      - DISPLAY=${DISPLAY}
+      - ISAAC_SIM_PATH=/isaac-sim
+      - ISAAC_LAB_PATH=/workspace/IsaacLab
+      - PROJECT_GROOT_PATH=/workspace/Project_GROOT
+      - WANDB_API_KEY=${WANDB_API_KEY:-}
+
+    # Ports
+    ports:
+      - "8888:8888"  # Jupyter
+      - "6006:6006"  # TensorBoard
+      - "8080:8080"  # Web UI
+
+    # Network
+    network_mode: host
+
+    # Keep container running
+    stdin_open: true
+    tty: true
+
+    # Command
+    command: /bin/bash
+
+  # TensorBoard service (optional)
+  tensorboard:
+    image: tensorflow/tensorflow:latest
+    container_name: groot-tensorboard
+    ports:
+      - "6007:6006"
+    volumes:
+      - ./train/outputs:/logs
+    command: tensorboard --logdir=/logs --host=0.0.0.0
+    profiles:
+      - tensorboard
+
+  # Jupyter service (optional)
+  jupyter:
+    build:
+      context: .
+      dockerfile: .devcontainer/Dockerfile
+    container_name: groot-jupyter
+    runtime: nvidia
+    ports:
+      - "8889:8888"
+    volumes:
+      - .:/workspace/Project_GROOT
+    command: jupyter notebook --ip=0.0.0.0 --port=8888 --no-browser --allow-root
+    profiles:
+      - jupyter
