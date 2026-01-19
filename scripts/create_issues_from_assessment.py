@@ -141,9 +141,9 @@ def process_assessment_findings(
     # Filter by severity
     filtered_issues = [i for i in critical_issues if i.get("severity") in severities]
 
-    logger.info(
-        f"Filtered to {len(filtered_issues)} issues with severities: {', '.join(severities)}"
-    )
+    severity_list = ", ".join(severities)
+    filtered_count = len(filtered_issues)
+    logger.info(f"Filtered to {filtered_count} issues with severities: {severity_list}")
 
     # Get repository name from current directory
     repo_name = Path.cwd().name
@@ -246,7 +246,7 @@ This issue was identified during automated repository assessment and requires at
 ### References
 
 - Assessment Report: {source}
-- Full Assessment: docs/assessments/COMPREHENSIVE_ASSESSMENT_SUMMARY_{summary.get('timestamp', '')[:10]}.md
+- Full Assessment: See docs/assessments/ folder
 
 ### Next Steps
 
