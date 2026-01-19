@@ -169,7 +169,10 @@ Repository assessment completed across all {len(scores)} categories.
         if assessment_id in categories:
             cat_info = categories[assessment_id]
             score = scores[assessment_id]
-            md_content += f"| **{assessment_id}** | {cat_info['name']} | {score:.1f} | {cat_info['weight']}x |\n"
+            name = str(cat_info["name"])
+            weight = float(cat_info["weight"])
+            row = f"| **{assessment_id}** | {name} | {score:.1f} | {weight}x |\n"
+            md_content += row
 
     md_content += f"""
 ## Critical Issues
