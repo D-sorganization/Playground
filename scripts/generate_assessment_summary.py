@@ -98,8 +98,8 @@ def generate_summary(
     """
     logger.info(f"Generating assessment summary from {len(input_reports)} reports...")
 
-    # Category mapping
-    categories = {
+    # Category mapping with typed values
+    categories: dict[str, dict[str, str | float]] = {
         "A": {"name": "Architecture & Implementation", "weight": 2.0},
         "B": {"name": "Hygiene, Security & Quality", "weight": 2.0},
         "C": {"name": "Documentation & Integration", "weight": 1.5},
@@ -135,7 +135,7 @@ def generate_summary(
 
     for assessment_id, score in scores.items():
         if assessment_id in categories:
-            weight = categories[assessment_id]["weight"]
+            weight = float(categories[assessment_id]["weight"])
             total_weighted_score += score * weight
             total_weight += weight
 
@@ -169,10 +169,7 @@ Repository assessment completed across all {len(scores)} categories.
         if assessment_id in categories:
             cat_info = categories[assessment_id]
             score = scores[assessment_id]
-            name = cat_info["name"]
-            weight = cat_info["weight"]
-            row = f"| **{assessment_id}** | {name} | {score:.1f} | {weight}x |\n"
-            md_content += row
+            md_content += f"| **{assessment_id}** | {cat_info['name']} | {score:.1f} | {cat_info['weight']}x |\n"
 
     md_content += f"""
 ## Critical Issues
@@ -264,7 +261,7 @@ def main() -> int:
     args = parser.parse_args()
 
     # Expand wildcards if needed
-    input_reports = []
+    input_reports: list[Path] = []
     for pattern in args.input:
         if "*" in str(pattern):
             # Expand glob pattern
