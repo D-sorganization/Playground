@@ -9,49 +9,57 @@ on:
     workflows: ["CI Standard"]
     types: [completed]
   schedule:
-    - cron: "0 2 * * *"
+    # WEEKLY SCHEDULE - PST times (UTC-8)
+    - cron: "0 10 * * 2"  # Tuesday 2 AM PST - Tech Custodian
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Worker to dispatch (auto uses schedule routing)"
+        required: false
+        default: "auto"
+        type: choice
+        options:
+          - auto
+          - tech-custodian
 
 # Prevent multiple Control Tower instances from running simultaneously
 concurrency:
-  group: jules-control-tower
+  group: jules-control-tower-${{ github.repository }}
   cancel-in-progress: false
 
 permissions:
   contents: write
   pull-requests: write
   actions: write
+  issues: write
 
 jobs:
   triage:
     runs-on: ubuntu-latest
-    if: github.actor != 'jules-bot'
+    # Removed global actor check to allow scheduled runs even if file modified by bot
     outputs:
-      # FIX: Matched output name to what downstream jobs expect ("target")
       target: ${{ steps.decide.outputs.target }}
     steps:
-      - name: Fast API Ping (Optional)
-        continue-on-error: true
-        env:
-          API_KEY: ${{ secrets.JULES_API_KEY }}
-        run: |
-          # Example: Just checking if Jules is alive or valid before dispatching expensive workers
-          # Skip if API key is not configured (playground repo)
-          if [ -z "$API_KEY" ]; then
-            echo "Jules API key not configured - skipping health check"
-            exit 0
-          fi
-          curl -fsS -H "x-goog-api-key: $API_KEY" \
-            https://jules.google/api/v1/health || echo "Jules API health check failed"
-
       - name: Analyze Event Context
         id: decide
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const event = context.eventName;
+            const actor = context.actor;
+            const schedule = context.payload.schedule;
+            const manualTarget = context.payload.inputs?.target;
             let target = "none";
-            // 1. CI FAILURE -> AUTO-REPAIR or HOTFIX-CREATOR (if protected branch)
-            if (event === "workflow_run" && context.payload.workflow_run.conclusion === "failure") {
+
+            console.log(`Event: ${event}, Actor: ${actor}, Schedule: ${schedule}`);
+
+            // 0. MANUAL DISPATCH - Honor explicit target selection
+            if (event === "workflow_dispatch" && manualTarget && manualTarget !== "auto") {
+              target = manualTarget;
+              console.log(`Manual dispatch: ${target}`);
+            }
+            // 1. CI FAILURE -> AUTO-REPAIR or HOTFIX-CREATOR
+            else if (event === "workflow_run" && context.payload.workflow_run.conclusion === "failure") {
                const failedBranch = context.payload.workflow_run.head_branch;
                if (failedBranch === "main" || failedBranch === "master") {
                   target = "hotfix-creator";
@@ -59,27 +67,43 @@ jobs:
                   target = "auto-repair";
                }
             }
-            // 2. NIGHTLY SCHEDULE -> AUDITOR (Daily) or CUSTODIAN (Weekly)
-            else if (event === "schedule") {
-              const day = new Date().getDay();
-              if (day === 2) { // Tuesday
-                 target = "tech-custodian";
+            // 2. SCHEDULED RUNS - Route by cron pattern (deterministic)
+            else if (event === "schedule" || (event === "workflow_dispatch" && (!manualTarget || manualTarget === "auto"))) {
+              if (schedule) {
+                switch (schedule) {
+                  case "0 10 * * 2":
+                    target = "tech-custodian";
+                    break;
+                  default:
+                    target = "tech-custodian";
+                }
               } else {
-                 target = "scientific-auditor";
+                target = "tech-custodian";
               }
             }
-            // 3. PUSH TO MAIN -> DOCS (CodeWiki Feeder)
+            // 3. PUSH TO MAIN -> DOCS
             else if (event === "push" && context.ref === "refs/heads/main") {
-              target = "doc-scribe";
+              if (actor === 'jules-bot' || actor === 'jules-ai[bot]' || actor === 'google-labs-jules[bot]') {
+                 console.log("Ignoring push by bot to prevent doc-scribe loops.");
+                 target = "none";
+              } else {
+                 target = "doc-scribe";
+              }
             }
             // 4. NEW PR -> TEST GENERATOR
             else if (event === "pull_request" && context.payload.action === 'opened') {
-               target = "test-generator";
+               if (actor === 'jules-bot' || actor === 'jules-ai[bot]' || actor === 'google-labs-jules[bot]') {
+                  console.log("Ignoring PR open by bot.");
+                  target = "none";
+               } else {
+                  target = "test-generator";
+               }
             }
             // 5. PR CLOSED -> ARCHIVIST
             else if (event === "pull_request" && context.payload.action === 'closed' && context.payload.pull_request.merged) {
                target = "archivist";
             }
+
             console.log(`Decision: Dispatching [${target}]`);
             core.setOutput("target", target);
 
@@ -88,17 +112,19 @@ jobs:
   call-repair:
     needs: triage
     if: needs.triage.outputs.target == 'auto-repair'
-    # FIX: Pass the specific Run ID so we repair the *exact* failure, not just "the latest one"
     uses: ./.github/workflows/Jules-Auto-Repair.yml
     with:
       run_id: ${{ github.event.workflow_run.id }}
       branch: ${{ github.event.workflow_run.head_branch }}
     secrets: inherit
 
-  call-auditor:
+  call-hotfix-creator:
     needs: triage
-    if: needs.triage.outputs.target == 'scientific-auditor'
-    uses: ./.github/workflows/Jules-Scientific-Auditor.yml
+    if: needs.triage.outputs.target == 'hotfix-creator'
+    uses: ./.github/workflows/Jules-Hotfix-Creator.yml
+    with:
+      run_id: ${{ github.event.workflow_run.id }}
+      failed_branch: ${{ github.event.workflow_run.head_branch }}
     secrets: inherit
 
   call-scribe:
@@ -123,12 +149,4 @@ jobs:
     needs: triage
     if: needs.triage.outputs.target == 'archivist'
     uses: ./.github/workflows/Jules-Archivist.yml
-    secrets: inherit
-  call-hotfix-creator:
-    needs: triage
-    if: needs.triage.outputs.target == 'hotfix-creator'
-    uses: ./.github/workflows/Jules-Hotfix-Creator.yml
-    with:
-      run_id: ${{ github.event.workflow_run.id }}
-      failed_branch: ${{ github.event.workflow_run.head_branch }}
     secrets: inherit
