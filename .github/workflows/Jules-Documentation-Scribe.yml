@@ -1,6 +1,7 @@
 name: Jules Documentation Scribe (Worker)
 
-on: workflow_call
+on:
+  workflow_call:
 
 permissions:
   contents: write
@@ -79,7 +80,7 @@ jobs:
           else
             # 1. Create the PR (Capture the URL)
             PR_URL=$(gh pr create \
-              --title "docs: update metadata" \
+              --title "[Jules/Documentation-Scribe] docs: update metadata" \
               --body "Automated docstring updates." \
               --base main \
               --head $BRANCH \
