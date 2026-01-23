@@ -1,0 +1,4524 @@
+{
+  "timestamp": "2026-01-23T11:50:00.480846",
+  "repository": "Playground",
+  "python_files_analyzed": 25,
+  "overall_score": 5.8,
+  "principle_scores": {
+    "DRY": {
+      "score": 0.0,
+      "name": "Don't Repeat Yourself",
+      "weight": 2.0
+    },
+    "ORTHOGONALITY": {
+      "score": 0.0,
+      "name": "Orthogonality & Decoupling",
+      "weight": 1.5
+    },
+    "REVERSIBILITY": {
+      "score": 10.0,
+      "name": "Reversibility & Flexibility",
+      "weight": 1.0
+    },
+    "QUALITY": {
+      "score": 6.0,
+      "name": "Code Quality & Craftsmanship",
+      "weight": 1.5
+    },
+    "ROBUSTNESS": {
+      "score": 8.0,
+      "name": "Error Handling & Robustness",
+      "weight": 2.0
+    },
+    "TESTING": {
+      "score": 8.0,
+      "name": "Testing & Validation",
+      "weight": 2.0
+    },
+    "DOCUMENTATION": {
+      "score": 8.0,
+      "name": "Documentation & Communication",
+      "weight": 1.0
+    },
+    "AUTOMATION": {
+      "score": 9.0,
+      "name": "Automation & Tooling",
+      "weight": 1.5
+    }
+  },
+  "issues": [
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\baseline_assessments.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\baseline_assessments.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\baseline_assessments.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\create_issues_from_assessment.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\tools\\matlab_utilities\\scripts\\matlab_quality_check.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 4 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\tools\\matlab_utilities\\scripts\\matlab_quality_check.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\create_issues_from_assessment.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\generate_assessment_summary.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 4 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\tools\\matlab_utilities\\scripts\\matlab_quality_check.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\create_issues_from_assessment.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\generate_assessment_summary.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 12 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\tools\\matlab_utilities\\scripts\\matlab_quality_check.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\create_issues_from_assessment.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\run_assessment.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\create_issues_from_assessment.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\create_issues_from_assessment.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\create_issues_from_assessment.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\create_issues_from_assessment.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\create_issues_from_assessment.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\create_issues_from_assessment.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\create_issues_from_assessment.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\create_issues_from_assessment.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\create_issues_from_assessment.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\create_issues_from_assessment.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 4 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\create_issues_from_assessment.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 4 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\create_issues_from_assessment.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\create_issues_from_assessment.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\create_issues_from_assessment.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\create_issues_from_assessment.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\create_issues_from_assessment.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 3 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\create_issues_from_assessment.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\run_assessment.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\tools\\code_quality_check.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\generate_assessment_summary.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\generate_assessment_summary.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\pragmatic_programmer_review.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 3 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\generate_assessment_summary.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\generate_assessment_summary.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\generate_assessment_summary.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\generate_assessment_summary.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\generate_assessment_summary.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\generate_assessment_summary.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\generate_assessment_summary.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\generate_assessment_summary.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\generate_assessment_summary.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\generate_assessment_summary.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 4 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\generate_assessment_summary.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 26 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\retarget_to_sim.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\eval\\rollout_eval.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\rl_finetune.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\generate_assessment_summary.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\generate_assessment_summary.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\generate_assessment_summary.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\generate_assessment_summary.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\generate_assessment_summary.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\generate_assessment_summary.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\generate_assessment_summary.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\generate_assessment_summary.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\run_assessment.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 8 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\generate_assessment_summary.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\imitation_train.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\retarget_to_sim.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\generate_assessment_summary.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\generate_assessment_summary.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\run_assessment.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\pragmatic_programmer_review.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\pragmatic_programmer_review.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\pragmatic_programmer_review.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\pragmatic_programmer_review.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 3 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\pragmatic_programmer_review.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\pragmatic_programmer_review.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\pragmatic_programmer_review.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\pragmatic_programmer_review.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\pragmatic_programmer_review.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\pragmatic_programmer_review.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\pragmatic_programmer_review.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\pragmatic_programmer_review.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\pragmatic_programmer_review.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\pragmatic_programmer_review.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\pragmatic_programmer_review.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\pragmatic_programmer_review.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\pragmatic_programmer_review.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\pragmatic_programmer_review.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\pragmatic_programmer_review.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\pragmatic_programmer_review.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\pragmatic_programmer_review.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\pragmatic_programmer_review.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\pragmatic_programmer_review.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 3 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\pragmatic_programmer_review.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\pragmatic_programmer_review.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\pragmatic_programmer_review.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\pragmatic_programmer_review.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\pragmatic_programmer_review.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 3 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\pragmatic_programmer_review.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\pragmatic_programmer_review.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\pragmatic_programmer_review.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\pragmatic_programmer_review.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\pragmatic_programmer_review.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\pragmatic_programmer_review.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\pragmatic_programmer_review.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\pragmatic_programmer_review.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\pragmatic_programmer_review.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 3 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\pragmatic_programmer_review.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 3 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\pragmatic_programmer_review.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\run_assessment.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\tools\\code_quality_check.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\run_assessment.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\run_assessment.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\run_assessment.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\run_assessment.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\run_assessment.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\run_assessment.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\run_assessment.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 3 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\run_assessment.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\run_assessment.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\run_assessment.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\tests\\test_tools.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\tests\\test_tools.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\tests\\test_tools.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\tests\\test_tools.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\tests\\test_tools.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\tests\\test_tools.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\tests\\test_tools.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\tests\\test_tools.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\tests\\test_tools.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\tests\\test_tools.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\tests\\test_tools.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\tests\\test_tools.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\tests\\test_tools.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\tests\\test_tools.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\tests\\test_tools.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\tests\\test_tools.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\tests\\test_tools.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\tools\\code_quality_check.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\tools\\code_quality_check.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\tools\\code_quality_check.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\tools\\code_quality_check.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\tools\\code_quality_check.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\tools\\code_quality_check.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\tools\\code_quality_check.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\tools\\code_quality_check.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\tools\\code_quality_check.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\tools\\code_quality_check.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\tools\\code_quality_check.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\tools\\code_quality_check.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\tools\\code_quality_check.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\tools\\code_quality_check.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\tools\\matlab_utilities\\scripts\\matlab_quality_check.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\tools\\matlab_utilities\\scripts\\matlab_quality_check.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\tools\\matlab_utilities\\scripts\\matlab_quality_check.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\tools\\matlab_utilities\\scripts\\matlab_quality_check.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\tools\\matlab_utilities\\scripts\\matlab_quality_check.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\tools\\matlab_utilities\\scripts\\matlab_quality_check.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\tools\\matlab_utilities\\scripts\\matlab_quality_check.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\tools\\matlab_utilities\\scripts\\matlab_quality_check.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\tools\\matlab_utilities\\scripts\\matlab_quality_check.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\tools\\matlab_utilities\\scripts\\matlab_quality_check.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\tools\\matlab_utilities\\scripts\\matlab_quality_check.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\setup.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\setup.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\setup.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\eval\\rollout_eval.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 3 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\eval\\rollout_eval.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\club_track.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\retarget_to_sim.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\eval\\rollout_eval.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\club_track.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\eval\\rollout_eval.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\club_track.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\eval\\rollout_eval.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\rl_finetune.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\eval\\rollout_eval.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\eval\\rollout_eval.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\imitation_train.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 3 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\eval\\rollout_eval.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\eval\\rollout_eval.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\eval\\rollout_eval.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\eval\\rollout_eval.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\eval\\rollout_eval.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\eval\\rollout_eval.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\eval\\rollout_eval.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\eval\\rollout_eval.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\eval\\rollout_eval.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\eval\\rollout_eval.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 3 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\eval\\rollout_eval.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 3 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\eval\\rollout_eval.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 3 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\eval\\rollout_eval.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\eval\\rollout_eval.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\eval\\rollout_eval.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 5 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\imitation_train.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\retarget_to_sim.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\eval\\rollout_eval.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 3 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\eval\\rollout_eval.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\rl_finetune.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\imitation_train.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 3 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\eval\\rollout_eval.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\rl_finetune.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\imitation_train.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 3 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\eval\\rollout_eval.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\rl_finetune.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\imitation_train.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 3 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\eval\\rollout_eval.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\rl_finetune.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\imitation_train.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 3 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\eval\\rollout_eval.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\rl_finetune.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\imitation_train.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 3 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\eval\\rollout_eval.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\rl_finetune.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\imitation_train.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 3 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\eval\\rollout_eval.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\rl_finetune.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\imitation_train.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 3 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\eval\\rollout_eval.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\rl_finetune.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\imitation_train.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 3 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\eval\\rollout_eval.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\rl_finetune.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\imitation_train.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\eval\\rollout_eval.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\rl_finetune.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\eval\\rollout_eval.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\rl_finetune.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\eval\\rollout_eval.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\rl_finetune.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\eval\\rollout_eval.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 3 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\eval\\rollout_eval.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\rl_finetune.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\imitation_train.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\eval\\rollout_eval.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\eval\\rollout_eval.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\eval\\rollout_eval.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\eval\\rollout_eval.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\eval\\rollout_eval.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\sim\\golf_swing_env.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 3 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\sim\\golf_swing_env.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\sim\\golf_swing_env.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\sim\\golf_swing_env.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\sim\\golf_swing_env.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\sim\\golf_swing_env.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\sim\\golf_swing_env.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\sim\\golf_swing_env.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\sim\\golf_swing_env.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\sim\\golf_swing_env.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\sim\\golf_swing_env.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\sim\\golf_swing_env.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\sim\\golf_swing_env.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\sim\\golf_swing_env.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\sim\\golf_swing_env.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 3 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\sim\\golf_swing_env.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\sim\\golf_swing_env.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\sim\\golf_swing_env.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\sim\\golf_swing_env.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 3 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\sim\\golf_swing_env.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\sim\\golf_swing_env.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\sim\\golf_swing_env.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\sim\\golf_swing_env.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\sim\\golf_swing_env.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\sim\\golf_swing_env.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\sim\\golf_swing_env.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\sim\\golf_swing_env.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\sim\\golf_swing_env.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 3 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\sim\\golf_swing_env.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\sim\\golf_swing_env.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 3 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\sim\\golf_swing_env.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\sim\\golf_swing_env.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\sim\\golf_swing_env.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\sim\\golf_swing_env.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\sim\\golf_swing_env.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\club_track.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\club_track.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\club_track.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\pose_convert.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\club_track.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 3 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\pose_convert.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\club_track.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 4 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\pose_convert.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\club_track.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\retarget_to_sim.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 4 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\pose_convert.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\club_track.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\retarget_to_sim.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 4 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\pose_convert.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\club_track.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\retarget_to_sim.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\club_track.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\club_track.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\club_track.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\club_track.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\club_track.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 4 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\club_track.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 3 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\club_track.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\club_track.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\club_track.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\club_track.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\club_track.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\club_track.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 4 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\club_track.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\retarget_to_sim.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\club_track.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\club_track.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\pose_convert.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\club_track.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\pose_convert.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\club_track.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\pose_convert.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\club_track.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\pose_convert.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\club_track.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\pose_convert.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\club_track.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\pose_convert.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\club_track.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\pose_convert.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\club_track.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\club_track.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\club_track.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\club_track.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 3 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\club_track.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\club_track.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\pose_convert.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\pose_convert.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\pose_convert.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\pose_convert.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 3 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\pose_convert.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\pose_convert.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\pose_convert.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\pose_convert.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\pose_convert.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\pose_convert.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 3 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\pose_convert.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\pose_convert.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\pose_convert.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\pose_convert.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\pose_convert.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\pose_convert.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\pose_convert.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\pose_convert.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 4 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\pose_convert.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\retarget_to_sim.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\pose_convert.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\pose_convert.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\pose_convert.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\pose_convert.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\retarget_to_sim.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\retarget_to_sim.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\retarget_to_sim.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\retarget_to_sim.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\retarget_to_sim.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\retarget_to_sim.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\retarget_to_sim.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\retarget_to_sim.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\retarget_to_sim.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\retarget_to_sim.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\retarget_to_sim.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 3 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\retarget_to_sim.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\retarget_to_sim.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\retarget_to_sim.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\retarget_to_sim.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\retarget_to_sim.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\retarget_to_sim.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\retarget_to_sim.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\retarget_to_sim.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\retarget_to_sim.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\retarget_to_sim.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\retarget_to_sim.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\retarget_to_sim.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\retarget_to_sim.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\retarget_to_sim.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\retarget_to_sim.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\retarget_to_sim.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 3 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\retarget_to_sim.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\smoke_test.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\smoke_test.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\smoke_test.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\smoke_test.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\smoke_test.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\smoke_test.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\smoke_test.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\smoke_test.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\smoke_test.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\smoke_test.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\smoke_test.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\smoke_test.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\smoke_test.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\smoke_test.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\smoke_test.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\smoke_test.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\video_ingest.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\video_ingest.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\video_ingest.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\video_ingest.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\video_ingest.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\video_ingest.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\video_ingest.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\video_ingest.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\video_ingest.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\video_ingest.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\video_ingest.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\video_ingest.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\video_ingest.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\imitation_train.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\rl_finetune.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\imitation_train.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\rl_finetune.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\imitation_train.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\imitation_train.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\imitation_train.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\imitation_train.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\imitation_train.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\imitation_train.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 3 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\imitation_train.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\imitation_train.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\imitation_train.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\rl_finetune.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\imitation_train.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\rl_finetune.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\imitation_train.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\rl_finetune.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\imitation_train.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\rl_finetune.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\imitation_train.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\imitation_train.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\imitation_train.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\imitation_train.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\imitation_train.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\imitation_train.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 3 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\imitation_train.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\imitation_train.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\imitation_train.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\imitation_train.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\imitation_train.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\imitation_train.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\imitation_train.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\imitation_train.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 3 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\imitation_train.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\imitation_train.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\imitation_train.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\imitation_train.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\imitation_train.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\rl_finetune.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\imitation_train.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\rl_finetune.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\imitation_train.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\rl_finetune.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\imitation_train.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 4 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\rl_finetune.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\imitation_train.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\imitation_train.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\imitation_train.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\imitation_train.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\rl_finetune.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\imitation_train.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\rl_finetune.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\imitation_train.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\rl_finetune.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\rl_finetune.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\rl_finetune.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\rl_finetune.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\rl_finetune.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\rl_finetune.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\rl_finetune.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\rl_finetune.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block detected",
+      "description": "Similar code found in 2 locations",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\rl_finetune.py"
+      ],
+      "recommendation": "Extract common code into a shared function"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MINOR",
+      "title": "Magic number '20' repeated 6 times",
+      "description": "Repeated numeric literals should be constants",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\create_issues_from_assessment.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\tools\\matlab_utilities\\scripts\\matlab_quality_check.py"
+      ],
+      "recommendation": "Define as named constant"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MINOR",
+      "title": "Magic number '60' repeated 15 times",
+      "description": "Repeated numeric literals should be constants",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\create_issues_from_assessment.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\pragmatic_programmer_review.py"
+      ],
+      "recommendation": "Define as named constant"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MINOR",
+      "title": "Magic number '30' repeated 4 times",
+      "description": "Repeated numeric literals should be constants",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\video_ingest.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\generate_assessment_summary.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\pragmatic_programmer_review.py"
+      ],
+      "recommendation": "Define as named constant"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MINOR",
+      "title": "Magic number '50' repeated 9 times",
+      "description": "Repeated numeric literals should be constants",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\pragmatic_programmer_review.py"
+      ],
+      "recommendation": "Define as named constant"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MINOR",
+      "title": "Magic number '75' repeated 4 times",
+      "description": "Repeated numeric literals should be constants",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\sim\\golf_swing_env.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\tools\\matlab_utilities\\scripts\\matlab_quality_check.py"
+      ],
+      "recommendation": "Define as named constant"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MINOR",
+      "title": "Magic number '42' repeated 8 times",
+      "description": "Repeated numeric literals should be constants",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\eval\\rollout_eval.py"
+      ],
+      "recommendation": "Define as named constant"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MINOR",
+      "title": "Magic number '150' repeated 4 times",
+      "description": "Repeated numeric literals should be constants",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\eval\\rollout_eval.py"
+      ],
+      "recommendation": "Define as named constant"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MINOR",
+      "title": "Magic number '11' repeated 5 times",
+      "description": "Repeated numeric literals should be constants",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\sim\\golf_swing_env.py"
+      ],
+      "recommendation": "Define as named constant"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MINOR",
+      "title": "Magic number '256' repeated 5 times",
+      "description": "Repeated numeric literals should be constants",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\sim\\golf_swing_env.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\imitation_train.py"
+      ],
+      "recommendation": "Define as named constant"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MINOR",
+      "title": "Magic number '15' repeated 4 times",
+      "description": "Repeated numeric literals should be constants",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\club_track.py"
+      ],
+      "recommendation": "Define as named constant"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MINOR",
+      "title": "Magic number '33' repeated 6 times",
+      "description": "Repeated numeric literals should be constants",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\pose_convert.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\club_track.py"
+      ],
+      "recommendation": "Define as named constant"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MINOR",
+      "title": "Magic number '16' repeated 4 times",
+      "description": "Repeated numeric literals should be constants",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\pose_convert.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\club_track.py"
+      ],
+      "recommendation": "Define as named constant"
+    },
+    {
+      "principle": "ORTHOGONALITY",
+      "severity": "MAJOR",
+      "title": "God function: process_assessment_findings (187 lines)",
+      "description": "Functions over 50 lines violate single responsibility",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\create_issues_from_assessment.py"
+      ],
+      "recommendation": "Break into smaller, focused functions"
+    },
+    {
+      "principle": "ORTHOGONALITY",
+      "severity": "MAJOR",
+      "title": "God function: generate_summary (156 lines)",
+      "description": "Functions over 50 lines violate single responsibility",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\generate_assessment_summary.py"
+      ],
+      "recommendation": "Break into smaller, focused functions"
+    },
+    {
+      "principle": "ORTHOGONALITY",
+      "severity": "MAJOR",
+      "title": "God function: check_dry_violations (73 lines)",
+      "description": "Functions over 50 lines violate single responsibility",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\pragmatic_programmer_review.py"
+      ],
+      "recommendation": "Break into smaller, focused functions"
+    },
+    {
+      "principle": "ORTHOGONALITY",
+      "severity": "MAJOR",
+      "title": "God function: check_orthogonality (73 lines)",
+      "description": "Functions over 50 lines violate single responsibility",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\pragmatic_programmer_review.py"
+      ],
+      "recommendation": "Break into smaller, focused functions"
+    },
+    {
+      "principle": "ORTHOGONALITY",
+      "severity": "MAJOR",
+      "title": "God function: check_reversibility (59 lines)",
+      "description": "Functions over 50 lines violate single responsibility",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\pragmatic_programmer_review.py"
+      ],
+      "recommendation": "Break into smaller, focused functions"
+    },
+    {
+      "principle": "ORTHOGONALITY",
+      "severity": "MAJOR",
+      "title": "God function: check_quality (74 lines)",
+      "description": "Functions over 50 lines violate single responsibility",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\pragmatic_programmer_review.py"
+      ],
+      "recommendation": "Break into smaller, focused functions"
+    },
+    {
+      "principle": "ORTHOGONALITY",
+      "severity": "MAJOR",
+      "title": "God function: check_robustness (62 lines)",
+      "description": "Functions over 50 lines violate single responsibility",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\pragmatic_programmer_review.py"
+      ],
+      "recommendation": "Break into smaller, focused functions"
+    },
+    {
+      "principle": "ORTHOGONALITY",
+      "severity": "MAJOR",
+      "title": "God function: check_testing (68 lines)",
+      "description": "Functions over 50 lines violate single responsibility",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\pragmatic_programmer_review.py"
+      ],
+      "recommendation": "Break into smaller, focused functions"
+    },
+    {
+      "principle": "ORTHOGONALITY",
+      "severity": "MAJOR",
+      "title": "God function: check_documentation (69 lines)",
+      "description": "Functions over 50 lines violate single responsibility",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\pragmatic_programmer_review.py"
+      ],
+      "recommendation": "Break into smaller, focused functions"
+    },
+    {
+      "principle": "ORTHOGONALITY",
+      "severity": "MAJOR",
+      "title": "God function: check_automation (88 lines)",
+      "description": "Functions over 50 lines violate single responsibility",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\pragmatic_programmer_review.py"
+      ],
+      "recommendation": "Break into smaller, focused functions"
+    },
+    {
+      "principle": "ORTHOGONALITY",
+      "severity": "MAJOR",
+      "title": "God function: run_review (81 lines)",
+      "description": "Functions over 50 lines violate single responsibility",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\pragmatic_programmer_review.py"
+      ],
+      "recommendation": "Break into smaller, focused functions"
+    },
+    {
+      "principle": "ORTHOGONALITY",
+      "severity": "MAJOR",
+      "title": "God function: generate_markdown_report (63 lines)",
+      "description": "Functions over 50 lines violate single responsibility",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\pragmatic_programmer_review.py"
+      ],
+      "recommendation": "Break into smaller, focused functions"
+    },
+    {
+      "principle": "ORTHOGONALITY",
+      "severity": "MAJOR",
+      "title": "God function: create_github_issues (89 lines)",
+      "description": "Functions over 50 lines violate single responsibility",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\pragmatic_programmer_review.py"
+      ],
+      "recommendation": "Break into smaller, focused functions"
+    },
+    {
+      "principle": "ORTHOGONALITY",
+      "severity": "MAJOR",
+      "title": "God function: main (72 lines)",
+      "description": "Functions over 50 lines violate single responsibility",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\pragmatic_programmer_review.py"
+      ],
+      "recommendation": "Break into smaller, focused functions"
+    },
+    {
+      "principle": "ORTHOGONALITY",
+      "severity": "MAJOR",
+      "title": "God function: run_assessment (116 lines)",
+      "description": "Functions over 50 lines violate single responsibility",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\run_assessment.py"
+      ],
+      "recommendation": "Break into smaller, focused functions"
+    },
+    {
+      "principle": "ORTHOGONALITY",
+      "severity": "MAJOR",
+      "title": "God function: main (79 lines)",
+      "description": "Functions over 50 lines violate single responsibility",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\eval\\rollout_eval.py"
+      ],
+      "recommendation": "Break into smaller, focused functions"
+    },
+    {
+      "principle": "ORTHOGONALITY",
+      "severity": "MAJOR",
+      "title": "God function: generate_plots (80 lines)",
+      "description": "Functions over 50 lines violate single responsibility",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\eval\\rollout_eval.py"
+      ],
+      "recommendation": "Break into smaller, focused functions"
+    },
+    {
+      "principle": "ORTHOGONALITY",
+      "severity": "MAJOR",
+      "title": "God function: generate_report (110 lines)",
+      "description": "Functions over 50 lines violate single responsibility",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\eval\\rollout_eval.py"
+      ],
+      "recommendation": "Break into smaller, focused functions"
+    },
+    {
+      "principle": "ORTHOGONALITY",
+      "severity": "MAJOR",
+      "title": "God function: main (112 lines)",
+      "description": "Functions over 50 lines violate single responsibility",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\club_track.py"
+      ],
+      "recommendation": "Break into smaller, focused functions"
+    },
+    {
+      "principle": "ORTHOGONALITY",
+      "severity": "MAJOR",
+      "title": "God function: _track_line_fit (56 lines)",
+      "description": "Functions over 50 lines violate single responsibility",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\club_track.py"
+      ],
+      "recommendation": "Break into smaller, focused functions"
+    },
+    {
+      "principle": "ORTHOGONALITY",
+      "severity": "MAJOR",
+      "title": "God function: add_club_to_pose_file (51 lines)",
+      "description": "Functions over 50 lines violate single responsibility",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\club_track.py"
+      ],
+      "recommendation": "Break into smaller, focused functions"
+    },
+    {
+      "principle": "ORTHOGONALITY",
+      "severity": "MAJOR",
+      "title": "God function: main (99 lines)",
+      "description": "Functions over 50 lines violate single responsibility",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\pose_convert.py"
+      ],
+      "recommendation": "Break into smaller, focused functions"
+    },
+    {
+      "principle": "ORTHOGONALITY",
+      "severity": "MAJOR",
+      "title": "God function: process_video (93 lines)",
+      "description": "Functions over 50 lines violate single responsibility",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\pose_convert.py"
+      ],
+      "recommendation": "Break into smaller, focused functions"
+    },
+    {
+      "principle": "ORTHOGONALITY",
+      "severity": "MAJOR",
+      "title": "God function: _compute_swing_phases (58 lines)",
+      "description": "Functions over 50 lines violate single responsibility",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\pose_convert.py"
+      ],
+      "recommendation": "Break into smaller, focused functions"
+    },
+    {
+      "principle": "ORTHOGONALITY",
+      "severity": "MAJOR",
+      "title": "God function: validate_trajectory (53 lines)",
+      "description": "Functions over 50 lines violate single responsibility",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\retarget_to_sim.py"
+      ],
+      "recommendation": "Break into smaller, focused functions"
+    },
+    {
+      "principle": "ORTHOGONALITY",
+      "severity": "MAJOR",
+      "title": "God function: main (136 lines)",
+      "description": "Functions over 50 lines violate single responsibility",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\retarget_to_sim.py"
+      ],
+      "recommendation": "Break into smaller, focused functions"
+    },
+    {
+      "principle": "ORTHOGONALITY",
+      "severity": "MAJOR",
+      "title": "God function: retarget (67 lines)",
+      "description": "Functions over 50 lines violate single responsibility",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\retarget_to_sim.py"
+      ],
+      "recommendation": "Break into smaller, focused functions"
+    },
+    {
+      "principle": "ORTHOGONALITY",
+      "severity": "MAJOR",
+      "title": "God function: _simple_ik_mapping (87 lines)",
+      "description": "Functions over 50 lines violate single responsibility",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\retarget_to_sim.py"
+      ],
+      "recommendation": "Break into smaller, focused functions"
+    },
+    {
+      "principle": "ORTHOGONALITY",
+      "severity": "MAJOR",
+      "title": "God function: main (107 lines)",
+      "description": "Functions over 50 lines violate single responsibility",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\video_ingest.py"
+      ],
+      "recommendation": "Break into smaller, focused functions"
+    },
+    {
+      "principle": "ORTHOGONALITY",
+      "severity": "MAJOR",
+      "title": "God function: add_video (68 lines)",
+      "description": "Functions over 50 lines violate single responsibility",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\tools\\video_ingest.py"
+      ],
+      "recommendation": "Break into smaller, focused functions"
+    },
+    {
+      "principle": "ORTHOGONALITY",
+      "severity": "MAJOR",
+      "title": "God function: main (90 lines)",
+      "description": "Functions over 50 lines violate single responsibility",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\imitation_train.py"
+      ],
+      "recommendation": "Break into smaller, focused functions"
+    },
+    {
+      "principle": "ORTHOGONALITY",
+      "severity": "MAJOR",
+      "title": "God function: __init__ (62 lines)",
+      "description": "Functions over 50 lines violate single responsibility",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\imitation_train.py"
+      ],
+      "recommendation": "Break into smaller, focused functions"
+    },
+    {
+      "principle": "ORTHOGONALITY",
+      "severity": "MAJOR",
+      "title": "God function: main (86 lines)",
+      "description": "Functions over 50 lines violate single responsibility",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\src\\Project_GROOT\\train\\rl_finetune.py"
+      ],
+      "recommendation": "Break into smaller, focused functions"
+    },
+    {
+      "principle": "QUALITY",
+      "severity": "MINOR",
+      "title": "Technical debt: 18 TODO comments",
+      "description": "Accumulated TODOs indicate incomplete work",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\pragmatic_programmer_review.py"
+      ],
+      "recommendation": "Address or create issues for TODOs"
+    },
+    {
+      "principle": "QUALITY",
+      "severity": "MAJOR",
+      "title": "Known bugs: 8 FIXME comments",
+      "description": "FIXME indicates known problems",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\pragmatic_programmer_review.py"
+      ],
+      "recommendation": "Fix or create issues for FIXMEs"
+    },
+    {
+      "principle": "QUALITY",
+      "severity": "MINOR",
+      "title": "Low type hint coverage",
+      "description": "Type hints improve code clarity and catch errors",
+      "files": [],
+      "recommendation": "Add type hints to function signatures"
+    },
+    {
+      "principle": "ROBUSTNESS",
+      "severity": "MAJOR",
+      "title": "Overly broad exception handling (21 found)",
+      "description": "Catching 'Exception' hides specific errors",
+      "files": [
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\create_issues_from_assessment.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\generate_assessment_summary.py",
+        "C:\\Users\\diete\\Repositories\\Playground\\scripts\\pragmatic_programmer_review.py"
+      ],
+      "recommendation": "Catch specific exception types"
+    },
+    {
+      "principle": "TESTING",
+      "severity": "MAJOR",
+      "title": "Low test coverage (2 tests for 23 source files)",
+      "description": "Test ratio below 30%",
+      "files": [],
+      "recommendation": "Increase test coverage"
+    },
+    {
+      "principle": "DOCUMENTATION",
+      "severity": "MAJOR",
+      "title": "No README file found",
+      "description": "Every project needs a README",
+      "files": [],
+      "recommendation": "Create README.md with project overview"
+    },
+    {
+      "principle": "AUTOMATION",
+      "severity": "MINOR",
+      "title": "No build automation found",
+      "description": "Makefile or similar simplifies common tasks",
+      "files": [],
+      "recommendation": "Add Makefile with common targets"
+    }
+  ],
+  "issue_summary": {
+    "CRITICAL": 0,
+    "MAJOR": 424,
+    "MINOR": 15
+  }
+}
