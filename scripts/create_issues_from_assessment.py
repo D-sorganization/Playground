@@ -23,7 +23,15 @@ def get_existing_issues() -> list[dict[str, Any]]:
     """Fetch existing GitHub issues."""
     try:
         result = subprocess.run(
-            ["gh", "issue", "list", "--limit", "200", "--json", "number,title,state,labels"],
+            [
+                "gh",
+                "issue",
+                "list",
+                "--limit",
+                "200",
+                "--json",
+                "number,title,state,labels",
+            ],
             capture_output=True,
             text=True,
             check=True,
@@ -133,9 +141,8 @@ def process_assessment_findings(
     # Filter by severity
     filtered_issues = [i for i in critical_issues if i.get("severity") in severities]
 
-    logger.info(
-        f"Filtered to {len(filtered_issues)} issues with severities: {', '.join(severities)}"
-    )
+    sev_str = ", ".join(severities)
+    logger.info(f"Filtered to {len(filtered_issues)} issues with severities: {sev_str}")
 
     # Get repository name from current directory
     repo_name = Path.cwd().name
@@ -157,7 +164,11 @@ def process_assessment_findings(
         """Classify issue into a category."""
         text = (source_name + " " + description).lower()
 
-        if "architecture" in text or "implementation" in text or "Assessment_A" in source_name:
+        if (
+            "architecture" in text
+            or "implementation" in text
+            or "Assessment_A" in source_name
+        ):
             return "Architecture"
         elif "quality" in text or "hygiene" in text or "Assessment_B" in source_name:
             return "Code Quality"
@@ -167,7 +178,11 @@ def process_assessment_findings(
             return "User Experience"
         elif "performance" in text or "Assessment_E" in source_name:
             return "Performance"
-        elif "installation" in text or "deployment" in text or "Assessment_F" in source_name:
+        elif (
+            "installation" in text
+            or "deployment" in text
+            or "Assessment_F" in source_name
+        ):
             return "Installation"
         elif "test" in text or "Assessment_G" in source_name:
             return "Testing"
@@ -211,6 +226,10 @@ def process_assessment_findings(
         # Generate standardized title
         title = f"[{repo_short}] {severity} {category}: {clean_desc}"
 
+        timestamp = summary.get("timestamp", "")
+        timestamp_date = timestamp[:10] if timestamp else "UNKNOWN"
+        assessment_file = f"COMPREHENSIVE_ASSESSMENT_SUMMARY_{timestamp_date}.md"
+
         body = f"""## Issue Description
 
 **Severity**: {severity}
@@ -230,7 +249,7 @@ This issue was identified during automated repository assessment and requires at
 ### References
 
 - Assessment Report: {source}
-- Full Assessment: docs/assessments/COMPREHENSIVE_ASSESSMENT_SUMMARY_{summary.get('timestamp', '')[:10]}.md
+- Full Assessment: docs/assessments/{assessment_file}
 
 ### Next Steps
 
