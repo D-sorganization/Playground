@@ -174,8 +174,7 @@ jobs:
               --title "[Jules/Code-Quality-Fixer] Code Quality Fixes - $(date +%Y-%m-%d)" \
               --body "Automated code quality fixes" \
               --base main \
-              --head "$BRANCH_NAME" \
-              --label "jules:code-quality,automated-fix"
+              --head "$BRANCH_NAME"
             
             # Post-processing: Remove reviewers to reduce noise
             PR_NUM=$(gh pr list --head "$BRANCH_NAME" --json number -q '.[0].number')

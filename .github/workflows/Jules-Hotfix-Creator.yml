@@ -117,7 +117,6 @@ jobs:
             --base "$FAILED_BRANCH" \
             --head "$HOTFIX_BRANCH" \
             --title "[Jules/Hotfix-Creator] 🚨 Urgent: Fix CI failure on $FAILED_BRANCH" \
-            --label "urgent,auto-fix,hotfix" \
             --body "$(printf '%s\n' \
             "## Automated Hotfix for Protected Branch" \
             "" \

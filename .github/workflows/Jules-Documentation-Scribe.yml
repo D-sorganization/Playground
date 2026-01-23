@@ -83,8 +83,7 @@ jobs:
               --title "[Jules/Documentation-Scribe] docs: update metadata" \
               --body "Automated docstring updates." \
               --base main \
-              --head $BRANCH \
-              --label "auto-fix")
+              --head $BRANCH)
             
             echo "PR Created: $PR_URL"
 
