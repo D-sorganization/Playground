@@ -12,6 +12,11 @@ permissions:
   issues: write
   security-events: write
 
+# HARDENING: Prevent concurrent runs
+concurrency:
+  group: jules-sentinel-${{ github.repository }}
+  cancel-in-progress: false
+
 jobs:
   security-audit:
     runs-on: ubuntu-latest
@@ -96,6 +101,9 @@ jobs:
           )
           
           echo "Creating Jules session..."
+          # HARDENING: Do NOT use automationMode: AUTO_CREATE_PR
+          # Sentinel is read-only - it documents findings but doesn't create PRs autonomously
+          # This prevents cascade issues where Jules creates PRs that trigger more workflows
           REQUEST_JSON=$(jq -n \
             --arg prompt "$PROMPT" \
             --arg source "$SOURCE_ID" \
@@ -106,8 +114,7 @@ jobs:
                 githubRepoContext: {
                   startingBranch: "main"
                 }
-              },
-              automationMode: "AUTO_CREATE_PR"
+              }
             }')
           
           echo "Request: $REQUEST_JSON"
