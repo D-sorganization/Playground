@@ -69,8 +69,7 @@ jobs:
             --title "[Jules/Tech-Custodian] chore: weekly refactor of $TARGET" \
             --body "Automated cleanup." \
             --base main \
-            --head $BRANCH \
-            --label "auto-fix")
+            --head $BRANCH)
 
           echo "PR Created: $PR_URL"
 
