@@ -186,24 +186,24 @@ This section defines the active agents within the Jules "Control Tower" Architec
 
 ### 1. The Control Tower (Orchestrator)
 **Role:** Air Traffic Controller
-**Workflow:** `.github/workflows/jules-control-tower.yml`
+**Workflow:** `.github/workflows/Jules-Control-Tower.yml`
 **Responsibilities:**
--  **Sole Trigger:** The only agent that listens to GitHub events (Push, PR, Schedule).
+-  **Orchestrator:** Coordinates specialized agent workflows. Note that CI and Guard workflows run independently.
 -  **Decision Maker:** Analyzes the event context (Triage) and dispatches the appropriate specialized worker.
 -  **Loop Prevention:** Enforces `if: github.actor != 'jules-bot'` to prevent infinite recursion.
 
 ### 2. Auto-Repair (Medic)
 **Role:** Fixer of Broken Builds
-**Workflow:** `.github/workflows/jules-auto-repair.yml`
+**Workflow:** `.github/workflows/Jules-Auto-Repair.yml`
 **Triggered By:** CI Failure (Standard CI)
 **Capabilities:**
 -  **Read:** CI Failure Logs
 -  **Write:** Fixes to syntax, imports, and simple logic errors.
--  **Constraint:** limited retries (max 2) to prevent "flailing".
+-  **Constraint:** limited retries (max 3) to prevent "flailing".
 
 ### 3. Test-Generator (Architect)
 **Role:** Quality Assurance Engineer
-**Workflow:** `.github/workflows/jules-test-generator.yml`
+**Workflow:** `.github/workflows/Jules-Test-Generator.yml`
 **Triggered By:** New PR with `.py` changes
 **Capabilities:**
 -  **Write:** New test files in `tests/`.
@@ -211,7 +211,7 @@ This section defines the active agents within the Jules "Control Tower" Architec
 
 ### 4. Doc-Scribe (Librarian)
 **Role:** Documentation Maintainer
-**Workflow:** `.github/workflows/jules-documentation-scribe.yml`
+**Workflow:** `.github/workflows/Jules-Documentation-Scribe.yml`
 **Triggered By:** Push to `main`
 **Capabilities:**
 -  **Write:** Updates to `docs/` and markdown files.
@@ -219,15 +219,16 @@ This section defines the active agents within the Jules "Control Tower" Architec
 
 ### 5. Scientific-Auditor (The Professor)
 **Role:** Peer Reviewer
-**Workflow:** `.github/workflows/jules-scientific-auditor.yml`
+**Workflow:** `.github/workflows/Jules-Scientific-Auditor.yml`
 **Triggered By:** Nightly Schedule
 **Capabilities:**
--  **Read-Only:** CANNOT modify code.
--  **Output:** Comments on PRs or Issues regarding mathematical correctness and physics fidelity.
+- **Read/Write:** Analyzes mathematical correctness; can commit reports to `docs/assessments/` or open GitHub Issues.
+- **Justification:** This agent requires limited write access only to publish audit artifacts (reports and issues) so that all mathematical reviews are transparent, reproducible, and traceable over time. It remains strictly read-only with respect to source, configuration, and test code.
+- **Constraints:** MUST NOT modify application source code, configuration files, or tests; MAY ONLY create or update files under `docs/assessments/` and open or comment on GitHub Issues/PRs to recommend changes.
 
 ### 6. Conflict-Fix (Diplomat)
 **Role:** Merge Conflict Resolver
-**Workflow:** `.github/workflows/jules-conflict-fix.yml`
+**Workflow:** `.github/workflows/Jules-Conflict-Fix.yml`
 **Triggered By:** Manual dispatch or specific conflict events (if configured)
 **Capabilities:**
 -  **Write:** Merge resolution commits.
@@ -363,3 +364,20 @@ Before pushing workflow changes:
 ### Reference Documentation:
 
 See `Repository_Management/workflow-fixes/` for documented fixes and patterns to avoid.
+
+---
+
+
+### 🔄 Workflow & Automation Governance
+
+Agents must refer to the [Workflow Tracking Document](docs/workflows/WORKFLOW_TRACKING.md) to understand available tools.
+All workflows follow the Governing Workflow Guidance documented in the `Repository_Management` repository (see `docs/architecture/WORKFLOW_GOVERNANCE.md` in that repository).
+The **GitHub Issue Tracker** is the primary authority for tasking and gap remediation. Check existing issues before starting work.
+
+---
+
+
+### 📂 Repository Decluttering & Organization
+To maintain a clean repository root, all development-related documentation (summaries, plans, analysis reports, technical debt assessments, etc.) MUST be stored in the `docs/development/` directory. 
+- **DO NOT** create new `.md` files in the root unless they are critical project-wide files (e.g., README, AGENTS, CHANGELOG).
+- Prefer creating issues for task tracking rather than temporary markdown files.
