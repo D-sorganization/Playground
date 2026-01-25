@@ -16,8 +16,9 @@ on:
         options:
           - 'false'
           - 'true'
-  schedule:
-    - cron: "0 3 * * *"  # Daily at 3 AM UTC
+  # Schedule disabled - orchestrated by Jules-Control-Tower.yml
+  # schedule:
+  #   - cron: "0 3 * * *"  # Daily at 3 AM UTC
 
 permissions:
   contents: write
