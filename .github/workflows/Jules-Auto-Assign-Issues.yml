@@ -40,7 +40,9 @@ jobs:
       - name: Comment @jules
         if: steps.check.outputs.should_assign == 'true'
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Use BOT_PAT instead of GITHUB_TOKEN so this comment triggers other workflows
+          # (GITHUB_TOKEN actions don't trigger subsequent workflows - GitHub security feature)
+          GH_TOKEN: ${{ secrets.BOT_PAT }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
           REPO: ${{ github.repository }}
         run: |

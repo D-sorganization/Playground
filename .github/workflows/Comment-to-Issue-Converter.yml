@@ -1,4 +1,3 @@
-
 name: Convert Review Comments to Issues
 
 # Converts PR review comments (from Copilot, Cursor, Jules, etc.) into GitHub Issues
