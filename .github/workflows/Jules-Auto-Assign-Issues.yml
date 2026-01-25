@@ -19,7 +19,7 @@ jobs:
       - name: Check Issue Labels
         id: check
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.BOT_PAT }}
           LABELS: ${{ toJson(github.event.issue.labels) }}
         run: |
           # LABELS is passed via env to prevent shell injection
@@ -40,8 +40,6 @@ jobs:
       - name: Comment @jules
         if: steps.check.outputs.should_assign == 'true'
         env:
-          # Use BOT_PAT instead of GITHUB_TOKEN so this comment triggers other workflows
-          # (GITHUB_TOKEN actions don't trigger subsequent workflows - GitHub security feature)
           GH_TOKEN: ${{ secrets.BOT_PAT }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
           REPO: ${{ github.repository }}
@@ -59,7 +57,7 @@ jobs:
       - name: Add Jules Label
         if: steps.check.outputs.should_assign == 'true'
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.BOT_PAT }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
           REPO: ${{ github.repository }}
         run: |
