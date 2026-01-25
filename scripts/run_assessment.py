@@ -42,7 +42,7 @@ ASSESSMENTS = {
 
 def find_python_files() -> list[Path]:
     """Find all Python files in the repository."""
-    python_files = []
+    python_files: list[Path] = []
     for pattern in ["**/*.py"]:
         python_files.extend(Path(".").glob(pattern))
     # Exclude common non-source directories
@@ -59,7 +59,7 @@ def find_python_files() -> list[Path]:
     return [f for f in python_files if not any(p in f.parts for p in excluded)]
 
 
-def run_ruff_check() -> dict:
+def run_ruff_check() -> dict[str, str | int]:
     """Run ruff and return statistics."""
     try:
         result = subprocess.run(
@@ -76,7 +76,7 @@ def run_ruff_check() -> dict:
         return {"exit_code": -1, "output": "", "errors": "ruff not installed"}
 
 
-def run_black_check() -> dict:
+def run_black_check() -> dict[str, str | int]:
     """Run black check and return results."""
     try:
         result = subprocess.run(
@@ -95,13 +95,13 @@ def run_black_check() -> dict:
 def count_test_files() -> int:
     """Count test files in the repository."""
     test_patterns = ["**/test_*.py", "**/*_test.py", "**/tests/*.py"]
-    test_files = set()
+    test_files: set[Path] = set()
     for pattern in test_patterns:
         test_files.update(Path(".").glob(pattern))
     return len(test_files)
 
 
-def check_documentation() -> dict:
+def check_documentation() -> dict[str, bool]:
     """Check documentation status."""
     has_readme = Path("README.md").exists()
     has_docs = Path("docs").exists()
@@ -231,7 +231,8 @@ This assessment was generated automatically. For detailed analysis:
     return 0
 
 
-def main():
+def main() -> None:
+    """Parse CLI arguments and run the specified assessment."""
     parser = argparse.ArgumentParser(description="Run repository assessment")
     parser.add_argument(
         "--assessment",

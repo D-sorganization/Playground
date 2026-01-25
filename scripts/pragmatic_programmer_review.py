@@ -37,7 +37,9 @@ logger = logging.getLogger(__name__)
 PRINCIPLES = {
     "DRY": {
         "name": "Don't Repeat Yourself",
-        "description": "Every piece of knowledge must have a single, unambiguous representation",
+        "description": (
+            "Every piece of knowledge must have a single, unambiguous representation"
+        ),
         "weight": 2.0,
     },
     "ORTHOGONALITY": {
@@ -47,7 +49,9 @@ PRINCIPLES = {
     },
     "REVERSIBILITY": {
         "name": "Reversibility & Flexibility",
-        "description": "Make decisions reversible; avoid painting yourself into a corner",
+        "description": (
+            "Make decisions reversible; avoid painting yourself into a corner"
+        ),
         "weight": 1.0,
     },
     "QUALITY": {
@@ -112,23 +116,23 @@ def compute_file_hash(content: str) -> str:
     return hashlib.md5(normalized.encode()).hexdigest()
 
 
-def extract_functions(content: str) -> list[dict]:
+def extract_functions(content: str) -> list[dict[str, Any]]:
     """Extract function definitions from Python code."""
-    functions = []
+    functions: list[dict[str, Any]] = []
     try:
         tree = ast.parse(content)
         for node in ast.walk(tree):
             if isinstance(node, ast.FunctionDef):
+                # Calculate body lines safely - end_lineno can be None
+                body_lines = 0
+                if node.end_lineno is not None:
+                    body_lines = node.end_lineno - node.lineno + 1
                 functions.append(
                     {
                         "name": node.name,
                         "lineno": node.lineno,
                         "args": len(node.args.args),
-                        "body_lines": (
-                            node.end_lineno - node.lineno + 1
-                            if hasattr(node, "end_lineno")
-                            else 0
-                        ),
+                        "body_lines": body_lines,
                         "has_docstring": (ast.get_docstring(node) is not None),
                     }
                 )
@@ -137,7 +141,7 @@ def extract_functions(content: str) -> list[dict]:
     return functions
 
 
-def check_dry_violations(files: list[Path]) -> list[dict]:
+def check_dry_violations(files: list[Path]) -> list[dict[str, Any]]:
     """
     Check for DRY (Don't Repeat Yourself) violations.
 
@@ -147,10 +151,10 @@ def check_dry_violations(files: list[Path]) -> list[dict]:
     - Repeated magic numbers/strings
     - Copy-paste patterns
     """
-    issues = []
-    code_blocks = defaultdict(list)
-    magic_numbers = defaultdict(list)
-    magic_strings = defaultdict(list)
+    issues: list[dict[str, Any]] = []
+    code_blocks: dict[str, list[tuple[Path, int]]] = defaultdict(list)
+    magic_numbers: dict[str, list[tuple[Path, int]]] = defaultdict(list)
+    magic_strings: dict[str, list[tuple[Path, int]]] = defaultdict(list)
 
     for file_path in files:
         try:
@@ -212,7 +216,7 @@ def check_dry_violations(files: list[Path]) -> list[dict]:
     return issues
 
 
-def check_orthogonality(files: list[Path]) -> list[dict]:
+def check_orthogonality(files: list[Path]) -> list[dict[str, Any]]:
     """
     Check for orthogonality and decoupling issues.
 
@@ -222,9 +226,9 @@ def check_orthogonality(files: list[Path]) -> list[dict]:
     - Circular dependencies
     - God classes/functions
     """
-    issues = []
-    imports_graph = defaultdict(set)
-    global_vars = []
+    issues: list[dict[str, Any]] = []
+    imports_graph: dict[str, set[str]] = defaultdict(set)
+    global_vars: list[dict[str, Any]] = []
 
     for file_path in files:
         try:
@@ -260,12 +264,16 @@ def check_orthogonality(files: list[Path]) -> list[dict]:
         functions = extract_functions(content)
         for func in functions:
             if func["body_lines"] > 50:
+                func_name = func["name"]
+                body_lines = func["body_lines"]
                 issues.append(
                     {
                         "principle": "ORTHOGONALITY",
                         "severity": "MAJOR",
-                        "title": f"God function: {func['name']} ({func['body_lines']} lines)",
-                        "description": "Functions over 50 lines violate single responsibility",
+                        "title": f"God function: {func_name} ({body_lines} lines)",
+                        "description": (
+                            "Functions over 50 lines violate single responsibility"
+                        ),
                         "files": [str(file_path)],
                         "recommendation": "Break into smaller, focused functions",
                     }
@@ -279,7 +287,7 @@ def check_orthogonality(files: list[Path]) -> list[dict]:
                 "severity": "MAJOR",
                 "title": f"Excessive global state ({len(global_vars)} globals)",
                 "description": "Global variables create hidden dependencies",
-                "files": list({g["file"] for g in global_vars[:5]}),
+                "files": list({str(g["file"]) for g in global_vars[:5]}),
                 "recommendation": "Use dependency injection or encapsulation",
             }
         )
@@ -287,7 +295,7 @@ def check_orthogonality(files: list[Path]) -> list[dict]:
     return issues
 
 
-def check_reversibility(root_path: Path) -> list[dict]:
+def check_reversibility(root_path: Path) -> list[dict[str, Any]]:
     """
     Check for reversibility and flexibility issues.
 
@@ -296,7 +304,7 @@ def check_reversibility(root_path: Path) -> list[dict]:
     - Tight coupling to specific implementations
     - Missing abstraction layers
     """
-    issues = []
+    issues: list[dict[str, Any]] = []
 
     # Check for hardcoded configs
     config_patterns = [
@@ -321,7 +329,9 @@ def check_reversibility(root_path: Path) -> list[dict]:
                         "principle": "REVERSIBILITY",
                         "severity": "MAJOR",
                         "title": description,
-                        "description": "Configuration should be external, not hardcoded",
+                        "description": (
+                            "Configuration should be external, not hardcoded"
+                        ),
                         "files": [str(file_path)],
                         "recommendation": "Use environment variables or config files",
                     }
@@ -348,7 +358,7 @@ def check_reversibility(root_path: Path) -> list[dict]:
     return issues
 
 
-def check_quality(files: list[Path]) -> list[dict]:
+def check_quality(files: list[Path]) -> list[dict[str, Any]]:
     """
     Check for code quality and craftsmanship issues.
 
@@ -358,9 +368,9 @@ def check_quality(files: list[Path]) -> list[dict]:
     - Inconsistent naming
     - Unfinished work markers
     """
-    issues = []
-    todos = []
-    fixmes = []
+    issues: list[dict[str, Any]] = []
+    todos: list[tuple[Path, int, str]] = []
+    fixmes: list[tuple[Path, int, str]] = []
     missing_type_hints = 0
 
     # Use constructed strings to avoid false positives in quality checks
@@ -428,7 +438,7 @@ def check_quality(files: list[Path]) -> list[dict]:
     return issues
 
 
-def check_robustness(files: list[Path]) -> list[dict]:
+def check_robustness(files: list[Path]) -> list[dict[str, Any]]:
     """
     Check for error handling and robustness issues.
 
@@ -438,9 +448,9 @@ def check_robustness(files: list[Path]) -> list[dict]:
     - Assertion usage
     - Resource management
     """
-    issues = []
-    bare_excepts = []
-    broad_excepts = []
+    issues: list[dict[str, Any]] = []
+    bare_excepts: list[tuple[Path, int]] = []
+    broad_excepts: list[tuple[Path, int]] = []
     no_finally = 0
 
     for file_path in files:
@@ -471,18 +481,22 @@ def check_robustness(files: list[Path]) -> list[dict]:
                 "principle": "ROBUSTNESS",
                 "severity": "CRITICAL",
                 "title": f"Bare except clauses ({len(bare_excepts)} found)",
-                "description": "Bare 'except:' catches all exceptions including KeyboardInterrupt",
+                "description": (
+                    "Bare 'except:' catches all exceptions "
+                    "including KeyboardInterrupt"
+                ),
                 "files": list({str(b[0]) for b in bare_excepts[:5]}),
                 "recommendation": "Specify exception types explicitly",
             }
         )
 
     if broad_excepts:
+        count = len(broad_excepts)
         issues.append(
             {
                 "principle": "ROBUSTNESS",
                 "severity": "MAJOR",
-                "title": f"Overly broad exception handling ({len(broad_excepts)} found)",
+                "title": f"Overly broad exception handling ({count} found)",
                 "description": "Catching 'Exception' hides specific errors",
                 "files": list({str(b[0]) for b in broad_excepts[:5]}),
                 "recommendation": "Catch specific exception types",
@@ -492,7 +506,7 @@ def check_robustness(files: list[Path]) -> list[dict]:
     return issues
 
 
-def check_testing(root_path: Path) -> list[dict]:
+def check_testing(root_path: Path) -> list[dict[str, Any]]:
     """
     Check for testing and validation issues.
 
@@ -501,11 +515,11 @@ def check_testing(root_path: Path) -> list[dict]:
     - Test file organization
     - Missing test utilities
     """
-    issues = []
+    issues: list[dict[str, Any]] = []
 
     # Find test files
     test_patterns = ["**/test_*.py", "**/*_test.py", "**/tests/*.py"]
-    test_files = set()
+    test_files: set[Path] = set()
     for pattern in test_patterns:
         test_files.update(root_path.glob(pattern))
 
@@ -532,7 +546,10 @@ def check_testing(root_path: Path) -> list[dict]:
             {
                 "principle": "TESTING",
                 "severity": "MAJOR",
-                "title": f"Low test coverage ({len(test_files)} tests for {len(source_files)} source files)",
+                "title": (
+                    f"Low test coverage ({len(test_files)} tests for "
+                    f"{len(source_files)} source files)"
+                ),
                 "description": "Test ratio below 30%",
                 "files": [],
                 "recommendation": "Increase test coverage",
@@ -560,7 +577,7 @@ def check_testing(root_path: Path) -> list[dict]:
     return issues
 
 
-def check_documentation(root_path: Path, files: list[Path]) -> list[dict]:
+def check_documentation(root_path: Path, files: list[Path]) -> list[dict[str, Any]]:
     """
     Check for documentation and communication issues.
 
@@ -569,7 +586,7 @@ def check_documentation(root_path: Path, files: list[Path]) -> list[dict]:
     - Docstring coverage
     - API documentation
     """
-    issues = []
+    issues: list[dict[str, Any]] = []
 
     # Check README
     readme_files = list(root_path.glob("README*"))
@@ -592,7 +609,9 @@ def check_documentation(root_path: Path, files: list[Path]) -> list[dict]:
                     "principle": "DOCUMENTATION",
                     "severity": "MINOR",
                     "title": "README is too brief",
-                    "description": "README should explain purpose, installation, and usage",
+                    "description": (
+                        "README should explain purpose, installation, and usage"
+                    ),
                     "files": [str(readme_files[0])],
                     "recommendation": "Expand README with examples and API docs",
                 }
@@ -620,7 +639,10 @@ def check_documentation(root_path: Path, files: list[Path]) -> list[dict]:
                     "principle": "DOCUMENTATION",
                     "severity": "MINOR",
                     "title": f"Low docstring coverage ({docstring_rate:.0%})",
-                    "description": f"{functions_without_docstrings} public functions lack docstrings",
+                    "description": (
+                        f"{functions_without_docstrings} public functions "
+                        "lack docstrings"
+                    ),
                     "files": [],
                     "recommendation": "Add docstrings to public functions",
                 }
@@ -629,7 +651,7 @@ def check_documentation(root_path: Path, files: list[Path]) -> list[dict]:
     return issues
 
 
-def check_automation(root_path: Path) -> list[dict]:
+def check_automation(root_path: Path) -> list[dict[str, Any]]:
     """
     Check for automation and tooling issues.
 
@@ -639,7 +661,7 @@ def check_automation(root_path: Path) -> list[dict]:
     - Pre-commit hooks
     - Build automation
     """
-    issues = []
+    issues: list[dict[str, Any]] = []
 
     # Check for CI/CD
     ci_configs = [
@@ -758,7 +780,7 @@ def run_review(root_path: Path) -> dict[str, Any]:
     all_issues.extend(check_automation(root_path))
 
     # Calculate scores per principle
-    scores = {}
+    scores: dict[str, float] = {}
     for principle_id, _principle_info in PRINCIPLES.items():
         principle_issues = [i for i in all_issues if i["principle"] == principle_id]
 
@@ -775,11 +797,18 @@ def run_review(root_path: Path) -> dict[str, Any]:
         scores[principle_id] = max(0.0, min(10.0, score))
 
     # Calculate weighted overall score
-    total_weight = sum(p["weight"] for p in PRINCIPLES.values())
-    overall = (
-        sum(scores[pid] * PRINCIPLES[pid]["weight"] for pid in PRINCIPLES)
-        / total_weight
-    )
+    total_weight = 0.0
+    for p in PRINCIPLES.values():
+        weight_value = p["weight"]
+        if isinstance(weight_value, (int, float)):
+            total_weight += weight_value
+
+    overall = 0.0
+    for pid in PRINCIPLES:
+        weight_value = PRINCIPLES[pid]["weight"]
+        if isinstance(weight_value, (int, float)):
+            overall += scores[pid] * weight_value
+    overall = overall / total_weight if total_weight > 0 else 0.0
 
     return {
         "timestamp": datetime.now().isoformat(),
@@ -874,9 +903,11 @@ def generate_markdown_report(results: dict[str, Any], output_path: Path) -> None
     logger.info(f"Report saved to: {output_path}")
 
 
-def create_github_issues(results: dict[str, Any], dry_run: bool = False) -> list[dict]:
+def create_github_issues(
+    results: dict[str, Any], dry_run: bool = False
+) -> list[dict[str, Any]]:
     """Create GitHub issues for critical and major findings."""
-    issues_to_create = []
+    issues_to_create: list[dict[str, Any]] = []
 
     for issue in results["issues"]:
         if issue["severity"] not in ("CRITICAL", "MAJOR"):
@@ -965,7 +996,7 @@ Based on principles from "The Pragmatic Programmer" by David Thomas and Andrew H
     return created
 
 
-def main():
+def main() -> None:
     """Main entry point for the Pragmatic Programmer review."""
     parser = argparse.ArgumentParser(
         description="Pragmatic Programmer Review - Automated Code Assessment"

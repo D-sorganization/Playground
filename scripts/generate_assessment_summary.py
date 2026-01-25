@@ -135,7 +135,12 @@ def generate_summary(
 
     for assessment_id, score in scores.items():
         if assessment_id in categories:
-            weight = categories[assessment_id]["weight"]
+            cat_data = categories[assessment_id]
+            weight_value = cat_data.get("weight", 1.0)
+            if isinstance(weight_value, (int, float)):
+                weight = float(weight_value)
+            else:
+                weight = 1.0
             total_weighted_score += score * weight
             total_weight += weight
 
@@ -168,8 +173,12 @@ Repository assessment completed across all {len(scores)} categories.
         if aid in categories:
             cat_info = categories[aid]
             score = scores[aid]
-            name = cat_info["name"]
-            weight = cat_info["weight"]
+            name = str(cat_info.get("name", "Unknown"))
+            weight_value = cat_info.get("weight", 1.0)
+            if isinstance(weight_value, (int, float)):
+                weight = float(weight_value)
+            else:
+                weight = 1.0
             md_content += f"| **{aid}** | {name} | {score:.1f} | {weight}x |\n"
 
     md_content += f"""
@@ -238,7 +247,7 @@ Recommended: 30 days from today
     return 0
 
 
-def main():
+def main() -> int:
     """Parse CLI arguments and generate assessment summary."""
     parser = argparse.ArgumentParser(description="Generate assessment summary")
     parser.add_argument(
@@ -264,7 +273,7 @@ def main():
     args = parser.parse_args()
 
     # Expand wildcards if needed
-    input_reports = []
+    input_reports: list[Path] = []
     for pattern in args.input:
         if "*" in str(pattern):
             # Expand glob pattern
@@ -284,4 +293,4 @@ def main():
 
 
 if __name__ == "__main__":
-    sys.exit(main() or 0)
+    sys.exit(main())
