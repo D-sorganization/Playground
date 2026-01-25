@@ -3,8 +3,9 @@ name: Jules Completist (Incomplete Implementation Auditor)
 on:
   workflow_call:
   workflow_dispatch:
-  schedule:
-    - cron: "0 1 * * *"  # Daily at 1 AM UTC (overnight window)
+  # Schedule disabled - orchestrated by Jules-Control-Tower.yml
+  # schedule:
+  #   - cron: "0 1 * * *"  # Daily at 1 AM UTC (overnight window)
 
 permissions:
   contents: write
