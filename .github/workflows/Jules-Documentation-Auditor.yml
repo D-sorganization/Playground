@@ -49,11 +49,15 @@ jobs:
           echo '```' >> /tmp/doc_report.md
           echo "" >> /tmp/doc_report.md
 
-          # Get coverage percentage
-          COVERAGE=$(interrogate . --ignore-init-method --ignore-init-module --fail-under 0 2>&1 | grep -oP '\d+\.\d+%' | head -1 || echo "0%")
+          # Get coverage percentage (use tail -1 to get actual coverage, not fail-under threshold)
+          COVERAGE=$(interrogate . --ignore-init-method --ignore-init-module --fail-under 0 2>&1 | grep -oP '\d+\.\d+%' | tail -1)
+          # Ensure fallback to 0% if no coverage found
+          COVERAGE="${COVERAGE:-0.0%}"
           echo "coverage=$COVERAGE" >> $GITHUB_OUTPUT
           # Extract numeric value for comparison (remove % sign)
           COVERAGE_NUM=$(echo "$COVERAGE" | sed 's/%//')
+          # Ensure coverage_num is a valid number for JSON parsing
+          COVERAGE_NUM="${COVERAGE_NUM:-0}"
           echo "coverage_num=$COVERAGE_NUM" >> $GITHUB_OUTPUT
 
           # Check for files with 0% documentation
@@ -149,7 +153,9 @@ jobs:
           COVERAGE: ${{ steps.scan.outputs.coverage }}
         run: |
           # Check if issue already exists
-          EXISTING=$(gh issue list --state open --label "documentation" --search "Documentation Coverage" --json number --jq 'length')
+          EXISTING=$(gh issue list --state open --label "documentation" --search "Documentation Coverage" --json number --jq 'length' 2>/dev/null || echo "0")
+          # Ensure EXISTING is a valid number
+          EXISTING="${EXISTING:-0}"
 
           if [ "$EXISTING" -eq 0 ]; then
             gh issue create \
