@@ -52,6 +52,9 @@ jobs:
           # Get coverage percentage
           COVERAGE=$(interrogate . --ignore-init-method --ignore-init-module --fail-under 0 2>&1 | grep -oP '\d+\.\d+%' | head -1 || echo "0%")
           echo "coverage=$COVERAGE" >> $GITHUB_OUTPUT
+          # Extract numeric value for comparison (remove % sign)
+          COVERAGE_NUM=$(echo "$COVERAGE" | sed 's/%//')
+          echo "coverage_num=$COVERAGE_NUM" >> $GITHUB_OUTPUT
 
           # Check for files with 0% documentation
           echo "### Files Needing Documentation" >> /tmp/doc_report.md
@@ -140,7 +143,7 @@ jobs:
           file_pattern: "docs/assessments/documentation/*"
 
       - name: Create Issue for Low Coverage
-        if: ${{ steps.scan.outputs.coverage < '50%' }}
+        if: ${{ fromJSON(steps.scan.outputs.coverage_num) < 50 }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COVERAGE: ${{ steps.scan.outputs.coverage }}
