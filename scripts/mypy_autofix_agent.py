@@ -16,7 +16,8 @@ Safeguards:
 - Tracks all changes for auditability
 
 Usage:
-    python scripts/mypy_autofix_agent.py [--max-fixes N] [--max-files N] [--dry-run] [--verbose]
+    python scripts/mypy_autofix_agent.py [--max-fixes N] [--max-files N]
+    [--dry-run] [--verbose]
 """
 
 from __future__ import annotations
@@ -331,7 +332,9 @@ def fix_union_attr(lines: list[str], error: MypyError) -> Fix | None:
     return Fix(
         file=error.file,
         line=error.line,
-        description=f"Add isinstance({var_name}, {target_type}) narrowing for union-attr",
+        description=(
+            f"Add isinstance({var_name}, {target_type}) narrowing for " "union-attr"
+        ),
         strategy="real-fix",
         original_code=line.strip(),
     )
@@ -592,12 +595,13 @@ def run_agent(
                     f"  [{fix.strategy}] {fix.file}:{fix.line} - {fix.description}"
                 )
                 if verbose:
-                    print(
-                        f"  FIX: {fix.file}:{fix.line} [{fix.strategy}] {fix.description}"
-                    )
+                    print(f"  FIX: {fix.file}:{fix.line} [{fix.strategy}]")
+                    print(f"       {fix.description}")
             else:
                 report.skipped_reasons.append(
-                    f"No fix available: {error.file}:{error.line} [{error.code}] {error.message[:60]}"
+                    "No fix available: "
+                    f"{error.file}:{error.line} [{error.code}] "
+                    f"{error.message[:60]}"
                 )
 
         if file_changed:

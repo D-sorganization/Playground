@@ -137,7 +137,7 @@ def generate_summary(
         if assessment_id in categories:
             cat_data = categories[assessment_id]
             weight_value = cat_data.get("weight", 1.0)
-            if isinstance(weight_value, (int, float)):
+            if isinstance(weight_value, int | float):
                 weight = float(weight_value)
             else:
                 weight = 1.0
@@ -175,7 +175,7 @@ Repository assessment completed across all {len(scores)} categories.
             score = scores[aid]
             name = str(cat_info.get("name", "Unknown"))
             weight_value = cat_info.get("weight", 1.0)
-            if isinstance(weight_value, (int, float)):
+            if isinstance(weight_value, int | float):
                 weight = float(weight_value)
             else:
                 weight = 1.0
