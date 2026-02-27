@@ -1,16 +1,52 @@
 # Workflow Tracking Document
 
-This document lists all active GitHub Workflows in this repository.
+This document lists GitHub Actions workflows currently present in this repository.
 
-| Workflow Name | Filename | Status | Purpose |
-| :--- | :--- | :--- | :--- |
-| **Control Tower** | `Jules-Control-Tower.yml` | Active | Orchestrates agentic workers. |
-| **PR Compiler** | `Jules-PR-Compiler.yml` | Active | Compiles PR info for fleet management. |
-| **CI Standard** | `ci-standard.yml` | Active | Linting, Formatting, and Type checking. |
-| **Python Tests** | `ci-fast-tests.yml` | Active | Runs unit and integration tests. |
-| **Assessment Generator** | `Jules-Assessment-Generator.yml` | Active | Automated architecture & quality audits. |
+Global status note: No explicit paused file present.
 
----
+| Workflow File | Status | Purpose |
+| --- | --- | --- |
+| agent-metrics-dashboard.yml | Defined | See workflow YAML for trigger and responsibility. |
+| auto-update-prs.yml | Defined | See workflow YAML for trigger and responsibility. |
+| ci-failure-digest.yml | Defined | See workflow YAML for trigger and responsibility. |
+| ci-standard.yml | Defined | See workflow YAML for trigger and responsibility. |
+| Comment-to-Issue-Converter.yml | Defined | See workflow YAML for trigger and responsibility. |
+| Jules-Archivist.yml | Defined | See workflow YAML for trigger and responsibility. |
+| Jules-Assessment-AutoFix.yml | Defined | See workflow YAML for trigger and responsibility. |
+| Jules-Assessment-Generator.yml | Defined | See workflow YAML for trigger and responsibility. |
+| Jules-Auto-Assign-Issues.yml | Defined | See workflow YAML for trigger and responsibility. |
+| Jules-Auto-Rebase.yml | Defined | See workflow YAML for trigger and responsibility. |
+| Jules-Auto-Refactor.yml | Defined | See workflow YAML for trigger and responsibility. |
+| Jules-Auto-Repair.yml | Defined | See workflow YAML for trigger and responsibility. |
+| Jules-Cleaner.yml | Defined | See workflow YAML for trigger and responsibility. |
+| Jules-Code-Quality-Fixer.yml | Defined | See workflow YAML for trigger and responsibility. |
+| Jules-Code-Quality-Reviewer.yml | Defined | See workflow YAML for trigger and responsibility. |
+| Jules-Comment-Processor.yml | Defined | See workflow YAML for trigger and responsibility. |
+| Jules-Completist.yml | Defined | See workflow YAML for trigger and responsibility. |
+| Jules-Comprehensive-Assessment.yml | Defined | See workflow YAML for trigger and responsibility. |
+| Jules-Consolidator.yml | Defined | See workflow YAML for trigger and responsibility. |
+| Jules-Control-Tower.yml | Defined | See workflow YAML for trigger and responsibility. |
+| Jules-Curie.yml | Defined | See workflow YAML for trigger and responsibility. |
+| Jules-Documentation-Auditor.yml | Defined | See workflow YAML for trigger and responsibility. |
+| Jules-Documentation-Scribe.yml | Defined | See workflow YAML for trigger and responsibility. |
+| Jules-Hotfix-Creator.yml | Defined | See workflow YAML for trigger and responsibility. |
+| Jules-Hypatia.yml | Defined | See workflow YAML for trigger and responsibility. |
+| Jules-Issue-Mention-Handler.yml | Defined | See workflow YAML for trigger and responsibility. |
+| Jules-Issue-Resolver.yml | Defined | See workflow YAML for trigger and responsibility. |
+| Jules-PR-AutoFix.yml | Defined | See workflow YAML for trigger and responsibility. |
+| Jules-PR-Cleanup.yml | Defined | See workflow YAML for trigger and responsibility. |
+| Jules-PR-Compiler.yml | Defined | See workflow YAML for trigger and responsibility. |
+| Jules-Render-Healer.yml | Defined | See workflow YAML for trigger and responsibility. |
+| Jules-Review-Fix.yml | Defined | See workflow YAML for trigger and responsibility. |
+| Jules-Sentinel.yml | Defined | See workflow YAML for trigger and responsibility. |
+| Jules-Supersede-Check.yml | Defined | See workflow YAML for trigger and responsibility. |
+| Jules-Test-Generator.yml | Defined | See workflow YAML for trigger and responsibility. |
+| Maintenance-Global-Control.yml | Defined | See workflow YAML for trigger and responsibility. |
+| Nightly-Doc-Organizer.yml | Defined | See workflow YAML for trigger and responsibility. |
+| pr-auto-labeler.yml | Defined | See workflow YAML for trigger and responsibility. |
+| PR-Comment-Responder.yml | Defined | See workflow YAML for trigger and responsibility. |
+| stale-cleanup.yml | Defined | See workflow YAML for trigger and responsibility. |
 
 ## Maintenance
-Update this document whenever a new workflow is added or the status of an existing workflow changes. For global standards, see `Repository_Management/docs/architecture/WORKFLOW_GOVERNANCE.md`.
+
+Update this file whenever workflows are added, removed, enabled, or disabled.
