@@ -33,8 +33,7 @@ def test_symbolic_derivative_and_integral() -> None:
     assert (
         sp.simplify(
             derivative
-            - sp.exp(sp.Symbol("x"))
-            * (sp.sin(sp.Symbol("x")) + sp.cos(sp.Symbol("x")))
+            - sp.exp(sp.Symbol("x")) * (sp.sin(sp.Symbol("x")) + sp.cos(sp.Symbol("x")))
         )
         == 0
     )
@@ -186,12 +185,14 @@ def test_screw_axis_and_twist_exponential() -> None:
     assert screw == expected
 
     twist_transform = calculator.evaluate("twist_exp([0, 0, 1, 0, 0, 0], pi/2)").result
-    expected_transform = sp.Matrix([
-        [0, -1, 0, 0],
-        [1, 0, 0, 0],
-        [0, 0, 1, 0],
-        [0, 0, 0, 1],
-    ])
+    expected_transform = sp.Matrix(
+        [
+            [0, -1, 0, 0],
+            [1, 0, 0, 0],
+            [0, 0, 1, 0],
+            [0, 0, 0, 1],
+        ]
+    )
     assert twist_transform == expected_transform
 
     adjoint = calculator.evaluate(
