@@ -117,7 +117,6 @@ class ViewState:
 
 
 class SolarSystemScene:
-
     def __init__(self, settings: RenderSettings | None = None):
         self.settings = settings or RenderSettings()
         self.renderer: Renderer | None = None
@@ -610,7 +609,7 @@ class SolarSystemScene:
                 self._mark_immersion_task("plan_transfer")
                 self._action_message = (
                     "Earth→Mars transfer: ΔV "
-                    f"{trajectory.total_delta_v/1000:.2f} km/s, "
+                    f"{trajectory.total_delta_v / 1000:.2f} km/s, "
                     f"flight {trajectory.time_of_flight:.1f} days"
                 )
             else:

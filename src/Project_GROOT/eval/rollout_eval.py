@@ -272,7 +272,7 @@ class PolicyEvaluator:
 <body>
     <h1>Project GROOT Evaluation Report</h1>
     <p><strong>Policy:</strong> {self.policy_path.name}</p>
-    <p><strong>Number of Rollouts:</strong> {summary['num_rollouts']}</p>
+    <p><strong>Number of Rollouts:</strong> {summary["num_rollouts"]}</p>
 
     <h2>Summary Metrics</h2>
 
@@ -284,17 +284,17 @@ class PolicyEvaluator:
         </tr>
         <tr>
             <td>Mean Max Speed</td>
-            <td class="metric">{summary['clubhead_speed']['max_mean']:.2f} m/s</td>
+            <td class="metric">{summary["clubhead_speed"]["max_mean"]:.2f} m/s</td>
         </tr>
         <tr>
             <td>Std Dev</td>
-            <td>{summary['clubhead_speed']['max_std']:.2f} m/s</td>
+            <td>{summary["clubhead_speed"]["max_std"]:.2f} m/s</td>
         </tr>
         <tr>
             <td>Range</td>
             <td>
-                {summary['clubhead_speed']['max_min']:.2f} -
-                {summary['clubhead_speed']['max_max']:.2f} m/s
+                {summary["clubhead_speed"]["max_min"]:.2f} -
+                {summary["clubhead_speed"]["max_max"]:.2f} m/s
             </td>
         </tr>
     </table>
@@ -308,8 +308,8 @@ class PolicyEvaluator:
         <tr>
             <td>Mean Duration</td>
             <td>
-                {summary['swing_duration']['mean']:.3f} ±
-                {summary['swing_duration']['std']:.3f} s
+                {summary["swing_duration"]["mean"]:.3f} ±
+                {summary["swing_duration"]["std"]:.3f} s
             </td>
         </tr>
     </table>
@@ -323,13 +323,13 @@ class PolicyEvaluator:
         <tr>
             <td>Trajectory Smoothness</td>
             <td>
-                {summary['trajectory_smoothness']['mean']:.3f} ±
-                {summary['trajectory_smoothness']['std']:.3f}
+                {summary["trajectory_smoothness"]["mean"]:.3f} ±
+                {summary["trajectory_smoothness"]["std"]:.3f}
             </td>
         </tr>
         <tr>
             <td>Joint Limit Violations</td>
-            <td>{summary['joint_limit_violations']['percentage']:.1f}% of rollouts</td>
+            <td>{summary["joint_limit_violations"]["percentage"]:.1f}% of rollouts</td>
         </tr>
     </table>
 
