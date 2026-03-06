@@ -17,7 +17,7 @@ import sys
 from pathlib import Path
 
 
-def run_command(cmd: list[str], check: bool = True) -> subprocess.CompletedProcess:
+def run_command(cmd: list[str], check: bool = True) -> subprocess.CompletedProcess[str]:
     """Run a command and return the result."""
     print(f"  Running: {' '.join(cmd)}")
     return subprocess.run(cmd, check=check, capture_output=True, text=True)
