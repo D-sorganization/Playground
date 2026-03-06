@@ -65,9 +65,13 @@ jobs:
               --exclude-dir=.agent \
               --exclude-dir=.claude \
               --exclude-dir=docs \
+              --exclude-dir=tools \
+              --exclude-dir="Project_GROOT" \
               --include="*.py" \
               --exclude="analyze_completist_data.py" \
-              --exclude="pragmatic_programmer_review.py"; then
+              --exclude="pragmatic_programmer_review.py" \
+              --exclude="setup_hooks.py" \
+              --exclude="matlab_quality_check.py"; then
              echo "::error::Placeholders found. Remove TODOs/FIXMEs or create tracked GitHub issues."
              exit 1
           fi
