@@ -13,7 +13,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent / "tools"))
 
 from code_quality_check import QualityChecker
-from matlab_utilities.scripts.matlab_quality_check import MatlabQualityChecker
+from matlab_utilities.scripts.matlab_quality_check import MATLABQualityChecker
 
 
 class TestQualityChecker(unittest.TestCase):
@@ -79,7 +79,7 @@ class TestMatlabQualityChecker(unittest.TestCase):
 
     def setUp(self) -> None:
         """Set up test fixtures."""
-        self.checker = MatlabQualityChecker()
+        self.checker = MATLABQualityChecker()
         self.temp_dir = tempfile.mkdtemp()
         self.temp_path = Path(self.temp_dir)
 
