@@ -68,7 +68,7 @@ def create_github_issue(
 def process_assessment_findings(
     summary_file: Path,
     dry_run: bool = False,
-    output_file: Path = None,
+    output_file: Path | None = None,
 ) -> int:
     """
     Process assessment findings and create issues.
@@ -166,7 +166,7 @@ Please address this issue immediately.
     return count
 
 
-def main():
+def main() -> None:
     """Create GitHub issues from assessment findings."""
     parser = argparse.ArgumentParser(
         description="Create GitHub issues from assessment findings"
