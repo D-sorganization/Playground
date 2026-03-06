@@ -3,7 +3,7 @@
 Create GitHub issues from assessment findings.
 
 This script reads the assessment summary JSON and creates GitHub issues
-for untracked critical findings.
+for categories with low scores and critical findings.
 """
 
 import argparse
@@ -12,48 +12,10 @@ import logging
 import subprocess
 import sys
 from pathlib import Path
-from typing import Any
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
-
-
-def get_existing_issues() -> list[dict[str, Any]]:
-    """Fetch existing GitHub issues."""
-    try:
-        result = subprocess.run(
-            [
-                "gh",
-                "issue",
-                "list",
-                "--limit",
-                "200",
-                "--json",
-                "number,title,state,labels",
-            ],
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-        issues: list[dict[str, Any]] = json.loads(result.stdout)
-        return issues
-    except Exception as e:
-        logger.warning(f"Could not fetch existing issues: {e}")
-        return []
-
-
-def issue_exists(title: str, existing_issues: list[dict[str, Any]]) -> bool:
-    """Check if an issue with similar title already exists."""
-    # Simple check for now - could be more sophisticated
-    title_lower = title.lower()
-    for issue in existing_issues:
-        if issue["state"] == "OPEN":
-            existing_title = issue["title"].lower()
-            # Check for significant overlap
-            if title_lower in existing_title or existing_title in title_lower:
-                return True
-    return False
 
 
 def create_github_issue(
@@ -76,23 +38,28 @@ def create_github_issue(
     """
     if dry_run:
         logger.info(f"[DRY RUN] Would create issue: {title}")
-        logger.debug(f"Labels: {', '.join(labels)}")
-        logger.debug(f"Body:\n{body}")
+        logger.info(f"          Labels: {labels}")
         return True
 
     try:
-        # Build gh command
         cmd = ["gh", "issue", "create", "--title", title, "--body", body]
 
-        # Add labels
+        # Add labels (only if they exist in the repo)
         if labels:
             cmd.extend(["--label", ",".join(labels)])
 
-        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
-        issue_url = result.stdout.strip()
-        logger.info(f"✓ Created issue: {issue_url}")
-        return True
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        if result.returncode == 0:
+            issue_url = result.stdout.strip()
+            logger.info(f"✓ Created issue: {issue_url}")
+            return True
+        else:
+            logger.error(f"✗ Failed to create issue '{title}': {result.stderr}")
+            return False
 
+    except FileNotFoundError:
+        logger.error("✗ 'gh' CLI not found. Cannot create issues.")
+        return False
     except subprocess.CalledProcessError as e:
         logger.error(f"✗ Failed to create issue '{title}': {e.stderr}")
         return False
@@ -100,230 +67,139 @@ def create_github_issue(
 
 def process_assessment_findings(
     summary_file: Path,
-    severities: list[str],
-    check_existing: bool = True,
     dry_run: bool = False,
+    output_file: Path = None,
 ) -> int:
     """
     Process assessment findings and create issues.
 
     Args:
-        summary_file: Path to assessment summary JSON
-        severities: List of severities to create issues for
-        check_existing: If True, skip issues that already exist
-        dry_run: If True, log instead of creating
+        summary_file: Path to assessment_summary.json
+        dry_run: If True, don't actually create issues
+        output_file: Path to save list of issues to create
 
     Returns:
-        Exit code (0 = success, 1 = failure)
+        Number of issues created/planned
     """
-    # Load assessment summary
+    if not summary_file.exists():
+        logger.warning(f"Summary file not found: {summary_file}")
+        return 0
+
     try:
         with open(summary_file) as f:
             summary = json.load(f)
-    except Exception as e:
-        logger.error(f"Could not load summary file: {e}")
-        return 1
-
-    critical_issues = summary.get("critical_issues", [])
-
-    if not critical_issues:
-        logger.info("No critical issues found in assessment")
+    except json.JSONDecodeError as e:
+        logger.error(f"Invalid JSON in {summary_file}: {e}")
         return 0
 
-    logger.info(f"Found {len(critical_issues)} critical issues in assessment")
+    issues_to_create = []
 
-    # Get existing issues if checking
-    existing_issues = []
-    if check_existing:
-        logger.info("Fetching existing GitHub issues...")
-        existing_issues = get_existing_issues()
-        logger.info(f"Found {len(existing_issues)} existing issues")
+    # 1. Check for Category Scores < 5
+    category_scores = summary.get("category_scores", {})
+    for cat_id, data in category_scores.items():
+        score = data.get("score", 0)
+        name = data.get("name", "Unknown")
 
-    # Filter by severity
-    filtered_issues = [i for i in critical_issues if i.get("severity") in severities]
+        if score < 5:
+            issues_to_create.append(
+                {
+                    "title": f"Improve {name} (Category {cat_id})",
+                    "body": f"""## Low Assessment Score
 
-    sev_str = ", ".join(severities)
-    logger.info(f"Filtered to {len(filtered_issues)} issues with severities: {sev_str}")
+**Category**: {cat_id} - {name}
+**Score**: {score}/10
+**Threshold**: 5/10
 
-    # Get repository name from current directory
-    repo_name = Path.cwd().name
-    repo_short_names = {
-        "Gasification_Model": "GasModel",
-        "Tools": "Tools",
-        "AffineDrift": "AffineDrift",
-        "Games": "Games",
-        "Golf_Modeling_Suite": "GolfSuite",
-        "MLProjects": "MLProj",
-        "Playground": "Playground",
-        "MEB_Conversion": "MEBConv",
-        "Repository_Management": "RepoMgmt",
-    }
-    repo_short = repo_short_names.get(repo_name, repo_name[:8])
+The assessment for this category falls below the acceptable threshold.
 
-    # Category classification based on source
-    def classify_category(source_name: str, description: str) -> str:
-        """Classify issue into a category."""
-        text = (source_name + " " + description).lower()
+### Recommendations
 
-        if (
-            "architecture" in text
-            or "implementation" in text
-            or "Assessment_A" in source_name
-        ):
-            return "Architecture"
-        elif "quality" in text or "hygiene" in text or "Assessment_B" in source_name:
-            return "Code Quality"
-        elif "documentation" in text or "Assessment_C" in source_name:
-            return "Documentation"
-        elif "user" in text or "ux" in text or "Assessment_D" in source_name:
-            return "User Experience"
-        elif "performance" in text or "Assessment_E" in source_name:
-            return "Performance"
-        elif (
-            "installation" in text
-            or "deployment" in text
-            or "Assessment_F" in source_name
-        ):
-            return "Installation"
-        elif "test" in text or "Assessment_G" in source_name:
-            return "Testing"
-        elif "error" in text or "Assessment_H" in source_name:
-            return "Error Handling"
-        elif "security" in text or "Assessment_I" in source_name:
-            return "Security"
-        elif "extensibility" in text or "Assessment_J" in source_name:
-            return "Extensibility"
-        elif "reproducibility" in text or "Assessment_K" in source_name:
-            return "Reproducibility"
-        elif "maintainability" in text or "Assessment_L" in source_name:
-            return "Maintainability"
-        elif "educational" in text or "Assessment_M" in source_name:
-            return "Documentation"
-        elif "visualization" in text or "Assessment_N" in source_name:
-            return "Visualization"
-        elif "ci" in text or "cd" in text or "Assessment_O" in source_name:
-            return "CI/CD"
-        else:
-            return "General"
+- Review the detailed assessment report: `docs/assessments/Assessment_{cat_id}_*.md`
+- Address identified findings.
+- Re-run assessment to verify improvements.
+""",
+                    "labels": ["jules:assessment", "needs-attention"],
+                }
+            )
 
-    # Create issues
-    created_count = 0
-    skipped_count = 0
+    # 2. Check for Critical Issues (legacy check)
+    critical_issues = summary.get("critical_issues", [])
+    for issue in critical_issues:
+        title = f"[Assessment] {issue.get('description', 'Critical Issue')}"
+        issues_to_create.append(
+            {
+                "title": title,
+                "body": f"""## Critical Assessment Finding
 
-    for issue in filtered_issues[:20]:  # Limit to 20 to avoid spam
-        severity = issue.get("severity", "UNKNOWN")
-        description = issue.get("description", "No description")
-        source = issue.get("source", "Unknown")
+**Severity**: {issue.get("severity")}
+**Source**: {issue.get("source")}
 
-        # Classify category
-        category = classify_category(source, description)
+{issue.get("description")}
 
-        # Clean description for title (remove markdown, truncate)
-        clean_desc = description.replace("**", "").replace("*", "").replace("`", "")
-        clean_desc = clean_desc.split("\n")[0]  # First line only
-        if len(clean_desc) > 60:
-            clean_desc = clean_desc[:57] + "..."
+Please address this issue immediately.
+""",
+                "labels": ["jules:assessment", "critical"],
+            }
+        )
 
-        # Generate standardized title
-        title = f"[{repo_short}] {severity} {category}: {clean_desc}"
+    # Create Issues or Log
+    count = 0
+    file_content = "# Issues to Create\n\n"
 
-        timestamp = summary.get("timestamp", "")
-        timestamp_date = timestamp[:10] if timestamp else "UNKNOWN"
-        assessment_file = f"COMPREHENSIVE_ASSESSMENT_SUMMARY_{timestamp_date}.md"
+    for issue in issues_to_create:
+        success = create_github_issue(
+            issue["title"], issue["body"], issue["labels"], dry_run=dry_run
+        )
+        if success:
+            count += 1
+            file_content += (
+                f"## {issue['title']}\n\n"
+                f"Labels: {', '.join(issue['labels'])}\n\n"
+                f"{issue['body']}\n\n---\n\n"
+            )
 
-        body = f"""## Issue Description
+    if output_file:
+        with open(output_file, "w") as f:
+            f.write(file_content)
+        logger.info(f"✓ Issues list saved to {output_file}")
 
-**Severity**: {severity}
-**Category**: {category}
-**Source**: {source}
-**Identified**: {summary.get('timestamp', 'Unknown')}
-
-### Problem
-
-{description}
+    return count
 
 
-### Impact
-
-This issue was identified during automated repository assessment and requires attention.
-
-### References
-
-- Assessment Report: {source}
-- Full Assessment: docs/assessments/{assessment_file}
-
-### Next Steps
-
-1. Investigate the issue
-2. Determine root cause
-3. Implement fix
-4. Verify resolution
-5. Update tests if needed
-
----
-
-🤖 Auto-generated by [Jules Assessment Auto-Fix](https://github.com/D-sorganization/Gasification_Model/actions/workflows/Jules-Assessment-AutoFix.yml)
-"""
-
-        # Determine labels
-        labels = ["auto-generated", "quality-control"]
-        if severity in ("BLOCKER", "CRITICAL"):
-            labels.append("bug")
-        else:
-            labels.append("enhancement")
-
-        # Check if already exists
-        if check_existing and issue_exists(title, existing_issues):
-            logger.info(f"⊘ Skipping (already exists): {title}")
-            skipped_count += 1
-            continue
-
-        # Create the issue
-        if create_github_issue(title, body, labels, dry_run):
-            created_count += 1
-
-    logger.info(f"\n✓ Summary: Created {created_count} issues, skipped {skipped_count}")
-
-    return 0
-
-
-def main() -> None:
-    """Parse CLI arguments and create GitHub issues from assessment."""
-    parser = argparse.ArgumentParser(description="Create GitHub issues from assessment")
+def main():
+    """Create GitHub issues from assessment findings."""
+    parser = argparse.ArgumentParser(
+        description="Create GitHub issues from assessment findings"
+    )
     parser.add_argument(
         "--input",
         required=True,
         type=Path,
-        help="Assessment summary JSON file",
-    )
-    parser.add_argument(
-        "--severity",
-        default="BLOCKER,CRITICAL",
-        help="Comma-separated list of severities to create issues for",
-    )
-    parser.add_argument(
-        "--check-existing",
-        action="store_true",
-        help="Check for existing issues before creating",
+        help="Path to assessment_summary.json",
     )
     parser.add_argument(
         "--dry-run",
         action="store_true",
-        help="Print issues instead of creating them",
+        help="Log what would happen without creating issues",
+    )
+    parser.add_argument(
+        "--output-file",
+        type=Path,
+        help="Output file to save issue list",
     )
 
     args = parser.parse_args()
 
-    severities = [s.strip().upper() for s in args.severity.split(",")]
+    logger.info(f"Processing assessment findings from: {args.input}")
 
-    exit_code = process_assessment_findings(
+    issues_created = process_assessment_findings(
         args.input,
-        severities,
-        args.check_existing,
-        args.dry_run,
+        dry_run=args.dry_run,
+        output_file=args.output_file,
     )
 
-    sys.exit(exit_code)
+    logger.info(f"✓ Processed {issues_created} issues")
+    sys.exit(0)
 
 
 if __name__ == "__main__":

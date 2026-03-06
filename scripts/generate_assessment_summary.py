@@ -71,6 +71,11 @@ def extract_issues_from_report(report_path: Path) -> list[dict[str, Any]]:
                         "severity": severity,
                         "description": match.group(1).strip(),
                         "source": report_path.stem,
+                        "assessment": (
+                            report_path.stem.split("_")[1]
+                            if "_" in report_path.stem
+                            else "Unknown"
+                        ),
                     }
                 )
 
@@ -98,36 +103,43 @@ def generate_summary(
     """
     logger.info(f"Generating assessment summary from {len(input_reports)} reports...")
 
-    # Category mapping
-    categories = {
-        "A": {"name": "Architecture & Implementation", "weight": 2.0},
-        "B": {"name": "Hygiene, Security & Quality", "weight": 2.0},
-        "C": {"name": "Documentation & Integration", "weight": 1.5},
-        "D": {"name": "User Experience", "weight": 1.5},
-        "E": {"name": "Performance & Scalability", "weight": 1.5},
-        "F": {"name": "Installation & Deployment", "weight": 1.0},
-        "G": {"name": "Testing & Validation", "weight": 2.0},
-        "H": {"name": "Error Handling", "weight": 1.0},
-        "I": {"name": "Security & Input Validation", "weight": 2.0},
-        "J": {"name": "Extensibility & Plugins", "weight": 1.0},
-        "K": {"name": "Reproducibility & Provenance", "weight": 1.0},
-        "L": {"name": "Long-Term Maintainability", "weight": 1.5},
-        "M": {"name": "Educational Resources", "weight": 1.0},
-        "N": {"name": "Visualization & Export", "weight": 1.0},
-        "O": {"name": "CI/CD & DevOps", "weight": 2.0},
+    # Category mapping with weights summing to 100%
+    # Groups: Code(25), Testing(15), Docs(10), Security(15),
+    # Perf(15), Ops(10), Design(10)
+    categories: dict[str, dict[str, Any]] = {
+        "A": {"name": "Code Structure", "weight": 5.0},
+        "B": {"name": "Documentation", "weight": 10.0},
+        "C": {"name": "Test Coverage", "weight": 15.0},
+        "D": {"name": "Error Handling", "weight": 5.0},
+        "E": {"name": "Performance", "weight": 7.5},
+        "F": {"name": "Security", "weight": 15.0},
+        "G": {"name": "Dependencies", "weight": 5.0},
+        "H": {"name": "CI/CD", "weight": 3.33},
+        "I": {"name": "Code Style", "weight": 5.0},
+        "J": {"name": "API Design", "weight": 5.0},
+        "K": {"name": "Data Handling", "weight": 5.0},
+        "L": {"name": "Logging", "weight": 3.33},
+        "M": {"name": "Configuration", "weight": 3.33},
+        "N": {"name": "Scalability", "weight": 7.5},
+        "O": {"name": "Maintainability", "weight": 5.0},
     }
 
     # Collect scores and issues
-    scores = {}
+    scores: dict[str, float] = {}
     all_issues = []
 
     for report in input_reports:
-        # Extract assessment ID from filename (e.g., Assessment_A_Results_2026-01-17.md)
-        match = re.search(r"Assessment_([A-O])_Results", report.name)
+        # Extract assessment ID from filename (e.g., Assessment_A_Category.md)
+        # Matches Assessment_A_... or Assessment_A.md
+        match = re.search(r"Assessment_([A-O])(_|\.)", report.name)
         if match:
             assessment_id = match.group(1)
             scores[assessment_id] = extract_score_from_report(report)
             all_issues.extend(extract_issues_from_report(report))
+        else:
+            logger.warning(
+                f"Could not parse assessment ID from filename: {report.name}"
+            )
 
     # Calculate weighted average
     total_weighted_score = 0.0
@@ -147,8 +159,9 @@ def generate_summary(
     overall_score = total_weighted_score / total_weight if total_weight > 0 else 7.0
 
     # Count critical issues
-    critical_severities = ("BLOCKER", "CRITICAL")
-    critical_issues = [i for i in all_issues if i["severity"] in critical_severities]
+    critical_issues = [
+        i for i in all_issues if i["severity"] in ("BLOCKER", "CRITICAL")
+    ]
 
     # Generate markdown summary
     md_content = f"""# Comprehensive Assessment Summary
@@ -159,7 +172,7 @@ def generate_summary(
 
 ## Executive Summary
 
-Repository assessment completed across all {len(scores)} categories.
+Repository assessment completed across {len(scores)} categories.
 
 ### Overall Health: {overall_score:.1f}/10
 
@@ -189,10 +202,10 @@ Found {len(critical_issues)} critical issues requiring immediate attention:
 """
 
     for i, issue in enumerate(critical_issues[:10], 1):
-        sev = issue["severity"]
-        desc = issue["description"]
-        src = issue["source"]
-        md_content += f"{i}. **[{sev}]** {desc} (Source: {src})\n"
+        md_content += (
+            f"{i}. **[{issue['severity']}]** {issue['description']} "
+            f"(Source: {issue['source']})\n"
+        )
 
     md_content += """
 ## Recommendations
@@ -202,10 +215,18 @@ Found {len(critical_issues)} critical issues requiring immediate attention:
 3. Schedule remediation for MAJOR issues
 4. Monitor trends in assessment scores
 
-## Next Assessment
+## Top 5 Recommendations
+"""
+    # Simple logic to pick top recommendations based on lowest scores
+    sorted_scores = sorted([(k, v) for k, v in scores.items()], key=lambda x: x[1])
+    for i, (cat, score) in enumerate(sorted_scores[:5], 1):
+        cat_name = categories.get(cat, {}).get("name", cat)
+        md_content += (
+            f"{i}. Improve **{cat_name}** (Score: {score:.1f}): "
+            "Focus on raising this score.\n"
+        )
 
-Recommended: 30 days from today
-
+    md_content += """
 ---
 
 *Generated by Jules Assessment Auto-Fix*
@@ -219,20 +240,17 @@ Recommended: 30 days from today
     logger.info(f"✓ Markdown summary saved to {output_md}")
 
     # Generate JSON metrics
-    category_scores = {}
-    for k, v in scores.items():
-        if k in categories:
-            cat = categories[k]
-            category_scores[k] = {
-                "score": v,
-                "name": cat["name"],
-                "weight": cat["weight"],
-            }
-
     json_data = {
         "timestamp": datetime.now().isoformat(),
         "overall_score": round(overall_score, 2),
-        "category_scores": category_scores,
+        "category_scores": {
+            k: {
+                "score": scores.get(k, 0.0),
+                "name": categories[k]["name"],
+                "weight": categories[k]["weight"],
+            }
+            for k in categories
+        },
         "critical_issues": critical_issues,
         "total_issues": len(all_issues),
         "reports_analyzed": len(input_reports),
@@ -277,7 +295,15 @@ def main() -> int:
     for pattern in args.input:
         if "*" in str(pattern):
             # Expand glob pattern
-            input_reports.extend(Path(".").glob(str(pattern)))
+            # Note: glob expansion might be handled by shell, but good to be safe
+            base_dir = Path(".")
+            parts = str(pattern).split("/")
+            if len(parts) > 1:
+                base_dir = Path("/".join(parts[:-1]))
+                pattern_str = parts[-1]
+                input_reports.extend(base_dir.glob(pattern_str))
+            else:
+                input_reports.extend(Path(".").glob(str(pattern)))
         else:
             input_reports.append(pattern)
 
@@ -288,8 +314,7 @@ def main() -> int:
         logger.error("No valid input reports found")
         return 1
 
-    exit_code = generate_summary(input_reports, args.output, args.json_output)
-    return exit_code
+    return generate_summary(input_reports, args.output, args.json_output)
 
 
 if __name__ == "__main__":
