@@ -4,7 +4,7 @@ import unittest
 from unittest.mock import patch
 
 # Ensure Calculator package is in path (usually covered by running from root)
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
 from Calculator.limiter import RateLimiter
 
@@ -40,5 +40,6 @@ class TestRateLimiter(unittest.TestCase):
         self.assertFalse(limiter.is_allowed("A"))
         self.assertTrue(limiter.is_allowed("B"))
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

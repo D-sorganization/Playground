@@ -5,7 +5,7 @@ import unittest
 import numpy as np
 
 # Add src to path
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../src")))
 
 from star_wars_rrt import Obstacle, PursuitAI, RRTPlanner, Ship
 
@@ -64,6 +64,7 @@ class TestRRTPlanner(unittest.TestCase):
         path = self.planner.plan_path(start, goal, [obstacle])
         self.assertIsNone(path)
 
+
 class TestPursuitAI(unittest.TestCase):
     def setUp(self):
         self.bounds = np.array([-10, 10, -10, 10, -10, 10])
@@ -88,5 +89,6 @@ class TestPursuitAI(unittest.TestCase):
         # target at 0, pursuer at 0.1 (x). Evasion should be towards -x.
         self.assertTrue(direction[0] < 0)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()
