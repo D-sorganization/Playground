@@ -333,7 +333,7 @@ def fix_union_attr(lines: list[str], error: MypyError) -> Fix | None:
         file=error.file,
         line=error.line,
         description=(
-            f"Add isinstance({var_name}, {target_type}) narrowing for " "union-attr"
+            f"Add isinstance({var_name}, {target_type}) narrowing for union-attr"
         ),
         strategy="real-fix",
         original_code=line.strip(),

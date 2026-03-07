@@ -17,7 +17,7 @@ import sys
 from pathlib import Path
 
 
-def run_command(cmd: list[str], check: bool = True) -> subprocess.CompletedProcess:
+def run_command(cmd: list[str], check: bool = True) -> subprocess.CompletedProcess[str]:
     """Run a command and return the result."""
     print(f"  Running: {' '.join(cmd)}")
     return subprocess.run(cmd, check=check, capture_output=True, text=True)
@@ -98,7 +98,8 @@ def print_summary() -> None:
     print("\n" + "=" * 60)
     print("HOOK SUMMARY")
     print("=" * 60)
-    print("""
+    print(
+        """
 PRE-COMMIT (runs on every commit, <15 seconds):
   - ruff (lint + auto-fix)
   - black (format)
@@ -117,7 +118,8 @@ MANUAL COMMANDS:
   pre-commit run --all-files      # Run all pre-commit hooks
   pre-commit run --hook-stage pre-push  # Run pre-push hooks manually
   pre-commit autoupdate           # Update hook versions
-""")
+"""
+    )
 
 
 def main() -> None:

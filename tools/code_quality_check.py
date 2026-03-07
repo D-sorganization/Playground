@@ -66,6 +66,48 @@ MAGIC_NUMBERS = [
 ]
 
 
+class QualityChecker:
+    """Stateful wrapper around module-level quality check functions.
+
+    Maintains a list of issues found across check_* calls for test introspection.
+    """
+
+    def __init__(self) -> None:
+        """Initialize the checker with an empty issues list."""
+        self.issues: list[tuple[int, str, str]] = []
+
+    def check_placeholders(self, filepath: Path) -> list[tuple[int, str, str]]:
+        """Check a file for banned placeholder patterns."""
+        found = check_file(filepath)
+        placeholder_issues = [
+            (n, t, c) for n, t, c in found if "placeholder" in t.lower()
+        ]
+        self.issues.extend(placeholder_issues)
+        return placeholder_issues
+
+    def check_imports(self, filepath: Path) -> list[tuple[int, str, str]]:
+        """Check a file for wildcard imports."""
+        try:
+            content = filepath.read_text(encoding="utf-8")
+            lines = content.splitlines()
+        except (OSError, UnicodeDecodeError):
+            return []
+
+        found: list[tuple[int, str, str]] = []
+        for line_num, line in enumerate(lines, 1):
+            if re.match(r"^\s*from\s+\S+\s+import\s+\*", line):
+                found.append((line_num, "wildcard_import", line.strip()))
+        self.issues.extend(found)
+        return found
+
+    def should_skip_file(self, filepath: Path) -> bool:
+        """Return True if the file should be skipped by quality checks."""
+        parts = filepath.parts
+        skip_dirs = {".git", "archive", "legacy", "experimental", "__pycache__"}
+        skip_exts = {".md", ".txt", ".json", ".yaml", ".yml", ".toml"}
+        return any(p in skip_dirs for p in parts) or filepath.suffix in skip_exts
+
+
 def is_legitimate_pass_context(lines: list[str], line_num: int) -> bool:
     """Check if a pass statement is in a legitimate context."""
     if line_num <= 0 or line_num > len(lines):
