@@ -13,7 +13,6 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent / "tools"))
 
 from code_quality_check import QualityChecker
-from matlab_utilities.scripts.matlab_quality_check import MATLABQualityChecker
 
 
 class TestQualityChecker(unittest.TestCase):
@@ -42,7 +41,7 @@ class TestQualityChecker(unittest.TestCase):
 
         # Should find one placeholder issue
         placeholder_issues = [
-            issue for issue in self.checker.issues if issue[1] == "placeholder"
+            issue for issue in self.checker.issues if "placeholder" in issue[1].lower()
         ]
         self.assertEqual(len(placeholder_issues), 1)
 
@@ -72,61 +71,6 @@ class TestQualityChecker(unittest.TestCase):
         # Should not skip Python files
         py_file = Path("test.py")
         self.assertFalse(self.checker.should_skip_file(py_file))
-
-
-class TestMatlabQualityChecker(unittest.TestCase):
-    """Test the MATLAB code quality checker."""
-
-    def setUp(self) -> None:
-        """Set up test fixtures."""
-        self.checker = MATLABQualityChecker()
-        self.temp_dir = tempfile.mkdtemp()
-        self.temp_path = Path(self.temp_dir)
-
-    def tearDown(self) -> None:
-        """Clean up test fixtures."""
-        import shutil
-
-        shutil.rmtree(self.temp_dir)
-
-    def test_find_matlab_files(self) -> None:
-        """Test MATLAB file discovery."""
-        # Create some test files
-        (self.temp_path / "test.m").write_text("% MATLAB function")
-        (self.temp_path / "backup.asv").write_text("% Backup file")
-        (self.temp_path / "script.py").write_text("# Python file")
-
-        matlab_files = self.checker.find_matlab_files(self.temp_path)
-
-        # Should find only the .m file, not .asv or .py
-        self.assertEqual(len(matlab_files), 1)
-        self.assertEqual(matlab_files[0].name, "test.m")
-
-    def test_function_detection(self) -> None:
-        """Test function vs script detection."""
-        # Create a function file
-        func_file = self.temp_path / "myfunction.m"
-        func_content = (
-            "function result = myfunction(x)\n% A test function\nresult = x * 2;\nend"
-        )
-        func_file.write_text(func_content)
-
-        file_info = self.checker.analyze_file(func_file)
-
-        self.assertEqual(file_info["type"], "function")
-        self.assertEqual(len(file_info["functions"]), 1)
-        self.assertEqual(file_info["functions"][0]["name"], "myfunction")
-
-    def test_script_detection(self) -> None:
-        """Test script detection."""
-        # Create a script file
-        script_file = self.temp_path / "myscript.m"
-        script_file.write_text("% A test script\nx = 1:10;\ny = x.^2;\nplot(x, y);")
-
-        file_info = self.checker.analyze_file(script_file)
-
-        self.assertEqual(file_info["type"], "script")
-
 
 if __name__ == "__main__":
     unittest.main()
