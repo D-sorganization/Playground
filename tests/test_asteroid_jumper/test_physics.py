@@ -15,6 +15,7 @@ from __future__ import annotations
 import math
 import sys
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -173,7 +174,7 @@ class TestMomentOfInertia:
 
 
 class TestComputeJumpImpulse:
-    def _make_colinear_config(self) -> dict:
+    def _make_colinear_config(self) -> dict[str, Any]:
         """Force pushes exactly through both COMs → no torque."""
         return {
             "force_magnitude": 100.0,

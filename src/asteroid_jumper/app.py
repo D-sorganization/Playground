@@ -72,7 +72,7 @@ def main() -> int:
     app.setStyleSheet(STYLESHEET)
     window = AsteroidJumperWindow()
     window.show()
-    return app.exec()
+    return int(app.exec())
 
 
 if __name__ == "__main__":
