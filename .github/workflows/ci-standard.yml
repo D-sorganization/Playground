@@ -115,16 +115,20 @@ jobs:
   javascript-tests:
     needs: quality-gate
     runs-on: ubuntu-latest
-    if: hashFiles('javascript/package.json') != ''
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: "20" }
       - name: Install & Test
-        working-directory: ./javascript
+        working-directory: ./
         run: |
-          npm ci
-          npm run test:coverage
+          if [ -d "javascript" ]; then
+            cd javascript
+            npm ci
+            npm run test:coverage
+          else
+            echo "No javascript directory found, skipping."
+          fi
 
   matlab-tests:
     needs: quality-gate
@@ -143,12 +147,17 @@ jobs:
   arduino-build:
     needs: quality-gate
     runs-on: ubuntu-latest
-    if: hashFiles('arduino/platformio.ini') != ''
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: { python-version: "3.11" }
       - run: pip install platformio
       - name: Verify Build
-        working-directory: ./arduino
-        run: pio run -e uno
+        working-directory: ./
+        run: |
+          if [ -d "arduino" ]; then
+            cd arduino
+            pio run -e uno
+          else
+            echo "No arduino directory found, skipping."
+          fi
