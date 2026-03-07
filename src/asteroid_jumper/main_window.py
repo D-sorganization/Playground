@@ -79,10 +79,7 @@ class AsteroidJumperWindow(QMainWindow):
         self._controls.reset_requested.connect(self._on_reset)
         self._controls.config_changed.connect(self._renderer.update)
         # Attach lightweight signal for mouse-drag angle update
-        self._renderer.force_angle_changed = _SimpleSignal()  # type: ignore[attr-defined]
-        self._renderer.force_angle_changed.connect(  # type: ignore[attr-defined]
-            self._controls.set_force_angle
-        )
+        self._renderer.force_angle_changed.connect(self._controls.set_force_angle)
 
     def _start_metrics_timer(self) -> None:
         self._metrics_timer = QTimer(self)

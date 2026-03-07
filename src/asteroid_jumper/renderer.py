@@ -70,6 +70,7 @@ class AsteroidJumperRenderer(QWidget):
         self._jumper_trail: list[tuple[float, float]] = []
         self._force_angle_drag = False
         self._force_angle_screen: QPointF | None = None
+        self.force_angle_changed = _SimpleSignal()
 
         self.setMinimumSize(600, 500)
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
@@ -185,7 +186,7 @@ class AsteroidJumperRenderer(QWidget):
         self._ctrl.set_force_angle(angle_deg)
         self._ctrl.set_jump_direction(angle_deg)
         self._ctrl.state = self._ctrl._build_state()
-        self.force_angle_changed.emit(angle_deg)  # type: ignore[attr-defined]
+        self.force_angle_changed.emit(angle_deg)
         self.update()
 
     # ------------------------------------------------------------------
@@ -527,3 +528,23 @@ class AsteroidJumperRenderer(QWidget):
 
 # Global reference height used throughout (normalised jumper height in "nice" units)
 JUMPER_HEIGHT_REF: float = 0.08  # fraction of scale
+
+
+# ---------------------------------------------------------------------------
+# Mini signal helper
+# ---------------------------------------------------------------------------
+
+
+class _SimpleSignal:
+    """Lightweight callable signal (wraps a list of callbacks)."""
+
+    def __init__(self) -> None:
+        self._slots: list[object] = []
+
+    def connect(self, slot: object) -> None:
+        assert callable(slot)
+        self._slots.append(slot)
+
+    def emit(self, *args: object) -> None:
+        for slot in self._slots:
+            slot(*args)  # type: ignore[operator]

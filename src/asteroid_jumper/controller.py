@@ -154,29 +154,31 @@ class SimController:
 
     def jumper_speed(self) -> float:
         """Current translational speed of the jumper (m/s)."""
-        return self.state.jumper.speed
+        return float(self.state.jumper.speed)
 
     def jumper_angular_speed(self) -> float:
         """Absolute angular speed of the jumper (rad/s)."""
-        return abs(self.state.jumper.angular_vel)
+        return float(abs(self.state.jumper.angular_vel))
 
     def asteroid_speed(self) -> float:
         """Current translational speed of the asteroid (m/s)."""
-        return self.state.asteroid.speed
+        return float(self.state.asteroid.speed)
 
     def asteroid_angular_speed(self) -> float:
         """Absolute angular speed of the asteroid (rad/s)."""
-        return abs(self.state.asteroid.angular_vel)
+        return float(abs(self.state.asteroid.angular_vel))
 
     def off_centre_fraction(self) -> float:
         """How off-centre the jump is: 0 = through COM, 1 = maximally off."""
         from asteroid_jumper.physics import off_centre_ratio
 
         contact = self._contact_point()
-        return off_centre_ratio(
-            contact,
-            self.state.asteroid.pos,
-            self.state.jumper.pos,
+        return float(
+            off_centre_ratio(
+                contact,
+                self.state.asteroid.pos,
+                self.state.jumper.pos,
+            )
         )
 
     def leg_phase(self) -> float:
@@ -238,4 +240,4 @@ class SimController:
     def _total_momentum_magnitude(self) -> float:
         """Total system linear momentum magnitude."""
         total = self.state.total_linear_momentum
-        return total.length()
+        return float(total.length())
