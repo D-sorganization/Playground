@@ -72,5 +72,6 @@ class TestQualityChecker(unittest.TestCase):
         py_file = Path("test.py")
         self.assertFalse(self.checker.should_skip_file(py_file))
 
+
 if __name__ == "__main__":
     unittest.main()
