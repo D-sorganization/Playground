@@ -43,7 +43,7 @@ ASSESSMENTS = {
 
 def find_python_files() -> list[Path]:
     """Find all Python files in the repository."""
-    python_files = []
+    python_files: list[Path] = []
     for pattern in ["**/*.py"]:
         python_files.extend(Path(".").glob(pattern))
     # Exclude common non-source directories
@@ -65,7 +65,7 @@ def find_python_files() -> list[Path]:
     ]
 
 
-def run_ruff_check() -> dict:
+def run_ruff_check() -> dict[str, object]:
     """Run ruff and return statistics."""
     try:
         result = subprocess.run(
@@ -82,7 +82,7 @@ def run_ruff_check() -> dict:
         return {"exit_code": -1, "output": "", "errors": "ruff not installed"}
 
 
-def run_black_check() -> dict:
+def run_black_check() -> dict[str, object]:
     """Run black check and return results."""
     try:
         result = subprocess.run(
@@ -101,13 +101,13 @@ def run_black_check() -> dict:
 def count_test_files() -> int:
     """Count test files in the repository."""
     test_patterns = ["**/test_*.py", "**/*_test.py", "**/tests/*.py"]
-    test_files = set()
+    test_files: set[Path] = set()
     for pattern in test_patterns:
         test_files.update(Path(".").glob(pattern))
     return len(test_files)
 
 
-def check_documentation() -> dict:
+def check_documentation() -> dict[str, bool]:
     """Check documentation status."""
     has_readme = Path("README.md").exists()
     has_docs = Path("docs").exists()
@@ -266,7 +266,7 @@ def run_assessment(assessment_id: str, output_path: Path) -> int:
         findings.append(f"- 'while True' loops: {while_true_count}")
 
         if sleep_count > 0:
-            score -= min(4, sleep_count * 0.5)
+            score -= int(min(4, sleep_count * 0.5))
             findings.append(
                 "MAJOR: Avoid 'time.sleep()'; use async/await or event-driven design."
             )
@@ -322,7 +322,7 @@ def run_assessment(assessment_id: str, output_path: Path) -> int:
         findings.append(f"- logger usages: {logger_count}")
         if print_count > 0:
             findings.append("MAJOR: 'print()' statements found. Use 'logging' instead.")
-            score -= min(3, print_count * 0.1)
+            score -= int(min(3, print_count * 0.1))
         if logger_count == 0 and file_count > 0:
             score -= 2
             findings.append("MINOR: No logging usage detected.")
@@ -386,7 +386,7 @@ def run_assessment(assessment_id: str, output_path: Path) -> int:
         findings.append(f"- Large files (>300 lines): {large_files}")
 
         if large_files > 0:
-            score -= min(3, large_files * 0.5)
+            score -= int(min(3, large_files * 0.5))
             findings.append(
                 f"MAJOR: Found {large_files} large files. Refactor modules."
             )
@@ -432,15 +432,15 @@ This assessment was generated automatically. For detailed analysis:
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
     # Write report
-    with open(output_path, "w") as f:
-        f.write(report_content)
+    with open(output_path, "w") as output_file:
+        output_file.write(report_content)
 
     logger.info(f"✓ Assessment {assessment_id} report saved to {output_path}")
     logger.info(f"  Score: {score}/10")
     return 0
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Run repository assessment")
     parser.add_argument(
         "--assessment",
