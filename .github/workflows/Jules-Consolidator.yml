@@ -4,17 +4,17 @@ on:
   workflow_dispatch:
     inputs:
       dry_run:
-        description: 'Dry run - analyze only'
+        description: "Dry run - analyze only"
         required: false
-        default: 'false'
+        default: "false"
         type: boolean
       exclude_prs:
-        description: 'Comma-separated PR numbers to exclude'
+        description: "Comma-separated PR numbers to exclude"
         required: false
-        default: ''
+        default: ""
         type: string
   schedule:
-    - cron: "0 8 * * 2"  # 5 AM PST Mon-Fri (13 UTC)
+    - cron: "0 8 * * 2" # 5 AM PST Mon-Fri (13 UTC)
 
 concurrency:
   group: jules-consolidator
@@ -33,7 +33,7 @@ jobs:
       pr_list: ${{ steps.list.outputs.prs }}
       should_consolidate: ${{ steps.list.outputs.should_consolidate }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -68,7 +68,7 @@ jobs:
     if: needs.discover.outputs.should_consolidate == 'true' && inputs.dry_run != 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}

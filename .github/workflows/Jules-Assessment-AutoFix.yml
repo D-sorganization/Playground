@@ -7,29 +7,29 @@ on:
   workflow_dispatch:
     inputs:
       assessment_type:
-        description: 'Assessment type (comprehensive, quick, or specific A-O)'
+        description: "Assessment type (comprehensive, quick, or specific A-O)"
         required: false
-        default: 'comprehensive'
+        default: "comprehensive"
       auto_fix:
-        description: 'Automatically fix top issues'
+        description: "Automatically fix top issues"
         required: false
-        default: 'true'
+        default: "true"
       max_issues_to_fix:
-        description: 'Maximum number of issues to auto-fix'
+        description: "Maximum number of issues to auto-fix"
         required: false
-        default: '10'
+        default: "10"
       source_pr_to_close:
-        description: 'PR number to close after fix (supersedes that PR)'
+        description: "PR number to close after fix (supersedes that PR)"
         required: false
         type: string
       dry_run:
-        description: 'Dry run mode - show what would happen without making changes'
+        description: "Dry run mode - show what would happen without making changes"
         required: false
-        default: 'false'
+        default: "false"
         type: choice
         options:
-          - 'false'
-          - 'true'
+          - "false"
+          - "true"
 
 # HARDENING: Prevent concurrent runs and bot-triggered cascades
 concurrency:
@@ -50,9 +50,9 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
-          fetch-depth: 0  # Full history for git analysis
+          fetch-depth: 0 # Full history for git analysis
 
       - name: Prepare assessment branch
         run: |
@@ -62,9 +62,9 @@ jobs:
           echo "ASSESSMENT_BRANCH=$BRANCH_NAME" >> $GITHUB_ENV
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
-          python-version: '3.11'
+          python-version: "3.11"
 
       - name: Install dependencies
         run: |
@@ -154,7 +154,7 @@ jobs:
           echo "critical_issues=$CRITICAL_ISSUES" >> $GITHUB_OUTPUT
 
       - name: Upload Assessment Reports
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: assessment-reports
           path: |
@@ -219,14 +219,14 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
-          python-version: '3.11'
+          python-version: "3.11"
 
       - name: Install dependencies
         run: |
@@ -392,17 +392,17 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Download assessment summary
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: assessment-reports
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
-          python-version: '3.11'
+          python-version: "3.11"
 
       - name: Create issues for critical findings
         env:

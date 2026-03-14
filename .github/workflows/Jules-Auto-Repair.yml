@@ -26,13 +26,13 @@ on:
   workflow_dispatch:
     inputs:
       branch:
-        description: 'Branch to repair'
+        description: "Branch to repair"
         required: true
         type: string
       max_iterations:
-        description: 'Maximum repair iterations'
+        description: "Maximum repair iterations"
         required: false
-        default: '5'
+        default: "5"
         type: string
 
 permissions:
@@ -123,17 +123,17 @@ jobs:
             echo "exceeded=false" >> $GITHUB_OUTPUT
           fi
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         if: steps.branch.outputs.skip != 'true' && steps.limits.outputs.exceeded != 'true'
         with:
           ref: ${{ steps.branch.outputs.branch }}
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         if: steps.branch.outputs.skip != 'true' && steps.limits.outputs.exceeded != 'true'
         with:
-          python-version: '3.11'
+          python-version: "3.11"
 
       - name: Install Tools
         if: steps.branch.outputs.skip != 'true' && steps.limits.outputs.exceeded != 'true'

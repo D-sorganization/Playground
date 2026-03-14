@@ -2,7 +2,7 @@ name: Nightly Documentation Organizer
 
 on:
   schedule:
-    - cron: "0 8 * * 2"  # Daily at 3 AM PST (11 UTC)
+    - cron: "0 8 * * 2" # Daily at 3 AM PST (11 UTC)
   workflow_dispatch:
 
 permissions:
@@ -14,7 +14,7 @@ jobs:
     if: hashFiles('.github/WORKFLOWS_PAUSED') == ''
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
