@@ -9,13 +9,13 @@ on:
   workflow_dispatch:
     inputs:
       dry_run:
-        description: 'Dry run - show what would be processed without acting'
+        description: "Dry run - show what would be processed without acting"
         required: false
-        default: 'false'
+        default: "false"
         type: choice
         options:
-          - 'false'
-          - 'true'
+          - "false"
+          - "true"
   # Schedule disabled - orchestrated by Jules-Control-Tower.yml
   # schedule:
   #   - cron: "0 8 * * 2"  # Daily at 3 AM UTC
@@ -33,11 +33,11 @@ jobs:
   process-comments:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.11"
 

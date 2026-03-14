@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
     inputs:
       dry_run:
-        description: 'Dry run - report only, no changes'
+        description: "Dry run - report only, no changes"
         required: false
         default: false
         type: boolean
@@ -21,7 +21,7 @@ jobs:
   compile-prs:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
 

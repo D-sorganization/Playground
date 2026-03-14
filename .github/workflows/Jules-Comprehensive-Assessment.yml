@@ -2,7 +2,7 @@ name: Jules Comprehensive Assessment
 
 on:
   schedule:
-    - cron: "0 8 * * 2"  # Daily at 5 AM UTC
+    - cron: "0 8 * * 2" # Daily at 5 AM UTC
   workflow_dispatch:
 
 permissions:
@@ -16,17 +16,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.11"
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: "20"
 
@@ -59,7 +59,7 @@ jobs:
         run: |
           echo "Collecting incomplete implementation patterns..."
           mkdir -p .jules/completist_data
-          
+
           # Find TODO/FIXME markers
           grep -rn "TODO\|FIXME\|XXX\|HACK\|TEMP" --include="*.py" --include="*.ts" --include="*.js" . \
             --exclude-dir=".git" --exclude-dir="venv" --exclude-dir="node_modules" \
@@ -85,9 +85,9 @@ jobs:
       # ---------------------------------------------------------
       - name: Generate Completist Report & Plot
         run: |
-            if [ -f "scripts/analyze_completist_data.py" ]; then
-               python scripts/analyze_completist_data.py || echo "Analysis script failed"
-            fi
+          if [ -f "scripts/analyze_completist_data.py" ]; then
+             python scripts/analyze_completist_data.py || echo "Analysis script failed"
+          fi
 
       # ---------------------------------------------------------
       # Archive Old Data
@@ -113,7 +113,7 @@ jobs:
           commit_message: "docs(assessment): pre-assessment data collection"
           branch: "automation/assessment-$(date +%Y-%m-%d)"
           create_branch: true
-          push_options: '--force'
+          push_options: "--force"
 
       # ---------------------------------------------------------
       # Component 3: Jules Comprehensive Assessment (API)
@@ -151,20 +151,20 @@ jobs:
 
           ## Mission
           Perform a thorough audit of the repository, combining General Code Quality (A-O), Completist Analysis, and Pragmatic Programmer review.
-          
+
           ## Requirements
-          
+
           ### 1. General Assessment (Categories A-O)
           For EACH category from A to O:
           1. **Read Reference**: Look for `docs/assessments/Assessment_Prompt_X.md` (where X is A, B, C...).
           2. **Follow Instructions Exactly**: Follow the specific tables and criteria in those files.
           3. **Output**: Save to `docs/assessments/Assessment_X_Category.md`.
-          
+
           ### 2. Completist Audit
           - **Read Reference**: `docs/assessments/Assessment_Prompt_Completist.md`.
           - **Input Data**: Review `.jules/completist_data/` and the report in `docs/assessments/completist/`.
           - **Output**: `docs/assessments/Assessment_Completist.md` (following the template).
-          
+
           ### 3. Pragmatic Programmer Review
           - **Read Reference**: `docs/assessments/Assessment_Prompt_Pragmatic_Programmer.md`.
           - **Input Data**: Review `docs/assessments/pragmatic_programmer/`.
@@ -173,14 +173,14 @@ jobs:
           ### 4. Comprehensive Report
           - Create `docs/assessments/Comprehensive_Assessment.md`.
           - Include a unified scorecard.
-          
+
           ## PR Title Instruction
           The Pull Request Title MUST be exactly:
           [REPO_NAME_PLACEHOLDER] [docs] Assessment Generation - DATE_PLACEHOLDER
-          
+
           PROMPT_EOF
           )
-          
+
           # Inject Variables into Prompt
           PROMPT="${PROMPT//REPO_NAME_PLACEHOLDER/$REPO_NAME}"
           PROMPT="${PROMPT//DATE_PLACEHOLDER/$DATE}"
@@ -248,19 +248,19 @@ jobs:
           DATE=$(date +%Y-%m-%d)
           EXPECTED_TITLE="[${{ github.event.repository.name }}] [docs] Assessment Generation - $DATE"
           BRANCH="automation/assessment-$DATE"
-          
+
           echo "Looking for PR on branch $BRANCH or by app/jules..."
-          
+
           # Try 1: By Branch
           PR=$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number')
-          
+
           # Try 2: By Author (Recent)
           if [ -z "$PR" ]; then
             # Wait a moment for creation if needed
             sleep 5
             PR=$(gh pr list --author "app/jules" --state open --sort created --limit 1 --json number --jq '.[0].number')
           fi
-          
+
           if [ -n "$PR" ]; then
             echo "Found PR #$PR. Updating title..."
             gh pr edit "$PR" --title "$EXPECTED_TITLE"
