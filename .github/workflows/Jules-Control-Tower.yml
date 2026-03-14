@@ -11,7 +11,8 @@ on:
   schedule:
     # COST OPTIMIZED: Runs Monday only (1x weekly for stable repos)
     # Time-based routing in triage step handles worker selection
-    - cron: "0 8 * * 1"  # Monday at midnight PST
+    - cron: "0 8 * * 1" # Monday at midnight PST
+  workflow_dispatch:
     inputs:
       target:
         description: "Worker to dispatch (auto uses schedule routing)"
@@ -23,6 +24,7 @@ on:
           - assessment-generator
           - code-quality-reviewer
           - completist
+          - documentation-auditor
           - sentinel
           - auto-refactor
           - auto-rebase
