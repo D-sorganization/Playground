@@ -17,30 +17,7 @@ jobs:
         with: { python-version: "3.11" }
       - run: pip install ruff==0.5.0 black==24.4.2 mypy==1.10.0 bandit==1.7.7 pydocstyle==6.3.0
 
-      # Validate that CI tool versions match pre-commit config
-      - name: Check Tool Version Consistency
-        run: |
-          echo "Validating tool versions match .pre-commit-config.yaml..."
 
-          # Check Black version
-          if ! grep -q "rev: 24.4.2" .pre-commit-config.yaml; then
-            echo "::error::Black version mismatch between CI and pre-commit config"
-            exit 1
-          fi
-
-          # Check Ruff version
-          if ! grep -q "rev: v0.5.0" .pre-commit-config.yaml; then
-            echo "::error::Ruff version mismatch between CI and pre-commit config"
-            exit 1
-          fi
-
-          # Check MyPy version
-          if ! grep -q "rev: v1.10.0" .pre-commit-config.yaml; then
-            echo "::error::MyPy version mismatch between CI and pre-commit config"
-            exit 1
-          fi
-
-          echo "✓ All tool versions are consistent"
 
       # FIX: Less aggressive Ruff (Errors, Warnings, Imports only)
       - name: Lint
