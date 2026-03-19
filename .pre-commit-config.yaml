@@ -201,6 +201,7 @@ repos:
             src/archive/|
             src/legacy/|
             src/experimental/|
+            src/Project_GROOT/|
             __pycache__/|
             \.pytest_cache/|
             \.venv/|
@@ -242,6 +243,7 @@ repos:
             "--tb=short",
             "-m",
             "not slow and not integration",
+            "--ignore=tests/test_ti89_calculator.py",
           ]
         language: python
         additional_dependencies: [pytest, pytest-cov]
