@@ -12,20 +12,18 @@ jobs:
   quality-gate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-python@v6
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with: { python-version: "3.11" }
-      - run: pip install ruff==0.5.0 black==24.4.2 mypy==1.10.0 bandit==1.7.7 pydocstyle==6.3.0
-
-
+      - run: pip install ruff==0.5.0 mypy==1.10.0 bandit==1.7.7 pydocstyle==6.3.0
 
       # FIX: Less aggressive Ruff (Errors, Warnings, Imports only)
       - name: Lint
         run: ruff check .
 
-      # FIX: Enforce Black formatting (88 chars)
-      - name: Check Formatting
-        run: black --check .
+      # FIX: Enforce ruff formatting
+      - name: Check Formatting (ruff)
+        run: ruff format --check .
 
       - run: pip install mypy types-PyYAML types-requests
       - run: pip install -r requirements.txt
@@ -62,7 +60,7 @@ jobs:
           cat matlab_quality_report.txt
 
       - name: Upload MATLAB Report
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: matlab-quality-report
@@ -76,8 +74,8 @@ jobs:
       matrix:
         python: ["3.11"]
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-python@v6
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
       - run: pip install -r requirements.txt
@@ -94,8 +92,8 @@ jobs:
     needs: quality-gate
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with: { node-version: "20" }
       - name: Install & Test
         working-directory: ./
@@ -114,7 +112,7 @@ jobs:
     if: false
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
       - uses: matlab-actions/setup-matlab@v2
       - uses: matlab-actions/run-command@v2
         with:
@@ -126,8 +124,8 @@ jobs:
     needs: quality-gate
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-python@v6
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with: { python-version: "3.11" }
       - run: pip install platformio
       - name: Verify Build
