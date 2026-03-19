@@ -9,6 +9,11 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../src"
 
 from star_wars_rrt import Obstacle, PursuitAI, RRTPlanner, Ship
 
+<<<<<<< Updated upstream
+=======
+from star_wars_rrt import Obstacle, PursuitAI, RRTPlanner, Ship
+
+>>>>>>> Stashed changes
 
 class TestRRTPlanner(unittest.TestCase):
     def setUp(self):

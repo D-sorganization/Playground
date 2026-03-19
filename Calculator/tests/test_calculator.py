@@ -9,6 +9,11 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from calculator import TI89Calculator
 
+<<<<<<< Updated upstream
+=======
+from calculator import TI89Calculator
+
+>>>>>>> Stashed changes
 
 class TestTI89Calculator(unittest.TestCase):
     def setUp(self):

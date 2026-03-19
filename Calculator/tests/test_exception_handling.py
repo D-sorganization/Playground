@@ -23,17 +23,34 @@ def test_exception_info_leak(client):
 
     # Patch _dispatch_calculation to raise an exception with a sensitive message
     with patch(
+<<<<<<< Updated upstream
         "Calculator.webapp._dispatch_calculation", side_effect=Exception(secret_message)
     ):
         payload = {"operation": "evaluate", "expression": "1+1"}
         response = client.post("/api/calculate", json=payload)
+=======
+        'Calculator.webapp._dispatch_calculation',
+        side_effect=Exception(secret_message)
+    ):
+        payload = {
+            "operation": "evaluate",
+            "expression": "1+1"
+        }
+        response = client.post('/api/calculate', json=payload)
+>>>>>>> Stashed changes
 
         assert response.status_code == 500
         json_data = response.get_json()
         assert "error" in json_data
 
         # Verify fix: The secret message should NOT be in the response
+<<<<<<< Updated upstream
         assert (
             secret_message not in json_data["error"]
         ), "Vulnerability present: Secret message found in response"
+=======
+        assert secret_message not in json_data["error"], (
+            "Vulnerability present: Secret message found in response"
+        )
+>>>>>>> Stashed changes
         assert json_data["error"] == "An internal error occurred."

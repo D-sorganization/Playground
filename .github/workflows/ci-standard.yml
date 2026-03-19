@@ -57,6 +57,7 @@ jobs:
       # Placeholder detection - scans Python source files for unresolved TODOs/FIXMEs
       - name: Verify No Placeholders
         run: |
+<<<<<<< Updated upstream
           if grep -rE "TODO|FIXME" . \
               --exclude-dir=vendor \
               --exclude-dir=.git \
@@ -72,6 +73,9 @@ jobs:
               --exclude="pragmatic_programmer_review.py" \
               --exclude="setup_hooks.py" \
               --exclude="matlab_quality_check.py"; then
+=======
+          if grep -rE "TODO|FIXME" . --exclude-dir=vendor --exclude-dir=.git --exclude-dir=node_modules; then
+>>>>>>> Stashed changes
              echo "::error::Placeholders found. Remove TODOs/FIXMEs or create tracked GitHub issues."
              exit 1
           fi
@@ -103,7 +107,11 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - run: pip install -r requirements.txt
+<<<<<<< Updated upstream
       - run: PYTHONPATH=. pytest tests/ --cov=. --cov-report=xml
+=======
+      - run: pytest tests/ --cov=. --cov-report=xml
+>>>>>>> Stashed changes
       - uses: codecov/codecov-action@v4
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}

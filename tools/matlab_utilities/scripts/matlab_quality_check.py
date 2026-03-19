@@ -82,7 +82,7 @@ class MATLABQualityChecker:
                 # Config script not found - fall back to static analysis
                 # (primary use case)
                 logger.info(
-                    "MATLAB quality config script not found, using static analysis",
+                    "MATLAB quality config script not found, " "using static analysis",
                 )
                 return self._static_matlab_analysis()
 

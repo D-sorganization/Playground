@@ -23,7 +23,13 @@ def read_requirements() -> list[str]:
     if os.path.exists(requirements_path):
         with open(requirements_path, encoding="utf-8") as f:
             return [
+<<<<<<< Updated upstream
                 line.strip() for line in f if line.strip() and not line.startswith("#")
+=======
+                line.strip()
+                for line in f
+                if line.strip() and not line.startswith("#")
+>>>>>>> Stashed changes
             ]
     return []
 
