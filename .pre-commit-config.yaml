@@ -157,7 +157,7 @@ repos:
         language: pygrep
         files: ^src/
         types: [python]
-        exclude: ^(src/.*/__main__\.py|tests/|\.github/)
+        exclude: ^(src/.*/__main__\.py|src/Project_GROOT/|tests/|\.github/)
 
       # Check for console.log in src (JavaScript)
       - id: no-console-log
@@ -236,7 +236,7 @@ repos:
         entry: pytest
         args:
           [
-            "tests/unit",
+            "tests/",
             "-x",
             "-q",
             "--tb=short",

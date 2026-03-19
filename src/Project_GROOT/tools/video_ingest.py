@@ -213,7 +213,7 @@ class VideoIngester:
         """Generate unique video ID."""
         # Use stem + hash of path + frame range for uniqueness
         stem = video_path.stem
-        path_hash = hashlib.md5(str(video_path).encode()).hexdigest()[:8]
+        path_hash = hashlib.md5(str(video_path).encode()).hexdigest()[:8]  # nosec B324
         video_id = f"{stem}_{start_frame:06d}_{end_frame:06d}_{path_hash}"
         return video_id
 
