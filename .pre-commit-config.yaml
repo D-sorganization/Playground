@@ -39,16 +39,6 @@ repos:
         types: [python]
         exclude: ^(\.github/|docs/|.*\.md$)
 
-  # Black - Python code formatter (backup)
-  - repo: https://github.com/psf/black
-    rev: 24.4.2
-    hooks:
-      - id: black
-        name: "black (Python format)"
-        language_version: python3.11
-        types: [python]
-        exclude: ^(\.github/|docs/|.*\.md$)
-
   # ===========================================================================
   # JAVASCRIPT / TYPESCRIPT / REACT CHECKS
   # ===========================================================================
@@ -224,7 +214,15 @@ repos:
       - id: bandit
         name: "bandit (Python security)"
         stages: [push]
-        args: ["-r", ".", "-ll", "-ii", "-x", "tests/,archive/,legacy/,.github/,node_modules/"]
+        args:
+          [
+            "-r",
+            ".",
+            "-ll",
+            "-ii",
+            "-x",
+            "tests/,archive/,legacy/,.github/,node_modules/",
+          ]
         pass_filenames: false
         types: [python]
 
@@ -236,12 +234,19 @@ repos:
         name: "pytest (Python tests)"
         stages: [push]
         entry: pytest
-        args: ["tests/unit", "-x", "-q", "--tb=short", "-m", "not slow and not integration"]
+        args:
+          [
+            "tests/unit",
+            "-x",
+            "-q",
+            "--tb=short",
+            "-m",
+            "not slow and not integration",
+          ]
         language: python
         additional_dependencies: [pytest, pytest-cov]
         pass_filenames: false
         types: [python]
-
 
   # Semgrep - Free local security + code quality scanning (pre-push)
   - repo: https://github.com/semgrep/semgrep
@@ -311,5 +316,5 @@ ci:
   autofix_prs: true
   autoupdate_branch: "main"
   autoupdate_commit_msg: "chore: update pre-commit hooks"
-  skip: [pytest-unit, bandit, mypy, semgrep, radon, fmt, cargo-check]  # Skip slow hooks in CI
+  skip: [pytest-unit, bandit, mypy, semgrep, radon, fmt, cargo-check] # Skip slow hooks in CI
 

@@ -510,9 +510,7 @@ def main():
         print("=" * 60)  # noqa: T201
         print(f"Timestamp: {results.get('timestamp', 'N/A')}")  # noqa: T201
         print(f"Total Files: {results.get('total_files', 0)}")  # noqa: T201
-        print(
-            f"Status: {'PASSED' if results.get('passed', False) else 'FAILED'}"
-        )  # noqa: T201
+        print(f"Status: {'PASSED' if results.get('passed', False) else 'FAILED'}")  # noqa: T201
         print(f"Summary: {results.get('summary', 'N/A')}")  # noqa: T201
 
         if results.get("issues"):
