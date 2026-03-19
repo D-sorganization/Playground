@@ -21,6 +21,11 @@ select = ["E", "F", "B", "UP", "I"]
 line-length = 88
 target-version = ['py311']
 
+[tool.pytest.ini_options]
+markers = [
+    "live_simulation: marks tests as live simulation tests requiring fleet infrastructure (deselect with '-m \"not live_simulation\"')",
+]
+
 [tool.mypy]
 python_version = "3.11"
 mypy_path = "src"
