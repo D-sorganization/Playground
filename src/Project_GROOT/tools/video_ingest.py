@@ -143,7 +143,7 @@ class VideoIngester:
                     golfer_name=golfer_name,
                     video_source=video_source,
                 )
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 print(f"Error processing {video_file}: {e}")
 
     def save(self):

@@ -422,7 +422,7 @@ def main():
                 for warning in validation["warnings"][:2]:  # Show first 2
                     print(f"      WARNING: {warning}")
 
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             print(f"  ✗ {pose_file.name}: {e}")
             all_reports.append(
                 {

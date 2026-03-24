@@ -250,7 +250,7 @@ class Renderer:
             self._font = pygame.font.SysFont("segoeui", 28, bold=True)
             self._small_font = pygame.font.SysFont("segoeui", 20)
             self._title_font = pygame.font.SysFont("segoeui", 32, bold=True)
-        except Exception:
+        except Exception:  # noqa: BLE001
             self._font = pygame.font.Font(None, 28)
             self._small_font = pygame.font.Font(None, 20)
             self._title_font = pygame.font.Font(None, 32)
@@ -370,7 +370,7 @@ class Renderer:
             glUseProgram(program)
             self._shader_program = program
             self._shaders_enabled = True
-        except Exception:
+        except Exception:  # noqa: BLE001
             self._shader_program = None
             self._shaders_enabled = False
 
@@ -764,7 +764,7 @@ class Renderer:
 
             # Flip Y for pygame coordinates
             return int(x), int(self.settings.window_height - y)
-        except Exception:
+        except Exception:  # noqa: BLE001
             return None
 
     def _render_text_2d(

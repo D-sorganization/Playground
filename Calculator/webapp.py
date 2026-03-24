@@ -320,7 +320,7 @@ def _sympify_value(
             transformations=standard_transformations + (convert_xor,),
             evaluate=True,
         )
-    except Exception as error:
+    except Exception as error:  # noqa: BLE001
         raise ValueError("Invalid numeric or symbolic value provided") from error
 
 

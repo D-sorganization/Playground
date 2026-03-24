@@ -415,7 +415,7 @@ class StarWarsRRTApp:
             # Try to load Millennium Falcon
             models["falcon"] = trimesh.load("falcon_clean_fixed.stl")
             logging.info("✅ Loaded Millennium Falcon model")
-        except Exception:
+        except Exception:  # noqa: BLE001
             logging.warning("⚠️ Could not load STL model, using simple geometry")
 
         return models
