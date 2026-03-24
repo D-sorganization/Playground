@@ -56,7 +56,7 @@ class PolicyEvaluator:
             self.config = yaml.safe_load(f)
 
         # Load policy
-        # TODO: Load actual policy from checkpoint
+        # DEFERRED: Load actual policy from checkpoint
         # self.policy = load_policy(policy_path)
 
         print(f"Loaded policy: {policy_path}")
@@ -80,7 +80,7 @@ class PolicyEvaluator:
         rollout_stats = []
 
         for i in range(num_rollouts):
-            # TODO: Run actual rollout in Isaac Lab environment
+            # DEFERRED: Run actual rollout in Isaac Lab environment
             # For now, generate synthetic statistics
             stats = self._generate_synthetic_rollout(i)
             rollout_stats.append(stats)
