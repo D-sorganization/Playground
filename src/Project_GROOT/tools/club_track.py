@@ -332,7 +332,7 @@ def main():
 
             print(f"{video_id}: max speed = {stats['max_clubhead_speed']:.1f} m/s")
 
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             print(f"Error processing {video_id}: {e}")
             continue
 

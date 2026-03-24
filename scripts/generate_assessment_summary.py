@@ -42,7 +42,7 @@ def extract_score_from_report(report_path: Path) -> float:
         # Default score if not found
         return 7.0
 
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         logger.warning(f"Could not extract score from {report_path}: {e}")
         return 7.0
 
@@ -79,7 +79,7 @@ def extract_issues_from_report(report_path: Path) -> list[dict[str, Any]]:
                     }
                 )
 
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         logger.warning(f"Could not extract issues from {report_path}: {e}")
 
     return issues

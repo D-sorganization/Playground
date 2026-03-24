@@ -448,7 +448,7 @@ def main():
             print(f"  ✓ Valid frames: {stats['valid_frames']}/{stats['total_frames']}")
             print(f"  ✓ Avg confidence: {stats['avg_confidence']:.3f}")
 
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             print(f"  ✗ Error: {e}")
             continue
 

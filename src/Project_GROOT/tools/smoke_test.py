@@ -42,7 +42,7 @@ def test_gpu():
     except ImportError:
         print("✗ PyTorch not installed")
         return False
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         print(f"✗ GPU test failed: {e}")
         return False
 
@@ -89,7 +89,7 @@ def test_isaac_lab():
             print("  Install Isaac Lab (see docs/SETUP.md)")
             return False
 
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         print(f"✗ Isaac Lab test failed: {e}")
         return False
 
