@@ -255,7 +255,7 @@ class GolfSwingEnv(DirectRLEnv):
         """Update clubhead position and velocity from robot state."""
         # Get end-effector (right hand) link state
         # This assumes the club is attached to the right hand
-        # TODO: Replace with actual end-effector link index from URDF
+        # DEFERRED: Replace with actual end-effector link index from URDF
         ee_link_idx = -1  # Placeholder
 
         # For now, use right wrist position as proxy

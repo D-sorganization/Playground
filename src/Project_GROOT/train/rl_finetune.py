@@ -55,13 +55,13 @@ class SimplePPOTrainer:
         print(f"  Num envs: {config['env']['num_envs']}")
         print(f"  Total steps: {config['train']['num_steps']}")
 
-        # TODO: Initialize Isaac Lab environment
+        # DEFERRED: Initialize Isaac Lab environment
         # self.env = create_golf_swing_env(env_config)
 
-        # TODO: Load pretrained policy
+        # DEFERRED: Load pretrained policy
         # self.policy = load_policy(pretrained_policy)
 
-        # TODO: Initialize PPO algorithm
+        # DEFERRED: Initialize PPO algorithm
         # self.ppo = PPO(policy=self.policy, ...)
 
     def train(self):

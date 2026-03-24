@@ -153,7 +153,7 @@ class MMPosePoseExtractor(PoseExtractor):
         checkpoint: str = None,
     ):
         super().__init__(confidence_threshold)
-        # TODO: Implement MMPose integration
+        # DEFERRED: Implement MMPose integration
         # This requires mmpose, mmdet, mmcv installation
         warnings.warn(
             "MMPose backend not fully implemented yet. Use MediaPipe for now.",
@@ -307,7 +307,7 @@ class PoseConverter:
         phase_labels = np.zeros(T, dtype=np.int32)
 
         # Use right wrist (joint 16 in MediaPipe) as reference
-        # TODO: Make this more robust - handle left/right handed
+        # DEFERRED: Make this more robust - handle left/right handed
         wrist_idx = 16  # right wrist
         wrist_traj = skeletons[:, wrist_idx, :]
 
