@@ -1,3 +1,7 @@
+import logging
+
+logger = logging.getLogger(__name__)
+
 #!/usr/bin/env python3
 """
 RL Fine-tuning Script for Project GROOT
@@ -50,10 +54,10 @@ class SimplePPOTrainer:
         self.output_dir.mkdir(parents=True, exist_ok=True)
         self.device = device
 
-        print("Initializing RL trainer...")
-        print("  Environment: GolfSwing-v0")
-        print(f"  Num envs: {config['env']['num_envs']}")
-        print(f"  Total steps: {config['train']['num_steps']}")
+        logger.info("Initializing RL trainer...")
+        logger.info("  Environment: GolfSwing-v0")
+        logger.info(f"  Num envs: {config['env']['num_envs']}")
+        logger.info(f"  Total steps: {config['train']['num_steps']}")
 
         # DEFERRED: Initialize Isaac Lab environment
         # self.env = create_golf_swing_env(env_config)
@@ -68,8 +72,8 @@ class SimplePPOTrainer:
         """Run RL training loop."""
         num_steps = self.config["train"]["num_steps"]
 
-        print(f"\nStarting RL fine-tuning for {num_steps} steps")
-        print(f"Output directory: {self.output_dir}")
+        logger.info(f"\nStarting RL fine-tuning for {num_steps} steps")
+        logger.info(f"Output directory: {self.output_dir}")
 
         # Placeholder training loop
         # In real implementation, this would:
@@ -80,14 +84,14 @@ class SimplePPOTrainer:
         # 5. Evaluate periodically
         # 6. Save checkpoints
 
-        print("\n" + "=" * 60)
-        print("NOTE: This is a template RL trainer.")
-        print("Full implementation requires:")
-        print("  1. Isaac Lab environment integration")
-        print("  2. PPO algorithm (RL Games, SB3, or RSL-RL)")
-        print("  3. Proper reward tuning for golf swing")
-        print("  4. Domain randomization setup")
-        print("=" * 60)
+        logger.info("\n" + "=" * 60)
+        logger.info("NOTE: This is a template RL trainer.")
+        logger.info("Full implementation requires:")
+        logger.info("  1. Isaac Lab environment integration")
+        logger.info("  2. PPO algorithm (RL Games, SB3, or RSL-RL)")
+        logger.info("  3. Proper reward tuning for golf swing")
+        logger.info("  4. Domain randomization setup")
+        logger.info("=" * 60)
 
         # Create placeholder checkpoint
         checkpoint_dir = self.output_dir / "checkpoints"
@@ -97,8 +101,8 @@ class SimplePPOTrainer:
         with open(self.output_dir / "rl_config.yaml", "w") as f:
             yaml.dump(self.config, f)
 
-        print(f"\n✓ RL training template ready at {self.output_dir}")
-        print("  Integrate with Isaac Lab to enable full training")
+        logger.info(f"\n✓ RL training template ready at {self.output_dir}")
+        logger.info("  Integrate with Isaac Lab to enable full training")
 
 
 def create_rl_config_template():
@@ -194,8 +198,8 @@ def main():
         with open(args.config) as f:
             config = yaml.safe_load(f)
     else:
-        print(f"Config not found: {args.config}")
-        print("Creating default config template...")
+        logger.info(f"Config not found: {args.config}")
+        logger.info("Creating default config template...")
         config = create_rl_config_template()
 
     # Override from command line
@@ -212,7 +216,7 @@ def main():
 
     # Check pretrained policy exists
     if not Path(args.pretrained_policy).exists():
-        print(f"Warning: Pretrained policy not found: {args.pretrained_policy}")
+        logger.info(f"Warning: Pretrained policy not found: {args.pretrained_policy}")
 
     # Create trainer
     trainer = SimplePPOTrainer(

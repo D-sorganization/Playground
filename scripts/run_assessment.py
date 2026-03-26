@@ -128,7 +128,7 @@ def count_occurrences(pattern: str, files: list[Path]) -> int:
         try:
             content = file.read_text(encoding="utf-8", errors="ignore")
             count += len(re.findall(pattern, content))
-        except Exception as e:  # noqa: BLE001
+        except Exception:  # noqa: BLE001
             pass
     return count
 
@@ -218,18 +218,14 @@ def run_assessment(assessment_id: str, output_path: Path) -> int:
         findings.append(f"- Potential hardcoded secrets: {hardcoded_secrets}")
         if shell_true_count > 0:
             score -= min(5, shell_true_count * 2)
-            findings.append(
-                "CRITICAL: Avoid 'shell=True' to prevent command injection."
-            )
+            findings.append("CRITICAL: Avoid 'shell=True' to prevent command injection.")
         if hardcoded_secrets > 0:
             score -= 5
             findings.append("CRITICAL: Potential hardcoded secrets detected.")
 
     elif assessment_id == "G":  # Dependencies
         has_reqs = Path("requirements.txt").exists() or Path("pyproject.toml").exists()
-        findings.append(
-            f"- requirements.txt/pyproject.toml: {'✓' if has_reqs else '✗'}"
-        )
+        findings.append(f"- requirements.txt/pyproject.toml: {'✓' if has_reqs else '✗'}")
         if not has_reqs:
             score -= 5
 
@@ -248,9 +244,7 @@ def run_assessment(assessment_id: str, output_path: Path) -> int:
         black_result = run_black_check()
         ruff_status = "✓ passed" if ruff_result["exit_code"] == 0 else "✗ issues found"
         findings.append(f"- Ruff check: {ruff_status}")
-        black_status = (
-            "✓ formatted" if black_result["exit_code"] == 0 else "✗ needs formatting"
-        )
+        black_status = "✓ formatted" if black_result["exit_code"] == 0 else "✗ needs formatting"
         findings.append(f"- Black formatting: {black_status}")
         if ruff_result["exit_code"] != 0:
             score -= 2
@@ -267,14 +261,10 @@ def run_assessment(assessment_id: str, output_path: Path) -> int:
 
         if sleep_count > 0:
             score -= int(min(4, sleep_count * 0.5))
-            findings.append(
-                "MAJOR: Avoid 'time.sleep()'; use async/await or event-driven design."
-            )
+            findings.append("MAJOR: Avoid 'time.sleep()'; use async/await or event-driven design.")
         if while_true_count > 2:
             score -= 1
-            findings.append(
-                "MINOR: Check 'while True' loops for potential infinite blocking."
-            )
+            findings.append("MINOR: Check 'while True' loops for potential infinite blocking.")
 
     elif assessment_id == "J":  # API Design
         # Heuristic: count function definitions and check for return type hints '->'
@@ -308,16 +298,12 @@ def run_assessment(assessment_id: str, output_path: Path) -> int:
         findings.append(f"- File open() calls: {open_usage}")
         findings.append(f"- SQLite usage: {sqlite_usage}")
 
-        if open_usage > 0 and (
-            json_usage == 0 and csv_usage == 0 and sqlite_usage == 0
-        ):
+        if open_usage > 0 and (json_usage == 0 and csv_usage == 0 and sqlite_usage == 0):
             findings.append("INFO: Raw file I/O detected. Consider structured formats.")
 
     elif assessment_id == "L":  # Logging
         print_count = count_occurrences(r"print\(", python_files)
-        logger_count = count_occurrences(
-            r"logger\.(info|error|warning|debug)", python_files
-        )
+        logger_count = count_occurrences(r"logger\.(info|error|warning|debug)", python_files)
         findings.append(f"- print() calls: {print_count}")
         findings.append(f"- logger usages: {logger_count}")
         if print_count > 0:
@@ -356,9 +342,7 @@ def run_assessment(assessment_id: str, output_path: Path) -> int:
         async_defs = count_occurrences(r"async\s+def", python_files)
         awaits = count_occurrences(r"\bawait\b", python_files)
         threading_import = count_occurrences(r"import\s+threading", python_files)
-        multiprocessing_import = count_occurrences(
-            r"import\s+multiprocessing", python_files
-        )
+        multiprocessing_import = count_occurrences(r"import\s+multiprocessing", python_files)
 
         findings.append(f"- Async functions: {async_defs}")
         findings.append(f"- Await usage: {awaits}")
@@ -366,30 +350,24 @@ def run_assessment(assessment_id: str, output_path: Path) -> int:
         findings.append(f"- Multiprocessing imports: {multiprocessing_import}")
 
         if async_defs == 0 and threading_import == 0 and multiprocessing_import == 0:
-            findings.append(
-                "INFO: No concurrency patterns detected. Consider for scalability."
-            )
+            findings.append("INFO: No concurrency patterns detected. Consider for scalability.")
 
     elif assessment_id == "O":  # Maintainability
         # Check file sizes
         large_files = 0
         for f in python_files:
             try:
-                line_count = len(
-                    f.read_text(encoding="utf-8", errors="ignore").splitlines()
-                )
+                line_count = len(f.read_text(encoding="utf-8", errors="ignore").splitlines())
                 if line_count > 300:
                     large_files += 1
-            except Exception as e:  # noqa: BLE001
+            except Exception:  # noqa: BLE001
                 pass
 
         findings.append(f"- Large files (>300 lines): {large_files}")
 
         if large_files > 0:
             score -= int(min(3, large_files * 0.5))
-            findings.append(
-                f"MAJOR: Found {large_files} large files. Refactor modules."
-            )
+            findings.append(f"MAJOR: Found {large_files} large files. Refactor modules.")
 
     else:
         # Generic assessment for others

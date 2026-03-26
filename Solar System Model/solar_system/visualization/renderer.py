@@ -250,7 +250,7 @@ class Renderer:
             self._font = pygame.font.SysFont("segoeui", 28, bold=True)
             self._small_font = pygame.font.SysFont("segoeui", 20)
             self._title_font = pygame.font.SysFont("segoeui", 32, bold=True)
-        except Exception as e:  # noqa: BLE001
+        except Exception:  # noqa: BLE001
             self._font = pygame.font.Font(None, 28)
             self._small_font = pygame.font.Font(None, 20)
             self._title_font = pygame.font.Font(None, 32)
@@ -370,7 +370,7 @@ class Renderer:
             glUseProgram(program)
             self._shader_program = program
             self._shaders_enabled = True
-        except Exception as e:  # noqa: BLE001
+        except Exception:  # noqa: BLE001
             self._shader_program = None
             self._shaders_enabled = False
 
@@ -477,9 +477,7 @@ class Renderer:
         if self._star_list:
             glCallList(self._star_list)
 
-    def render_body(
-        self, body: CelestialBody, julian_date: float, highlight: bool = False
-    ):
+    def render_body(self, body: CelestialBody, julian_date: float, highlight: bool = False):
         """
         Render a celestial body.
 
@@ -600,9 +598,7 @@ class Renderer:
         if color is None:
             # Use body color with reduced alpha
             body_color = body.color
-            glColor4f(
-                body_color[0] * 0.6, body_color[1] * 0.6, body_color[2] * 0.6, 0.4
-            )
+            glColor4f(body_color[0] * 0.6, body_color[1] * 0.6, body_color[2] * 0.6, 0.4)
         else:
             glColor4f(*color)
 
@@ -764,7 +760,7 @@ class Renderer:
 
             # Flip Y for pygame coordinates
             return int(x), int(self.settings.window_height - y)
-        except Exception as e:  # noqa: BLE001
+        except Exception:  # noqa: BLE001
             return None
 
     def _render_text_2d(
@@ -841,9 +837,7 @@ class Renderer:
         glMatrixMode(GL_MODELVIEW)
         glPopMatrix()
 
-    def render_info_panel(
-        self, info: dict[str, Any], position: tuple[int, int] = (20, 20)
-    ):
+    def render_info_panel(self, info: dict[str, Any], position: tuple[int, int] = (20, 20)):
         """Render an information panel overlay."""
         x, y = position
         line_height = 20
@@ -985,9 +979,7 @@ class Renderer:
         glEnd()
 
         # Title
-        title_surface = self._font.render(
-            "CONTROLS (Press H to hide)", True, (100, 200, 255)
-        )
+        title_surface = self._font.render("CONTROLS (Press H to hide)", True, (100, 200, 255))
         title_data = pygame.image.tostring(title_surface, "RGBA", True)
         w, h = title_surface.get_size()
         glRasterPos2i(x, y + h)
@@ -1008,9 +1000,7 @@ class Renderer:
                     text = f"{key}: {action}"
                     text_surface = self._small_font.render(text, True, (220, 220, 220))
                 else:  # No key, just action
-                    text_surface = self._small_font.render(
-                        action, True, (180, 180, 180)
-                    )
+                    text_surface = self._small_font.render(action, True, (180, 180, 180))
 
             text_data = pygame.image.tostring(text_surface, "RGBA", True)
             w, h = text_surface.get_size()
@@ -1640,9 +1630,7 @@ class Renderer:
         glMatrixMode(GL_MODELVIEW)
         glPopMatrix()
 
-    def render_sidebar(
-        self, sidebar_data: dict[str, Any], content_data: dict[str, Any]
-    ):
+    def render_sidebar(self, sidebar_data: dict[str, Any], content_data: dict[str, Any]):
         """Render the unified sidebar."""
         if not sidebar_data.get("visible", False):
             return
@@ -1752,9 +1740,7 @@ class Renderer:
             elif content_key == "history":
                 self.render_historical_events(content_data)
 
-    def render_unified_controls(
-        self, ctrl_data: dict[str, Any], time_data: dict[str, Any]
-    ):
+    def render_unified_controls(self, ctrl_data: dict[str, Any], time_data: dict[str, Any]):
         """Render the bottom unified control panel."""
         if not ctrl_data.get("visible", False):
             return

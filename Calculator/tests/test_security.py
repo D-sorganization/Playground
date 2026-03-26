@@ -23,9 +23,7 @@ class TestSecurity(unittest.TestCase):
         if response.status_code == 200:
             print("VULNERABILITY CONFIRMED: Large input accepted")
 
-        self.assertEqual(
-            response.status_code, 400, "Should reject excessively large input"
-        )
+        self.assertEqual(response.status_code, 400, "Should reject excessively large input")
 
 
 if __name__ == "__main__":

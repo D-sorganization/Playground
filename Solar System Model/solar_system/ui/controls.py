@@ -143,9 +143,7 @@ class InputHandler:
             KeyBinding(K_g, InputAction.TOGGLE_GRID, description="Toggle grid"),
             KeyBinding(K_h, InputAction.TOGGLE_HELP, description="Toggle help"),
             KeyBinding(K_c, InputAction.CYCLE_CAMERA, description="Cycle camera mode"),
-            KeyBinding(
-                K_f, InputAction.FOCUS_SELECTED, description="Focus on selected"
-            ),
+            KeyBinding(K_f, InputAction.FOCUS_SELECTED, description="Focus on selected"),
             KeyBinding(K_t, InputAction.PLAN_TRAJECTORY, description="Plan trajectory"),
             KeyBinding(K_0, InputAction.SELECT_SUN, description="Select Sun"),
             KeyBinding(K_1, InputAction.SELECT_PLANET_1, description="Select Mercury"),
@@ -175,10 +173,7 @@ class InputHandler:
 
     def unregister_callback(self, action: InputAction, callback: Callable):
         """Remove a callback for an action."""
-        if (
-            action in self._action_callbacks
-            and callback in self._action_callbacks[action]
-        ):
+        if action in self._action_callbacks and callback in self._action_callbacks[action]:
             self._action_callbacks[action].remove(callback)
 
     def _trigger_action(self, action: InputAction, **kwargs):
@@ -232,9 +227,7 @@ class InputHandler:
             False if should quit
         """
         for binding in self._key_bindings:
-            if binding.key == key and (
-                binding.modifiers == 0 or (modifiers & binding.modifiers)
-            ):
+            if binding.key == key and (binding.modifiers == 0 or (modifiers & binding.modifiers)):
                 self._trigger_action(binding.action)
 
                 if binding.action == InputAction.QUIT:

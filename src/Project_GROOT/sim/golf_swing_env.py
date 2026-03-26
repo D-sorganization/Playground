@@ -37,9 +37,7 @@ class GolfSwingEnvCfg(DirectRLEnvCfg):
     decimation: int = 2  # Control frequency decimation
     action_scale: float = 1.0
     action_space_dim: int = 11  # Upper body DOFs (torso + arms)
-    observation_space_dim: int = (
-        44  # q (11) + qdot (11) + target (11) + phase (1) + clubhead (10)
-    )
+    observation_space_dim: int = 44  # q (11) + qdot (11) + target (11) + phase (1) + clubhead (10)
 
     # Simulation settings
     sim: SimulationCfg = SimulationCfg(
@@ -93,9 +91,7 @@ class GolfSwingEnv(DirectRLEnv):
         self.clubhead_vel = torch.zeros(self.num_envs, 3, device=self.device)
         self.clubhead_pos_target = torch.zeros(self.num_envs, 3, device=self.device)
 
-        self.swing_phase = torch.zeros(
-            self.num_envs, device=self.device
-        )  # 0-1 normalized time
+        self.swing_phase = torch.zeros(self.num_envs, device=self.device)  # 0-1 normalized time
 
         # Metrics tracking
         self.max_clubhead_speed = torch.zeros(self.num_envs, device=self.device)
@@ -178,9 +174,7 @@ class GolfSwingEnv(DirectRLEnv):
 
         # 2. Clubhead speed reward
         clubhead_speed = torch.norm(self.clubhead_vel, dim=1)
-        speed_reward = torch.clamp(
-            clubhead_speed / self.cfg.target_clubhead_speed, 0, 1
-        )
+        speed_reward = torch.clamp(clubhead_speed / self.cfg.target_clubhead_speed, 0, 1)
         total_reward += self.cfg.reward_weights["clubhead_speed"] * speed_reward
 
         # 3. Clubhead path reward: match target trajectory
@@ -191,9 +185,7 @@ class GolfSwingEnv(DirectRLEnv):
         # 4. Smoothness reward: penalize high accelerations
         joint_vel = self.robot.data.joint_vel[:, : self.cfg.action_space_dim]
         smoothness_penalty = torch.sum(joint_vel**2, dim=1) / self.cfg.action_space_dim
-        total_reward += self.cfg.reward_weights["smoothness"] * torch.exp(
-            -smoothness_penalty
-        )
+        total_reward += self.cfg.reward_weights["smoothness"] * torch.exp(-smoothness_penalty)
 
         # 5. Joint limit penalty
         joint_limits_penalty = self._compute_joint_limits_penalty()
@@ -235,9 +227,7 @@ class GolfSwingEnv(DirectRLEnv):
         default_joint_vel = torch.zeros_like(default_joint_pos)
 
         self.robot.set_joint_position_target(default_joint_pos, env_ids=env_ids)
-        self.robot.write_joint_state_to_sim(
-            default_joint_pos, default_joint_vel, env_ids=env_ids
-        )
+        self.robot.write_joint_state_to_sim(default_joint_pos, default_joint_vel, env_ids=env_ids)
 
         # Reset tracking targets (will be set from demonstration)
         self.joint_pos_target[env_ids] = default_joint_pos
@@ -283,8 +273,7 @@ class GolfSwingEnv(DirectRLEnv):
 
         # Penalty when within 10% of limits
         penalty = torch.sum(
-            torch.clamp(0.1 - dist_to_lower, min=0)
-            + torch.clamp(0.1 - dist_to_upper, min=0),
+            torch.clamp(0.1 - dist_to_lower, min=0) + torch.clamp(0.1 - dist_to_upper, min=0),
             dim=1,
         )
 

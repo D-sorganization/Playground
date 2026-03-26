@@ -79,9 +79,7 @@ class QualityChecker:
     def check_placeholders(self, filepath: Path) -> list[tuple[int, str, str]]:
         """Check a file for banned placeholder patterns."""
         found = check_file(filepath)
-        placeholder_issues = [
-            (n, t, c) for n, t, c in found if "placeholder" in t.lower()
-        ]
+        placeholder_issues = [(n, t, c) for n, t, c in found if "placeholder" in t.lower()]
         self.issues.extend(placeholder_issues)
         return placeholder_issues
 
@@ -286,16 +284,12 @@ def main() -> None:
 
     # Report
     if all_issues:
-        sys.stderr.write(
-            f"{Colors.FAIL}{Colors.BOLD}❌ Quality check FAILED{Colors.ENDC}\n\n"
-        )
+        sys.stderr.write(f"{Colors.FAIL}{Colors.BOLD}❌ Quality check FAILED{Colors.ENDC}\n\n")
         for filepath, issues in all_issues:
             sys.stderr.write(f"\n{Colors.CYAN}{filepath}:{Colors.ENDC}\n")
             for line_num, message, code in issues:
                 if line_num > 0:
-                    sys.stderr.write(
-                        f"  Line {Colors.BOLD}{line_num}{Colors.ENDC}: {message}\n"
-                    )
+                    sys.stderr.write(f"  Line {Colors.BOLD}{line_num}{Colors.ENDC}: {message}\n")
                     if code:
                         sys.stderr.write(f"    > {Colors.WARNING}{code}{Colors.ENDC}\n")
                 else:
