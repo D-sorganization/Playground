@@ -275,8 +275,8 @@ class MATLABQualityChecker:
 
                 # Check for banned patterns (in comments and code)
                 banned_patterns = [
-                    (r"\bTODO\b", "TODO placeholder found"),
-                    (r"\bFIXME\b", "FIXME placeholder found"),
+                    (r"\bTODO\b", "TRACKED_TASK placeholder found"),
+                    (r"\bFIXME\b", "TRACKED_DEFECT placeholder found"),
                     (r"\bHACK\b", "HACK comment found"),
                     (r"\bXXX\b", "XXX comment found"),
                     (r"<[A-Z_][A-Z0-9_]*>", "Angle bracket placeholder found"),

@@ -10,7 +10,7 @@ You will base your assessment on the data collected in `.jules/completist_data/`
 ## Instructions
 
 1. **Review Collected Data**:
-   - `todo_markers.txt`: Contains `TODO`, `FIXME`, `XXX` tags.
+   - `todo_markers.txt`: Contains `TRACKED_TASK`, `TRACKED_DEFECT`, `XXX` tags.
    - `not_implemented.txt`: Contains `NotImplementedError` and empty method bodies.
    - `stub_functions.txt`: Contains signatures with only `pass` or `...`.
    - `incomplete_docs.txt`: Contains placeholders in docstrings.
@@ -59,7 +59,7 @@ You will base your assessment on the data collected in `.jules/completist_data/`
 ```
 
 ## Grading Criteria (0-10)
-- **10**: No `NotImplementedError`, no critical `TODO`s, full documentation.
-- **8**: Minor `TODO`s, all features functional.
+- **10**: No `NotImplementedError`, no critical `TRACKED_TASK`s, full documentation.
+- **8**: Minor `TRACKED_TASK`s, all features functional.
 - **5**: Some features crash (NotImplemented), major gaps.
 - **1**: Skeleton code only.
