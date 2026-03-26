@@ -415,7 +415,7 @@ class StarWarsRRTApp:
             # Try to load Millennium Falcon
             models["falcon"] = trimesh.load("falcon_clean_fixed.stl")
             logging.info("✅ Loaded Millennium Falcon model")
-        except Exception as e:  # noqa: BLE001
+        except Exception:  # noqa: BLE001
             logging.warning("⚠️ Could not load STL model, using simple geometry")
 
         return models
@@ -536,9 +536,7 @@ class StarWarsRRTApp:
             target = self.ships[1]
 
             # Update target behavior
-            new_target_pos = self.pursuit_ai.update_target_behavior(
-                target, pursuer, self.obstacles
-            )
+            new_target_pos = self.pursuit_ai.update_target_behavior(target, pursuer, self.obstacles)
             target.position = new_target_pos
 
             # Update pursuer (simple direct movement for now)
@@ -556,9 +554,7 @@ class StarWarsRRTApp:
 
 def main() -> None:
     """Main entry point"""
-    logging.basicConfig(
-        level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
-    )
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
     app = StarWarsRRTApp()
     app.setup_scenario("single")
     app.run()

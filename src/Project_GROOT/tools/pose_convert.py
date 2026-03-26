@@ -1,3 +1,7 @@
+import logging
+
+logger = logging.getLogger(__name__)
+
 #!/usr/bin/env python3
 """
 Pose Conversion Tool for Project GROOT
@@ -27,7 +31,7 @@ try:
     import cv2
 except ImportError:
     cv2 = None
-    print("Warning: OpenCV not installed")
+    logger.info("Warning: OpenCV not installed")
 
 try:
     from tqdm import tqdm
@@ -187,7 +191,7 @@ class PoseConverter:
         else:
             raise ValueError(f"Unknown pose backend: {pose_backend}")
 
-        print(f"Initialized {pose_backend} pose extractor")
+        logger.info(f"Initialized {pose_backend} pose extractor")
 
     def process_video(
         self,
@@ -271,9 +275,7 @@ class PoseConverter:
         )
 
         # Compute statistics
-        valid_frames = (
-            confidences.mean(axis=1) > self.extractor.confidence_threshold
-        ).sum()
+        valid_frames = (confidences.mean(axis=1) > self.extractor.confidence_threshold).sum()
         stats = {
             "total_frames": num_frames,
             "valid_frames": int(valid_frames),
@@ -283,9 +285,7 @@ class PoseConverter:
 
         return stats
 
-    def _compute_swing_phases(
-        self, skeletons: np.ndarray, confidences: np.ndarray
-    ) -> np.ndarray:
+    def _compute_swing_phases(self, skeletons: np.ndarray, confidences: np.ndarray) -> np.ndarray:
         """
         Compute swing phases based on wrist trajectory.
 
@@ -342,9 +342,7 @@ class PoseConverter:
 
         return phase_labels
 
-    def _visualize_pose(
-        self, frame: np.ndarray, keypoints: np.ndarray, confidence: np.ndarray
-    ):
+    def _visualize_pose(self, frame: np.ndarray, keypoints: np.ndarray, confidence: np.ndarray):
         """Draw pose on frame for visualization."""
         # Simple visualization: draw keypoints
         h, w = frame.shape[:2]
@@ -414,7 +412,7 @@ def main():
         manifest = json.load(f)
 
     videos = manifest["videos"]
-    print(f"Loaded manifest with {len(videos)} videos")
+    logger.info(f"Loaded manifest with {len(videos)} videos")
 
     # Create output directory
     output_dir = Path(args.output_dir)
@@ -433,7 +431,7 @@ def main():
         video_id = video_entry["id"]
         output_path = output_dir / f"{video_id}.npz"
 
-        print(f"\nProcessing: {video_id}")
+        logger.info(f"\nProcessing: {video_id}")
 
         try:
             stats = converter.process_video(
@@ -445,11 +443,11 @@ def main():
 
             all_stats.append({**video_entry, **stats})
 
-            print(f"  ✓ Valid frames: {stats['valid_frames']}/{stats['total_frames']}")
-            print(f"  ✓ Avg confidence: {stats['avg_confidence']:.3f}")
+            logger.info(f"  ✓ Valid frames: {stats['valid_frames']}/{stats['total_frames']}")
+            logger.info(f"  ✓ Avg confidence: {stats['avg_confidence']:.3f}")
 
         except Exception as e:  # noqa: BLE001
-            print(f"  ✗ Error: {e}")
+            logger.info(f"  ✗ Error: {e}")
             continue
 
     # Save processing statistics
@@ -457,8 +455,8 @@ def main():
     with open(stats_path, "w") as f:
         json.dump({"videos": all_stats}, f, indent=2)
 
-    print(f"\n✓ Processing complete. Stats saved to {stats_path}")
-    print(f"  Total videos processed: {len(all_stats)}/{len(videos)}")
+    logger.info(f"\n✓ Processing complete. Stats saved to {stats_path}")
+    logger.info(f"  Total videos processed: {len(all_stats)}/{len(videos)}")
 
 
 if __name__ == "__main__":

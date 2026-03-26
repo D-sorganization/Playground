@@ -1,3 +1,7 @@
+import logging
+
+logger = logging.getLogger(__name__)
+
 #!/usr/bin/env python3
 """
 Rollout Evaluation Script for Project GROOT
@@ -32,7 +36,7 @@ try:
     matplotlib.use("Agg")  # Non-interactive backend
 except ImportError:
     plt = None
-    print("Warning: matplotlib not installed. Plots will not be generated.")
+    logger.info("Warning: matplotlib not installed. Plots will not be generated.")
 
 
 class PolicyEvaluator:
@@ -59,12 +63,10 @@ class PolicyEvaluator:
         # DEFERRED: Load actual policy from checkpoint
         # self.policy = load_policy(policy_path)
 
-        print(f"Loaded policy: {policy_path}")
-        print(f"Output directory: {output_dir}")
+        logger.info(f"Loaded policy: {policy_path}")
+        logger.info(f"Output directory: {output_dir}")
 
-    def run_rollouts(
-        self, num_rollouts: int = 50, record_video: bool = False
-    ) -> list[dict]:
+    def run_rollouts(self, num_rollouts: int = 50, record_video: bool = False) -> list[dict]:
         """
         Run multiple policy rollouts and collect metrics.
 
@@ -75,7 +77,7 @@ class PolicyEvaluator:
         Returns:
             List of rollout statistics
         """
-        print(f"\nRunning {num_rollouts} rollouts...")
+        logger.info(f"\nRunning {num_rollouts} rollouts...")
 
         rollout_stats = []
 
@@ -86,7 +88,7 @@ class PolicyEvaluator:
             rollout_stats.append(stats)
 
             if (i + 1) % 10 == 0:
-                print(f"  Completed {i + 1}/{num_rollouts} rollouts")
+                logger.info(f"  Completed {i + 1}/{num_rollouts} rollouts")
 
         return rollout_stats
 
@@ -163,14 +165,14 @@ class PolicyEvaluator:
         with open(summary_file, "w") as f:
             json.dump(summary, f, indent=2)
 
-        print("\n✓ Results saved:")
-        print(f"  Rollout data: {results_file}")
-        print(f"  Summary: {summary_file}")
+        logger.info("\n✓ Results saved:")
+        logger.info(f"  Rollout data: {results_file}")
+        logger.info(f"  Summary: {summary_file}")
 
     def generate_plots(self, rollout_stats: list[dict]):
         """Generate evaluation plots."""
         if plt is None:
-            print("Skipping plots (matplotlib not available)")
+            logger.info("Skipping plots (matplotlib not available)")
             return
 
         plots_dir = self.output_dir / "plots"
@@ -246,7 +248,7 @@ class PolicyEvaluator:
         plt.savefig(plots_dir / "speed_vs_duration.png", dpi=150)
         plt.close()
 
-        print(f"✓ Plots saved to {plots_dir}")
+        logger.info(f"✓ Plots saved to {plots_dir}")
 
     def generate_report(self, summary: dict):
         """Generate HTML evaluation report."""
@@ -357,32 +359,32 @@ class PolicyEvaluator:
         with open(report_path, "w") as f:
             f.write(html)
 
-        print(f"✓ Report generated: {report_path}")
+        logger.info(f"✓ Report generated: {report_path}")
 
     def print_summary(self, summary: dict):
         """Print summary to console."""
-        print("\n" + "=" * 60)
-        print("EVALUATION SUMMARY")
-        print("=" * 60)
+        logger.info("\n" + "=" * 60)
+        logger.info("EVALUATION SUMMARY")
+        logger.info("=" * 60)
 
         cs = summary["clubhead_speed"]
-        print(f"\nClubhead Speed: {cs['max_mean']:.2f} ± {cs['max_std']:.2f} m/s")
-        print(f"  Range: {cs['max_min']:.2f} - {cs['max_max']:.2f} m/s")
-        print("  Target: 40-45 m/s")
+        logger.info(f"\nClubhead Speed: {cs['max_mean']:.2f} ± {cs['max_std']:.2f} m/s")
+        logger.info(f"  Range: {cs['max_min']:.2f} - {cs['max_max']:.2f} m/s")
+        logger.info("  Target: 40-45 m/s")
 
         sd = summary["swing_duration"]
-        print(f"\nSwing Duration: {sd['mean']:.3f} ± {sd['std']:.3f} s")
-        print("  Target: 1.2-1.5 s")
+        logger.info(f"\nSwing Duration: {sd['mean']:.3f} ± {sd['std']:.3f} s")
+        logger.info("  Target: 1.2-1.5 s")
 
         ts = summary["trajectory_smoothness"]
-        print(f"\nTrajectory Smoothness: {ts['mean']:.3f} ± {ts['std']:.3f}")
-        print("  (0-1 scale, higher is better)")
+        logger.info(f"\nTrajectory Smoothness: {ts['mean']:.3f} ± {ts['std']:.3f}")
+        logger.info("  (0-1 scale, higher is better)")
 
         jv = summary["joint_limit_violations"]
-        print(f"\nJoint Limit Violations: {jv['percentage']:.1f}% of rollouts")
-        print(f"  Total violations: {jv['total']}")
+        logger.info(f"\nJoint Limit Violations: {jv['percentage']:.1f}% of rollouts")
+        logger.info(f"  Total violations: {jv['total']}")
 
-        print("\n" + "=" * 60)
+        logger.info("\n" + "=" * 60)
 
 
 def main():

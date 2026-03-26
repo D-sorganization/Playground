@@ -1,3 +1,7 @@
+import logging
+
+logger = logging.getLogger(__name__)
+
 #!/usr/bin/env python3
 """
 Retargeting Tool for Project GROOT
@@ -32,7 +36,7 @@ try:
     from scipy.interpolate import interp1d
     from scipy.ndimage import gaussian_filter1d
 except ImportError:
-    print("Warning: scipy not installed. Install with: pip install scipy")
+    logger.info("Warning: scipy not installed. Install with: pip install scipy")
     gaussian_filter1d = None
     interp1d = None
 
@@ -54,9 +58,7 @@ class RobotConfig:
         self.joint_upper = np.array(config["joint_limits"]["upper"])
 
         # Velocity/acceleration limits
-        self.velocity_limits = np.array(
-            config.get("velocity_limits", [10.0] * self.num_dofs)
-        )
+        self.velocity_limits = np.array(config.get("velocity_limits", [10.0] * self.num_dofs))
         self.acceleration_limits = np.array(
             config.get("acceleration_limits", [50.0] * self.num_dofs)
         )
@@ -156,9 +158,7 @@ class PoseRetargeter:
             "timestamps": timestamps,
         }
 
-    def _simple_ik_mapping(
-        self, skeleton: np.ndarray, club_head: np.ndarray
-    ) -> np.ndarray:
+    def _simple_ik_mapping(self, skeleton: np.ndarray, club_head: np.ndarray) -> np.ndarray:
         """
         Simplified IK: heuristic mapping from human joints to robot DOFs.
 
@@ -354,9 +354,9 @@ def main():
 
     # Load robot config
     robot_config = RobotConfig(args.robot_config)
-    print(f"Loaded robot config: {robot_config.name}")
-    print(f"  DOFs: {robot_config.num_dofs}")
-    print(f"  DOF names: {robot_config.dof_names}")
+    logger.info(f"Loaded robot config: {robot_config.name}")
+    logger.info(f"  DOFs: {robot_config.num_dofs}")
+    logger.info(f"  DOF names: {robot_config.dof_names}")
 
     # Create output directory
     output_dir = Path(args.output_dir)
@@ -367,10 +367,10 @@ def main():
     pose_files = sorted(input_dir.glob("*.npz"))
 
     if not pose_files:
-        print(f"No .npz files found in {input_dir}")
+        logger.info(f"No .npz files found in {input_dir}")
         return
 
-    print(f"Found {len(pose_files)} pose files")
+    logger.info(f"Found {len(pose_files)} pose files")
 
     # Initialize retargeter
     retargeter = PoseRetargeter(
@@ -414,16 +414,16 @@ def main():
 
             # Print status
             status = "✓" if validation["valid"] else "✗"
-            print(f"  {status} {pose_file.name}")
+            logger.info(f"  {status} {pose_file.name}")
             if validation["errors"]:
                 for error in validation["errors"]:
-                    print(f"      ERROR: {error}")
+                    logger.info(f"      ERROR: {error}")
             if validation["warnings"]:
                 for warning in validation["warnings"][:2]:  # Show first 2
-                    print(f"      WARNING: {warning}")
+                    logger.info(f"      WARNING: {warning}")
 
         except Exception as e:  # noqa: BLE001
-            print(f"  ✗ {pose_file.name}: {e}")
+            logger.info(f"  ✗ {pose_file.name}: {e}")
             all_reports.append(
                 {
                     "file": pose_file.name,
@@ -439,10 +439,10 @@ def main():
 
     # Summary
     num_valid = sum(1 for r in all_reports if r["valid"])
-    print("\n✓ Retargeting complete")
-    print(f"  Valid demos: {num_valid}/{len(all_reports)}")
-    print(f"  Output: {output_dir}")
-    print(f"  Report: {report_file}")
+    logger.info("\n✓ Retargeting complete")
+    logger.info(f"  Valid demos: {num_valid}/{len(all_reports)}")
+    logger.info(f"  Output: {output_dir}")
+    logger.info(f"  Report: {report_file}")
 
 
 if __name__ == "__main__":

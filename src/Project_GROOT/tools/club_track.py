@@ -1,3 +1,7 @@
+import logging
+
+logger = logging.getLogger(__name__)
+
 #!/usr/bin/env python3
 """
 Club Tracking Tool for Project GROOT
@@ -109,9 +113,7 @@ class ClubTracker:
 
         # Normalize
         wrist_direction_norm = np.linalg.norm(wrist_direction, axis=1, keepdims=True)
-        wrist_direction_norm = np.clip(
-            wrist_direction_norm, 1e-6, None
-        )  # Avoid div by zero
+        wrist_direction_norm = np.clip(wrist_direction_norm, 1e-6, None)  # Avoid div by zero
         wrist_direction_unit = wrist_direction / wrist_direction_norm
 
         # Extend line from grip through hands to estimate clubhead
@@ -196,9 +198,7 @@ class ClubTracker:
             "total_path_length": float(club_path[-1]),
         }
 
-    def _compute_clubhead_speed(
-        self, club_head: np.ndarray, timestamps: np.ndarray
-    ) -> np.ndarray:
+    def _compute_clubhead_speed(self, club_head: np.ndarray, timestamps: np.ndarray) -> np.ndarray:
         """
         Compute clubhead speed from trajectory.
 
@@ -308,7 +308,7 @@ def main():
         pose_file = pose_dir / f"{video_id}.npz"
 
         if not pose_file.exists():
-            print(f"Warning: Pose file not found: {pose_file}")
+            logger.info(f"Warning: Pose file not found: {pose_file}")
             continue
 
         output_file = output_dir / f"{video_id}.npz"
@@ -318,9 +318,7 @@ def main():
                 pose_file=str(pose_file),
                 output_file=str(output_file),
                 video_path=(
-                    video_entry.get("video_path")
-                    if args.method == "optical_flow"
-                    else None
+                    video_entry.get("video_path") if args.method == "optical_flow" else None
                 ),
             )
 
@@ -332,10 +330,10 @@ def main():
                 }
             )
 
-            print(f"{video_id}: max speed = {stats['max_clubhead_speed']:.1f} m/s")
+            logger.info(f"{video_id}: max speed = {stats['max_clubhead_speed']:.1f} m/s")
 
         except Exception as e:  # noqa: BLE001
-            print(f"Error processing {video_id}: {e}")
+            logger.info(f"Error processing {video_id}: {e}")
             continue
 
     # Save statistics
@@ -346,12 +344,10 @@ def main():
     # Summary
     if all_stats:
         max_speeds = [s["max_clubhead_speed"] for s in all_stats]
-        print(f"\n✓ Processed {len(all_stats)} videos")
-        print(
-            f"  Clubhead speed range: {min(max_speeds):.1f} - {max(max_speeds):.1f} m/s"
-        )
-        print(f"  Mean max speed: {np.mean(max_speeds):.1f} m/s")
-        print(f"  Stats saved to {stats_file}")
+        logger.info(f"\n✓ Processed {len(all_stats)} videos")
+        print(f"  Clubhead speed range: {min(max_speeds):.1f} - {max(max_speeds):.1f} m/s")
+        logger.info(f"  Mean max speed: {np.mean(max_speeds):.1f} m/s")
+        logger.info(f"  Stats saved to {stats_file}")
 
     # Visualize if requested
     if args.visualize and all_stats:
@@ -363,7 +359,7 @@ def visualize_club_stats(stats: list):
     try:
         import matplotlib.pyplot as plt
     except ImportError:
-        print("Matplotlib not installed. Skipping visualization.")
+        logger.info("Matplotlib not installed. Skipping visualization.")
         return
 
     max_speeds = [s["max_clubhead_speed"] for s in stats]
@@ -377,7 +373,7 @@ def visualize_club_stats(stats: list):
     plt.xticks(range(len(golfers)), [g[:10] for g in golfers], rotation=45, ha="right")
     plt.tight_layout()
     plt.savefig("club_speeds.png")
-    print("✓ Visualization saved to club_speeds.png")
+    logger.info("✓ Visualization saved to club_speeds.png")
     plt.close()
 
 
