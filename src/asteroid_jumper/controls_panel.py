@@ -38,7 +38,8 @@ class ControlsPanel(QWidget):
         self, controller: SimController, parent: QWidget | None = None
     ) -> None:
         super().__init__(parent)
-        assert controller is not None
+        if not (controller is not None):
+            raise ValueError('DbC Blocked: Precondition failed.')
         self._ctrl = controller
         self._build_ui()
 

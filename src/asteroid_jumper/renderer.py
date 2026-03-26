@@ -61,7 +61,8 @@ class AsteroidJumperRenderer(QWidget):
         self, controller: SimController, parent: QWidget | None = None
     ) -> None:
         super().__init__(parent)
-        assert controller is not None, "controller must not be None"
+        if not (controller is not None):
+            raise ValueError("controller must not be None")
         self._ctrl = controller
         self._scale = VIEWPORT_SCALE
         self._pan = QPointF(0.0, 0.0)  # world-space offset (m)
@@ -104,7 +105,8 @@ class AsteroidJumperRenderer(QWidget):
 
     def set_scale(self, scale: float) -> None:
         """Set zoom level (pixels per metre)."""
-        assert scale > 0
+        if not (scale > 0):
+            raise ValueError('DbC Blocked: Precondition failed.')
         self._scale = scale
         self.update()
 
@@ -142,7 +144,8 @@ class AsteroidJumperRenderer(QWidget):
         painter.end()
 
     def mousePressEvent(self, event: object) -> None:  # noqa: N802
-        assert isinstance(event, type(event))
+        if not (isinstance(event):
+            raise ValueError(type(event)))
         from PyQt6.QtGui import QMouseEvent
 
         if isinstance(event, QMouseEvent):
@@ -302,7 +305,8 @@ class AsteroidJumperRenderer(QWidget):
         """Draw decorative craters on the asteroid surface."""
         from asteroid_jumper.physics import RigidBody
 
-        assert isinstance(ast, RigidBody)
+        if not (isinstance(ast):
+            raise ValueError(RigidBody))
         crater_angles = [0.5, 1.8, 3.1, 4.7, 5.5]
         crater_sizes = [0.6, 0.4, 0.5, 0.3, 0.7]
         p.save()
@@ -542,7 +546,8 @@ class _SimpleSignal:
         self._slots: list[object] = []
 
     def connect(self, slot: object) -> None:
-        assert callable(slot)
+        if not (callable(slot)):
+            raise ValueError('DbC Blocked: Precondition failed.')
         self._slots.append(slot)
 
     def emit(self, *args: object) -> None:
