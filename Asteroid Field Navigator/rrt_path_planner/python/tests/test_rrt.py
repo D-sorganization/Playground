@@ -29,36 +29,22 @@ class TestRRTPlanner(unittest.TestCase):
         self.assertTrue(np.linalg.norm(path[-1] - goal) < self.planner.goal_radius)
 
     def test_collision_sphere(self):
-        obstacle = Obstacle(
-            type=0, position=np.array([0.5, 0, 0]), size=0.2, color=(1, 1, 1)
-        )
+        obstacle = Obstacle(type=0, position=np.array([0.5, 0, 0]), size=0.2, color=(1, 1, 1))
         # Point inside
-        self.assertTrue(
-            self.planner._check_collision(np.array([0.5, 0.1, 0]), [obstacle])
-        )
+        self.assertTrue(self.planner._check_collision(np.array([0.5, 0.1, 0]), [obstacle]))
         # Point outside
-        self.assertFalse(
-            self.planner._check_collision(np.array([0.0, 0.0, 0]), [obstacle])
-        )
+        self.assertFalse(self.planner._check_collision(np.array([0.0, 0.0, 0]), [obstacle]))
 
     def test_collision_cube(self):
-        obstacle = Obstacle(
-            type=1, position=np.array([0.5, 0, 0]), size=0.2, color=(1, 1, 1)
-        )
+        obstacle = Obstacle(type=1, position=np.array([0.5, 0, 0]), size=0.2, color=(1, 1, 1))
         # Box extends from 0.4 to 0.6 in x, -0.1 to 0.1 in y/z
         # Point inside
-        self.assertTrue(
-            self.planner._check_collision(np.array([0.5, 0.05, 0.05]), [obstacle])
-        )
+        self.assertTrue(self.planner._check_collision(np.array([0.5, 0.05, 0.05]), [obstacle]))
         # Point outside
-        self.assertFalse(
-            self.planner._check_collision(np.array([0.65, 0, 0]), [obstacle])
-        )
+        self.assertFalse(self.planner._check_collision(np.array([0.65, 0, 0]), [obstacle]))
 
     def test_plan_path_collision_start(self):
-        obstacle = Obstacle(
-            type=0, position=np.array([0.0, 0, 0]), size=0.2, color=(1, 1, 1)
-        )
+        obstacle = Obstacle(type=0, position=np.array([0.0, 0, 0]), size=0.2, color=(1, 1, 1))
         start = np.array([0.0, 0.0, 0.0])
         goal = np.array([2.0, 0.0, 0.0])
         path = self.planner.plan_path(start, goal, [obstacle])

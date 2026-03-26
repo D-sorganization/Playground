@@ -1,3 +1,7 @@
+import logging
+
+logger = logging.getLogger(__name__)
+
 #!/usr/bin/env python3
 """
 Imitation Learning Training Script for Project GROOT
@@ -56,7 +60,7 @@ class SwingDemonstrationDataset(Dataset):
                 }
             )
 
-        print(f"Loaded {len(self.demos)} demonstrations")
+        logger.info(f"Loaded {len(self.demos)} demonstrations")
 
     def __len__(self):
         return len(self.demos)
@@ -89,9 +93,7 @@ class SwingDemonstrationDataset(Dataset):
         time_steps = np.linspace(0, 1, self.sequence_length)
 
         # State: q + qdot + time
-        state = np.concatenate(
-            [q, qdot, time_steps[:, None]], axis=1
-        )  # (T, num_dofs*2 + 1)
+        state = np.concatenate([q, qdot, time_steps[:, None]], axis=1)  # (T, num_dofs*2 + 1)
 
         # Action: q (position control)
         action = q
@@ -169,7 +171,7 @@ class ImitationTrainer:
         state_dim = sample["state"].shape[1]
         action_dim = sample["action"].shape[1]
 
-        print(f"State dim: {state_dim}, Action dim: {action_dim}")
+        logger.info(f"State dim: {state_dim}, Action dim: {action_dim}")
 
         # Create policy network
         self.policy = PolicyNetwork(
@@ -267,14 +269,14 @@ class ImitationTrainer:
         if is_best:
             best_path = self.output_dir / "checkpoints" / "best.pth"
             torch.save(checkpoint, best_path)
-            print(f"  ✓ Saved best model (epoch {self.epoch})")
+            logger.info(f"  ✓ Saved best model (epoch {self.epoch})")
 
     def train(self):
         """Main training loop."""
         num_epochs = self.config["train"]["num_epochs"]
 
-        print(f"\nStarting training for {num_epochs} epochs")
-        print(f"Output directory: {self.output_dir}")
+        logger.info(f"\nStarting training for {num_epochs} epochs")
+        logger.info(f"Output directory: {self.output_dir}")
 
         for epoch in range(num_epochs):
             self.epoch = epoch
@@ -298,9 +300,9 @@ class ImitationTrainer:
             if epoch % self.config["train"].get("save_freq", 50) == 0 or is_best:
                 self.save_checkpoint(is_best=is_best)
 
-        print("\n✓ Training complete!")
-        print(f"  Best loss: {self.best_loss:.6f}")
-        print(f"  Checkpoints saved to: {self.output_dir / 'checkpoints'}")
+        logger.info("\n✓ Training complete!")
+        logger.info(f"  Best loss: {self.best_loss:.6f}")
+        logger.info(f"  Checkpoints saved to: {self.output_dir / 'checkpoints'}")
 
         self.writer.close()
 
@@ -391,7 +393,7 @@ def main():
         trainer.optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
         trainer.scheduler.load_state_dict(checkpoint["scheduler_state_dict"])
         trainer.epoch = checkpoint["epoch"] + 1
-        print(f"Resumed from epoch {trainer.epoch}")
+        logger.info(f"Resumed from epoch {trainer.epoch}")
 
     # Train
     trainer.train()

@@ -245,9 +245,7 @@ class TooltipManager:
         self._hover_time: float = 0.0
         self._show_delay: float = 0.5  # Seconds before showing
 
-    def set_hover(
-        self, body_name: str, position: tuple[int, int], info: dict[str, Any]
-    ):
+    def set_hover(self, body_name: str, position: tuple[int, int], info: dict[str, Any]):
         """
         Set the currently hovered body.
 
@@ -372,9 +370,7 @@ class DateTimePicker:
                 # Validate that the day exists in the current month/year
                 from calendar import monthrange
 
-                max_days = monthrange(
-                    self._current_date.year, self._current_date.month
-                )[1]
+                max_days = monthrange(self._current_date.year, self._current_date.month)[1]
                 if 1 <= value <= max_days:
                     from contextlib import suppress
 
@@ -511,9 +507,7 @@ class EducationalInfoPanel:
         self._fun_facts: list[str] = []
         self._current_fact_index: int = 0
 
-    def set_body(
-        self, name: str, properties: dict[str, Any], fun_facts: list[str] = None
-    ):
+    def set_body(self, name: str, properties: dict[str, Any], fun_facts: list[str] = None):
         """
         Set the celestial body to display information about.
 
@@ -530,9 +524,7 @@ class EducationalInfoPanel:
     def cycle_fact(self):
         """Cycle to the next fun fact."""
         if self._fun_facts:
-            self._current_fact_index = (self._current_fact_index + 1) % len(
-                self._fun_facts
-            )
+            self._current_fact_index = (self._current_fact_index + 1) % len(self._fun_facts)
 
     def get_current_fact(self) -> str | None:
         """Get the currently displayed fun fact."""
@@ -671,8 +663,7 @@ class ImmersionChecklistPanel:
                 task_id="navigate_time",
                 title="Travel through time",
                 description=(
-                    "Use the date picker or time navigation hotkeys to see planetary "
-                    "alignments."
+                    "Use the date picker or time navigation hotkeys to see planetary " "alignments."
                 ),
             ),
             ImmersionTask(
@@ -684,15 +675,13 @@ class ImmersionChecklistPanel:
             ImmersionTask(
                 task_id="historical_events",
                 title="Explore mission history",
-                description="Open the historical events panel and jump to milestone "
-                "dates.",
+                description="Open the historical events panel and jump to milestone " "dates.",
             ),
             ImmersionTask(
                 task_id="plan_transfer",
                 title="Plot a transfer",
                 description=(
-                    "Plan an Earth→Mars Hohmann transfer to visualize interplanetary "
-                    "travel."
+                    "Plan an Earth→Mars Hohmann transfer to visualize interplanetary " "travel."
                 ),
             ),
         ]
@@ -856,9 +845,7 @@ class SidebarPanel:
             "height": self.height,
             "tabs": [t.name for t in self.tabs],
             "current_tab_index": self.current_tab_index,
-            "current_content_key": self.tabs[
-                self.current_tab_index
-            ].content_renderer_key,
+            "current_content_key": self.tabs[self.current_tab_index].content_renderer_key,
             "style": self.style,
             "visible": self.visible,
         }

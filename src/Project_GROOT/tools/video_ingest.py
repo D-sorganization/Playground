@@ -1,3 +1,7 @@
+import logging
+
+logger = logging.getLogger(__name__)
+
 #!/usr/bin/env python3
 """
 Video Ingestion Tool for Project GROOT
@@ -25,7 +29,7 @@ from pathlib import Path
 try:
     import cv2
 except ImportError:
-    print("Warning: OpenCV not installed. Install with: pip install opencv-python")
+    logger.info("Warning: OpenCV not installed. Install with: pip install opencv-python")
     cv2 = None
 
 
@@ -98,10 +102,7 @@ class VideoIngester:
         }
 
         self.videos.append(entry)
-        print(
-            f"Added: {video_id} ({entry['duration']:.2f}s, "
-            f"{end_frame - start_frame} frames)"
-        )
+        print(f"Added: {video_id} ({entry['duration']:.2f}s, " f"{end_frame - start_frame} frames)")
 
         return entry
 
@@ -134,7 +135,7 @@ class VideoIngester:
         for ext in extensions:
             video_files.extend(directory.glob(f"{pattern}{ext}"))
 
-        print(f"Found {len(video_files)} videos in {directory}")
+        logger.info(f"Found {len(video_files)} videos in {directory}")
 
         for video_file in sorted(video_files):
             try:
@@ -144,7 +145,7 @@ class VideoIngester:
                     video_source=video_source,
                 )
             except Exception as e:  # noqa: BLE001
-                print(f"Error processing {video_file}: {e}")
+                logger.info(f"Error processing {video_file}: {e}")
 
     def save(self):
         """Save manifest to JSON file."""
@@ -159,13 +160,10 @@ class VideoIngester:
         with open(self.output_path, "w") as f:
             json.dump(manifest, f, indent=2)
 
-        print(f"\n✓ Manifest saved: {self.output_path}")
-        print(f"  Total videos: {len(self.videos)}")
-        print(
-            f"  Total frames: "
-            f"{sum(v['end_frame'] - v['start_frame'] for v in self.videos)}"
-        )
-        print(f"  Total duration: {sum(v['duration'] for v in self.videos):.2f}s")
+        logger.info(f"\n✓ Manifest saved: {self.output_path}")
+        logger.info(f"  Total videos: {len(self.videos)}")
+        print(f"  Total frames: " f"{sum(v['end_frame'] - v['start_frame'] for v in self.videos)}")
+        logger.info(f"  Total duration: {sum(v['duration'] for v in self.videos):.2f}s")
 
     def _get_video_properties(self, video_path: Path) -> dict:
         """Extract video properties using OpenCV."""
@@ -207,9 +205,7 @@ class VideoIngester:
             "height": height,
         }
 
-    def _generate_video_id(
-        self, video_path: Path, start_frame: int, end_frame: int
-    ) -> str:
+    def _generate_video_id(self, video_path: Path, start_frame: int, end_frame: int) -> str:
         """Generate unique video ID."""
         # Use stem + hash of path + frame range for uniqueness
         stem = video_path.stem
@@ -303,7 +299,7 @@ def main():
         with open(args.output) as f:
             existing = json.load(f)
             ingester.videos = existing.get("videos", [])
-            print(f"Loaded existing manifest with {len(ingester.videos)} videos")
+            logger.info(f"Loaded existing manifest with {len(ingester.videos)} videos")
 
     # Ingest videos
     if args.input_file:

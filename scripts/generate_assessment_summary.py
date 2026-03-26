@@ -72,9 +72,7 @@ def extract_issues_from_report(report_path: Path) -> list[dict[str, Any]]:
                         "description": match.group(1).strip(),
                         "source": report_path.stem,
                         "assessment": (
-                            report_path.stem.split("_")[1]
-                            if "_" in report_path.stem
-                            else "Unknown"
+                            report_path.stem.split("_")[1] if "_" in report_path.stem else "Unknown"
                         ),
                     }
                 )
@@ -137,9 +135,7 @@ def generate_summary(
             scores[assessment_id] = extract_score_from_report(report)
             all_issues.extend(extract_issues_from_report(report))
         else:
-            logger.warning(
-                f"Could not parse assessment ID from filename: {report.name}"
-            )
+            logger.warning(f"Could not parse assessment ID from filename: {report.name}")
 
     # Calculate weighted average
     total_weighted_score = 0.0
@@ -159,9 +155,7 @@ def generate_summary(
     overall_score = total_weighted_score / total_weight if total_weight > 0 else 7.0
 
     # Count critical issues
-    critical_issues = [
-        i for i in all_issues if i["severity"] in ("BLOCKER", "CRITICAL")
-    ]
+    critical_issues = [i for i in all_issues if i["severity"] in ("BLOCKER", "CRITICAL")]
 
     # Generate markdown summary
     md_content = f"""# Comprehensive Assessment Summary
@@ -222,8 +216,7 @@ Found {len(critical_issues)} critical issues requiring immediate attention:
     for i, (cat, score) in enumerate(sorted_scores[:5], 1):
         cat_name = categories.get(cat, {}).get("name", cat)
         md_content += (
-            f"{i}. Improve **{cat_name}** (Score: {score:.1f}): "
-            "Focus on raising this score.\n"
+            f"{i}. Improve **{cat_name}** (Score: {score:.1f}): " "Focus on raising this score.\n"
         )
 
     md_content += """

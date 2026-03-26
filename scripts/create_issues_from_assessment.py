@@ -168,9 +168,7 @@ Please address this issue immediately.
 
 def main() -> None:
     """Create GitHub issues from assessment findings."""
-    parser = argparse.ArgumentParser(
-        description="Create GitHub issues from assessment findings"
-    )
+    parser = argparse.ArgumentParser(description="Create GitHub issues from assessment findings")
     parser.add_argument(
         "--input",
         required=True,
