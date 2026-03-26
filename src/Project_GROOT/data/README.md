@@ -32,7 +32,7 @@ Supported formats: MP4, AVI, MOV
 For quick testing, download sample data:
 
 ```bash
-# TODO: Add download link for sample dataset
+# TRACKED_TASK: Add download link for sample dataset
 # wget https://example.com/groot_sample_data.zip
 # unzip groot_sample_data.zip -d data/
 ```

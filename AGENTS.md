@@ -338,7 +338,7 @@ This section defines the active agents within the Jules "Control Tower" Architec
 **Schedule:** 1:00 AM PST (0 9 ** \* UTC)
 **Capabilities:\*\*
 
-- **Read:** Codebase for TODO, FIXME, NotImplementedError, pass statements
+- **Read:** Codebase for TRACKED_TASK, TRACKED_DEFECT, NotImplementedError, pass statements
 - **Write:** Implementations for incomplete code
 - **Constraint:** Creates PRs for review; does not merge directly.
 

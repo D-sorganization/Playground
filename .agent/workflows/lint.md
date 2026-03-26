@@ -1,5 +1,5 @@
 ---
-description: Run linting tools (ruff, black, mypy) and fix placeholder/TODO statements
+description: Run linting tools (ruff, black, mypy) and fix placeholder/TRACKED_TASK statements
 ---
 
 # Lint Workflow
@@ -33,7 +33,7 @@ Run comprehensive linting and code quality checks on the codebase.
 1. **Find placeholder statements** (review manually):
 
    ```bash
-   grep -rn "TODO\|FIXME\|XXX\|HACK\|NotImplementedError\|pass$" --include="*.py" .
+   grep -rn "TRACKED_TASK\|TRACKED_DEFECT\|XXX\|HACK\|NotImplementedError\|pass$" --include="*.py" .
    ```
 
 // turbo
