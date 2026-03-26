@@ -128,7 +128,7 @@ def count_occurrences(pattern: str, files: list[Path]) -> int:
         try:
             content = file.read_text(encoding="utf-8", errors="ignore")
             count += len(re.findall(pattern, content))
-        except Exception:  # noqa: BLE001
+        except Exception as e:  # noqa: BLE001
             pass
     return count
 
@@ -198,7 +198,7 @@ def run_assessment(assessment_id: str, output_path: Path) -> int:
     elif assessment_id == "D":  # Error Handling
         try_count = count_occurrences(r"try:", python_files)
         except_count = count_occurrences(r"except\s+.*:", python_files)
-        bare_except_count = count_occurrences(r"except:", python_files)
+        bare_except_count = count_occurrences(r"except Exception as e:", python_files)
         findings.append(f"- Try blocks: {try_count}")
         findings.append(f"- Except blocks: {except_count}")
         findings.append(f"- Bare except blocks: {bare_except_count}")
@@ -206,7 +206,7 @@ def run_assessment(assessment_id: str, output_path: Path) -> int:
             score -= min(5, bare_except_count)
             findings.append(
                 "MAJOR: Found "
-                f"{bare_except_count} bare 'except:' blocks. Catch specific exceptions."
+                f"{bare_except_count} bare 'except Exception as e:' blocks. Catch specific exceptions."
             )
 
     elif assessment_id == "F":  # Security
@@ -380,7 +380,7 @@ def run_assessment(assessment_id: str, output_path: Path) -> int:
                 )
                 if line_count > 300:
                     large_files += 1
-            except Exception:  # noqa: BLE001
+            except Exception as e:  # noqa: BLE001
                 pass
 
         findings.append(f"- Large files (>300 lines): {large_files}")

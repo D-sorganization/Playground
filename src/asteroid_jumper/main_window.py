@@ -128,7 +128,8 @@ class _SimpleSignal:
         self._slots: list[object] = []
 
     def connect(self, slot: object) -> None:
-        assert callable(slot)
+        if not (callable(slot)):
+            raise ValueError('DbC Blocked: Precondition failed.')
         self._slots.append(slot)
 
     def emit(self, *args: object) -> None:
