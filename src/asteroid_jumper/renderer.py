@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+
 """Simulation renderer widget — PyQt6 QPainter-based canvas.
 
 Draws with Catppuccin Mocha colour palette to match Tools repo theme.
