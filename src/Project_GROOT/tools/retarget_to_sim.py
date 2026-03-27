@@ -1,5 +1,7 @@
 import logging
 
+from numba import jit
+
 logger = logging.getLogger(__name__)
 
 #!/usr/bin/env python3
@@ -158,6 +160,7 @@ class PoseRetargeter:
             "timestamps": timestamps,
         }
 
+    @jit(nopython=True, fastmath=True)
     def _simple_ik_mapping(self, skeleton: np.ndarray, club_head: np.ndarray) -> np.ndarray:
         """
         Simplified IK: heuristic mapping from human joints to robot DOFs.

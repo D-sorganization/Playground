@@ -1,6 +1,8 @@
 import logging
 from typing import Any
 
+from numba import jit
+
 logger = logging.getLogger(__name__)
 
 #!/usr/bin/env python3
@@ -67,6 +69,7 @@ class PolicyEvaluator:
         logger.info(f"Loaded policy: {policy_path}")
         logger.info(f"Output directory: {output_dir}")
 
+    @jit(nopython=True, fastmath=True)
     def run_rollouts(self, num_rollouts: int = 50, record_video: bool = False) -> list[dict]:
         """
         Run multiple policy rollouts and collect metrics.
