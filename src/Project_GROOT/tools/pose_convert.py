@@ -1,5 +1,7 @@
 import logging
 
+from numba import jit
+
 logger = logging.getLogger(__name__)
 
 #!/usr/bin/env python3
@@ -193,6 +195,7 @@ class PoseConverter:
 
         logger.info(f"Initialized {pose_backend} pose extractor")
 
+    @jit(nopython=True, fastmath=True)
     def process_video(
         self,
         video_path: str,
