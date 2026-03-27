@@ -1,4 +1,5 @@
 import logging
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +30,7 @@ try:
     from tqdm import tqdm
 except ImportError:
 
-    def tqdm(x, **kwargs):
+    def tqdm(x, **kwargs) -> Any:
         return x
 
 
@@ -62,10 +63,10 @@ class SwingDemonstrationDataset(Dataset):
 
         logger.info(f"Loaded {len(self.demos)} demonstrations")
 
-    def __len__(self):
+    def __len__(self) -> Any:
         return len(self.demos)
 
-    def __getitem__(self, idx):
+    def __getitem__(self, idx) -> Any:
         """Return a demonstration sequence."""
         demo = self.demos[idx]
 
@@ -132,7 +133,7 @@ class PolicyNetwork(nn.Module):
 
         self.network = nn.Sequential(*layers)
 
-    def forward(self, state):
+    def forward(self, state) -> Any:
         """Forward pass."""
         return self.network(state)
 
@@ -246,7 +247,7 @@ class ImitationTrainer:
 
         return {"loss": avg_loss, "lr": self.scheduler.get_last_lr()[0]}
 
-    def save_checkpoint(self, is_best: bool = False):
+    def save_checkpoint(self, is_best: bool = False) -> Any:
         """Save model checkpoint."""
         checkpoint = {
             "epoch": self.epoch,
@@ -271,7 +272,7 @@ class ImitationTrainer:
             torch.save(checkpoint, best_path)
             logger.info(f"  ✓ Saved best model (epoch {self.epoch})")
 
-    def train(self):
+    def train(self) -> Any:
         """Main training loop."""
         num_epochs = self.config["train"]["num_epochs"]
 
@@ -307,7 +308,7 @@ class ImitationTrainer:
         self.writer.close()
 
 
-def main():
+def main() -> Any:
     parser = argparse.ArgumentParser(description="Train imitation learning policy")
 
     parser.add_argument(

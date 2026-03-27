@@ -1,4 +1,5 @@
 import logging
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +20,7 @@ import sys
 from pathlib import Path
 
 
-def test_gpu():
+def test_gpu() -> Any:
     """Test GPU and CUDA availability."""
     logger.info("\n=== GPU Test ===")
 
@@ -51,7 +52,7 @@ def test_gpu():
         return False
 
 
-def test_isaac_sim():
+def test_isaac_sim() -> Any:
     """Test Isaac Sim installation."""
     logger.info("\n=== Isaac Sim Test ===")
 
@@ -78,7 +79,7 @@ def test_isaac_sim():
         return False
 
 
-def test_isaac_lab():
+def test_isaac_lab() -> Any:
     """Test Isaac Lab installation."""
     logger.info("\n=== Isaac Lab Test ===")
 
@@ -98,7 +99,7 @@ def test_isaac_lab():
         return False
 
 
-def test_pose_backend():
+def test_pose_backend() -> Any:
     """Test pose estimation backend."""
     logger.info("\n=== Pose Estimation Test ===")
 
@@ -130,7 +131,7 @@ def test_pose_backend():
         return False
 
 
-def test_dependencies():
+def test_dependencies() -> Any:
     """Test Python dependencies."""
     logger.info("\n=== Dependencies Test ===")
 
@@ -157,7 +158,7 @@ def test_dependencies():
     return all_ok
 
 
-def test_project_structure():
+def test_project_structure() -> Any:
     """Test project directory structure."""
     logger.info("\n=== Project Structure Test ===")
 
@@ -186,7 +187,7 @@ def test_project_structure():
     return all_ok
 
 
-def test_all():
+def test_all() -> Any:
     """Run all tests."""
     logger.info("=" * 60)
     logger.info("Project GROOT Smoke Test")
@@ -222,7 +223,7 @@ def test_all():
         return 1
 
 
-def main():
+def main() -> Any:
     parser = argparse.ArgumentParser(description="Project GROOT smoke test")
 
     parser.add_argument(

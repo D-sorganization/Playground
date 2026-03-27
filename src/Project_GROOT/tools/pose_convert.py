@@ -1,4 +1,5 @@
 import logging
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +38,7 @@ try:
     from tqdm import tqdm
 except ImportError:
 
-    def tqdm(x, **kwargs):
+    def tqdm(x, **kwargs) -> Any:
         return x  # Fallback
 
 
@@ -342,7 +343,9 @@ class PoseConverter:
 
         return phase_labels
 
-    def _visualize_pose(self, frame: np.ndarray, keypoints: np.ndarray, confidence: np.ndarray):
+    def _visualize_pose(
+        self, frame: np.ndarray, keypoints: np.ndarray, confidence: np.ndarray
+    ) -> Any:
         """Draw pose on frame for visualization."""
         # Simple visualization: draw keypoints
         h, w = frame.shape[:2]
@@ -358,7 +361,7 @@ class PoseConverter:
         cv2.waitKey(1)
 
 
-def main():
+def main() -> Any:
     parser = argparse.ArgumentParser(
         description="Extract poses from golf swing videos",
         formatter_class=argparse.RawDescriptionHelpFormatter,

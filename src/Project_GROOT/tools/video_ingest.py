@@ -1,4 +1,5 @@
 import logging
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -147,7 +148,7 @@ class VideoIngester:
             except Exception as e:  # noqa: BLE001
                 logger.info(f"Error processing {video_file}: {e}")
 
-    def save(self):
+    def save(self) -> Any:
         """Save manifest to JSON file."""
         self.output_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -214,7 +215,7 @@ class VideoIngester:
         return video_id
 
 
-def main():
+def main() -> Any:
     parser = argparse.ArgumentParser(
         description="Ingest golf swing videos and create manifest",
         formatter_class=argparse.RawDescriptionHelpFormatter,

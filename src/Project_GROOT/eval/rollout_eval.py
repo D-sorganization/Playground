@@ -1,4 +1,5 @@
 import logging
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -153,7 +154,7 @@ class PolicyEvaluator:
 
         return summary
 
-    def save_results(self, rollout_stats: list[dict], summary: dict):
+    def save_results(self, rollout_stats: list[dict], summary: dict) -> Any:
         """Save evaluation results to disk."""
         # Save raw rollout data
         results_file = self.output_dir / "rollout_results.json"
@@ -169,7 +170,7 @@ class PolicyEvaluator:
         logger.info(f"  Rollout data: {results_file}")
         logger.info(f"  Summary: {summary_file}")
 
-    def generate_plots(self, rollout_stats: list[dict]):
+    def generate_plots(self, rollout_stats: list[dict]) -> Any:
         """Generate evaluation plots."""
         if plt is None:
             logger.info("Skipping plots (matplotlib not available)")
@@ -250,7 +251,7 @@ class PolicyEvaluator:
 
         logger.info(f"✓ Plots saved to {plots_dir}")
 
-    def generate_report(self, summary: dict):
+    def generate_report(self, summary: dict) -> Any:
         """Generate HTML evaluation report."""
         report_path = self.output_dir / "report.html"
 
@@ -361,7 +362,7 @@ class PolicyEvaluator:
 
         logger.info(f"✓ Report generated: {report_path}")
 
-    def print_summary(self, summary: dict):
+    def print_summary(self, summary: dict) -> Any:
         """Print summary to console."""
         logger.info("\n" + "=" * 60)
         logger.info("EVALUATION SUMMARY")
@@ -387,7 +388,7 @@ class PolicyEvaluator:
         logger.info("\n" + "=" * 60)
 
 
-def main():
+def main() -> Any:
     parser = argparse.ArgumentParser(description="Evaluate trained golf swing policy")
 
     parser.add_argument(

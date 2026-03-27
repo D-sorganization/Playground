@@ -1,4 +1,5 @@
 import logging
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -68,7 +69,7 @@ class SimplePPOTrainer:
         # DEFERRED: Initialize PPO algorithm
         # self.ppo = PPO(policy=self.policy, ...)
 
-    def train(self):
+    def train(self) -> Any:
         """Run RL training loop."""
         num_steps = self.config["train"]["num_steps"]
 
@@ -105,7 +106,7 @@ class SimplePPOTrainer:
         logger.info("  Integrate with Isaac Lab to enable full training")
 
 
-def create_rl_config_template():
+def create_rl_config_template() -> Any:
     """Create a template RL configuration."""
     return {
         "env": {
@@ -143,7 +144,7 @@ def create_rl_config_template():
     }
 
 
-def main():
+def main() -> Any:
     parser = argparse.ArgumentParser(description="RL fine-tuning for golf swing")
 
     parser.add_argument(
