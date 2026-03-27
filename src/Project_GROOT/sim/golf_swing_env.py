@@ -97,7 +97,7 @@ class GolfSwingEnv(DirectRLEnv):
         self.max_clubhead_speed = torch.zeros(self.num_envs, device=self.device)
         self.episode_swing_count = torch.zeros(self.num_envs, device=self.device)
 
-    def _setup_scene(self):
+    def _setup_scene(self) -> Any:
         """Setup the scene with robot and environment objects."""
         # Create robot articulation
         self.robot = Articulation(self.cfg.robot_cfg)
@@ -114,7 +114,7 @@ class GolfSwingEnv(DirectRLEnv):
         cfg = sim_utils.DomeLightCfg(intensity=2000.0, color=(0.75, 0.75, 0.75))
         cfg.func("/World/Light", cfg)
 
-    def _pre_physics_step(self, actions: torch.Tensor):
+    def _pre_physics_step(self, actions: torch.Tensor) -> Any:
         """Process actions before physics step."""
         # Scale actions
         self.actions = actions * self.cfg.action_scale
@@ -122,7 +122,7 @@ class GolfSwingEnv(DirectRLEnv):
         # Set joint position targets (PD control)
         self.joint_pos_target = self.robot.data.default_joint_pos + self.actions
 
-    def _apply_action(self):
+    def _apply_action(self) -> Any:
         """Apply actions to the robot."""
         # Apply joint position targets
         self.robot.set_joint_position_target(self.joint_pos_target)
@@ -217,7 +217,7 @@ class GolfSwingEnv(DirectRLEnv):
 
         return terminated, truncated
 
-    def _reset_idx(self, env_ids: torch.Tensor | None):
+    def _reset_idx(self, env_ids: torch.Tensor | None) -> Any:
         """Reset specified environments."""
         if env_ids is None:
             env_ids = torch.arange(self.num_envs, device=self.device)
@@ -241,7 +241,7 @@ class GolfSwingEnv(DirectRLEnv):
         # Reset buffers
         super()._reset_idx(env_ids)
 
-    def _update_clubhead_state(self):
+    def _update_clubhead_state(self) -> Any:
         """Update clubhead position and velocity from robot state."""
         # Get end-effector (right hand) link state
         # This assumes the club is attached to the right hand

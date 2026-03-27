@@ -1,4 +1,5 @@
 import logging
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +34,7 @@ try:
     from tqdm import tqdm
 except ImportError:
 
-    def tqdm(x, **kwargs):
+    def tqdm(x, **kwargs) -> Any:
         return x
 
 
@@ -244,7 +245,7 @@ class ClubTracker:
         return cumulative
 
 
-def main():
+def main() -> Any:
     parser = argparse.ArgumentParser(
         description="Track golf club trajectory from pose data",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -354,7 +355,7 @@ def main():
         visualize_club_stats(all_stats)
 
 
-def visualize_club_stats(stats: list):
+def visualize_club_stats(stats: list) -> Any:
     """Visualize club tracking statistics."""
     try:
         import matplotlib.pyplot as plt

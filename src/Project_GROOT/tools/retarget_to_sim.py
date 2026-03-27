@@ -28,7 +28,7 @@ try:
     from tqdm import tqdm
 except ImportError:
 
-    def tqdm(x, **kwargs):
+    def tqdm(x, **kwargs) -> Any:
         return x
 
 
@@ -307,7 +307,7 @@ def validate_trajectory(
     return report
 
 
-def main():
+def main() -> Any:
     parser = argparse.ArgumentParser(
         description="Retarget human poses to robot joint space",
         formatter_class=argparse.RawDescriptionHelpFormatter,
