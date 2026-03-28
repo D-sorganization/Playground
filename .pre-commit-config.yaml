@@ -26,7 +26,7 @@ repos:
 
   # Ruff - Fast Python linter with auto-fix
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.5.0
+    rev: v0.14.10
     hooks:
       - id: ruff
         name: "ruff (Python lint + fix)"
@@ -182,7 +182,7 @@ repos:
 
   # MyPy - Python type checking (pre-push only)
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.10.0
+    rev: v1.13.0
     hooks:
       - id: mypy
         name: "mypy (Python type check)"
