@@ -145,7 +145,7 @@ class VideoIngester:
                     golfer_name=golfer_name,
                     video_source=video_source,
                 )
-            except Exception as e:  # noqa: BLE001
+            except (OSError, ValueError, RuntimeError) as e:
                 logger.info(f"Error processing {video_file}: {e}")
 
     def save(self) -> Any:

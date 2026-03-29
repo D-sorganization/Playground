@@ -67,7 +67,7 @@ def create_app() -> Flask:
             return jsonify(response), 200
         except ValueError as error:
             return jsonify({"error": str(error)}), 400
-        except Exception:  # pragma: no cover - fallback safety
+        except (TypeError, ArithmeticError, RuntimeError):  # pragma: no cover - fallback safety
             logger.exception("Calculation failed")
             return jsonify({"error": "An internal error occurred."}), 500
 
@@ -301,7 +301,7 @@ def _sympify_value(
             transformations=standard_transformations + (convert_xor,),
             evaluate=True,
         )
-    except Exception as error:  # noqa: BLE001
+    except (TypeError, SyntaxError, AttributeError) as error:
         raise ValueError("Invalid numeric or symbolic value provided") from error
 
 

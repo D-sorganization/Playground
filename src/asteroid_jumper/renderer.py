@@ -148,8 +148,6 @@ class AsteroidJumperRenderer(QWidget):
         painter.end()
 
     def mousePressEvent(self, event: object) -> None:  # noqa: N802
-        if not (isinstance(event):
-            raise ValueError(type(event)))
         from PyQt6.QtGui import QMouseEvent
 
         if isinstance(event, QMouseEvent):
@@ -309,8 +307,6 @@ class AsteroidJumperRenderer(QWidget):
         """Draw decorative craters on the asteroid surface."""
         from asteroid_jumper.physics import RigidBody
 
-        if not (isinstance(ast):
-            raise ValueError(RigidBody))
         crater_angles = [0.5, 1.8, 3.1, 4.7, 5.5]
         crater_sizes = [0.6, 0.4, 0.5, 0.3, 0.7]
         p.save()

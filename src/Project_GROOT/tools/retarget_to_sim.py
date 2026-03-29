@@ -425,7 +425,7 @@ def main() -> Any:
                 for warning in validation["warnings"][:2]:  # Show first 2
                     logger.info(f"      WARNING: {warning}")
 
-        except Exception as e:  # noqa: BLE001
+        except (OSError, ValueError, KeyError, RuntimeError) as e:
             logger.info(f"  ✗ {pose_file.name}: {e}")
             all_reports.append(
                 {

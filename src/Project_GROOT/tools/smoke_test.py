@@ -47,7 +47,7 @@ def test_gpu() -> Any:
     except ImportError:
         logger.info("✗ PyTorch not installed")
         return False
-    except Exception as e:  # noqa: BLE001
+    except RuntimeError as e:
         logger.info(f"✗ GPU test failed: {e}")
         return False
 
@@ -94,7 +94,7 @@ def test_isaac_lab() -> Any:
             logger.info("  Install Isaac Lab (see docs/SETUP.md)")
             return False
 
-    except Exception as e:  # noqa: BLE001
+    except (ImportError, RuntimeError) as e:
         logger.info(f"✗ Isaac Lab test failed: {e}")
         return False
 

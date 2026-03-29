@@ -333,7 +333,7 @@ def main() -> Any:
 
             logger.info(f"{video_id}: max speed = {stats['max_clubhead_speed']:.1f} m/s")
 
-        except Exception as e:  # noqa: BLE001
+        except (OSError, ValueError, KeyError, RuntimeError) as e:
             logger.info(f"Error processing {video_id}: {e}")
             continue
 

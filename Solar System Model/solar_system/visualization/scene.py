@@ -46,47 +46,18 @@ from ..ui.widgets import (
     UnifiedControlPanel,
 )
 from .camera import CameraMode
+from .input_handler import InputHandlerMixin
 from .renderer import Renderer, RenderSettings
 
 try:
     import pygame
     from pygame.locals import (
-        K_0,
-        K_1,
-        K_9,
-        K_EQUALS,
-        K_ESCAPE,
-        K_HOME,
-        K_KP_MINUS,
-        K_KP_PLUS,
-        K_LEFTBRACKET,
-        K_MINUS,
-        K_PAGEDOWN,
-        K_PAGEUP,
-        K_PERIOD,
-        K_PLUS,
-        K_RIGHTBRACKET,
-        K_SPACE,
         KEYDOWN,
         MOUSEBUTTONDOWN,
         MOUSEBUTTONUP,
         MOUSEMOTION,
         MOUSEWHEEL,
         QUIT,
-        K_c,
-        K_d,
-        K_e,
-        K_f,
-        K_g,
-        K_h,
-        K_i,
-        K_l,
-        K_m,
-        K_n,
-        K_o,
-        K_r,
-        K_t,
-        K_v,
     )
 
     PYGAME_AVAILABLE = True
@@ -116,7 +87,7 @@ class ViewState:
     show_immersion_checklist: bool = True
 
 
-class SolarSystemScene:
+class SolarSystemScene(InputHandlerMixin):
     def __init__(self, settings: RenderSettings | None = None):
         self.settings = settings or RenderSettings()
         self.renderer: Renderer | None = None
@@ -460,174 +431,7 @@ class SolarSystemScene:
 
         return True
 
-    def _handle_key(self, key: int) -> bool:
-        """
-        Handle keyboard input.
-
-        Returns:
-            False if should quit, True otherwise
-        """
-        if key == K_ESCAPE:
-            return False
-
-        elif key == K_SPACE:
-            self.time_manager.toggle_pause()
-
-        elif key in (K_EQUALS, K_PLUS, K_KP_PLUS):
-            self.time_manager.increase_time_warp()
-
-        elif key in (K_MINUS, K_KP_MINUS):
-            self.time_manager.decrease_time_warp()
-
-        elif key == K_r:
-            self.time_manager.reverse_time()
-
-        elif key == K_d:
-            # Toggle date picker
-            if self.date_picker:
-                self.date_picker.toggle()
-                if self.date_picker.visible:
-                    self.date_picker.set_date(self.time_manager.current_time.datetime_utc)
-                    self._mark_immersion_task("navigate_time")
-
-        elif key == K_n:
-            # Toggle time navigation panel
-            if self.time_nav_panel:
-                self.time_nav_panel.toggle()
-                self._mark_immersion_task("navigate_time")
-
-        elif key == K_e:
-            # Toggle historical events panel
-            if self.historical_events:
-                self.historical_events.toggle()
-                if self.historical_events.visible:
-                    self._mark_immersion_task("historical_events")
-
-        elif key == K_LEFTBRACKET:
-            # Jump backward 1 day
-            self.time_manager.advance_days(-1)
-            self._update_ui_date()
-            self._mark_immersion_task("navigate_time")
-
-        elif key == K_RIGHTBRACKET:
-            # Jump forward 1 day
-            self.time_manager.advance_days(1)
-            self._update_ui_date()
-            self._mark_immersion_task("navigate_time")
-
-        elif key == K_PAGEUP:
-            # Jump backward 1 month, preserving day of month when possible
-            current_dt = self.time_manager.current_time.datetime_utc
-            target_day = current_dt.day
-
-            # Calculate previous month
-            if current_dt.month == 1:
-                prev_month = 12
-                prev_year = current_dt.year - 1
-            else:
-                prev_month = current_dt.month - 1
-                prev_year = current_dt.year
-
-            # Ensure day exists in previous month (handle cases like Jan 31 -> Dec 31)
-            max_days_in_prev = monthrange(prev_year, prev_month)[1]
-            actual_day = min(target_day, max_days_in_prev)
-
-            prev_date = current_dt.replace(year=prev_year, month=prev_month, day=actual_day)
-            self.time_manager.set_datetime(prev_date)
-            self._update_ui_date()
-            self._mark_immersion_task("navigate_time")
-
-        elif key == K_PAGEDOWN:
-            # Jump forward 1 month, preserving day of month when possible
-            current_dt = self.time_manager.current_time.datetime_utc
-            target_day = current_dt.day
-
-            # Calculate next month
-            if current_dt.month == 12:
-                next_month = 1
-                next_year = current_dt.year + 1
-            else:
-                next_month = current_dt.month + 1
-                next_year = current_dt.year
-
-            # Ensure day exists in next month (handle cases like Jan 31 -> Feb 28/29)
-            max_days_in_next = monthrange(next_year, next_month)[1]
-            actual_day = min(target_day, max_days_in_next)
-
-            next_date = current_dt.replace(year=next_year, month=next_month, day=actual_day)
-            self.time_manager.set_datetime(next_date)
-            self._update_ui_date()
-            self._mark_immersion_task("navigate_time")
-
-        elif key == K_HOME:
-            self.renderer.camera.reset()
-            self.renderer.camera.mode = CameraMode.FREE
-
-        elif key == K_o:
-            self.view_state.show_orbits = not self.view_state.show_orbits
-            self.renderer.settings.show_orbits = self.view_state.show_orbits
-            self._mark_immersion_task("toggle_overlays")
-
-        elif key == K_l:
-            self.view_state.show_labels = not self.view_state.show_labels
-            self.renderer.settings.show_labels = self.view_state.show_labels
-            self._mark_immersion_task("toggle_overlays")
-
-        elif key == K_i:
-            self.view_state.show_info_panel = not self.view_state.show_info_panel
-
-        elif key == K_g:
-            self.renderer.settings.show_grid = not self.renderer.settings.show_grid
-            self._mark_immersion_task("toggle_overlays")
-
-        elif key == K_h:
-            self.view_state.show_help = not self.view_state.show_help
-
-        elif key == K_v:
-            self.settings.stereo_view = not self.settings.stereo_view
-
-        elif key == K_c:
-            self._cycle_camera_mode()
-
-        elif key == K_f:
-            self._focus_on_selected()
-
-        elif key == K_t:
-            # Plan trajectory to Mars from Earth
-            trajectory = self.plan_trajectory("Earth", "Mars")
-            if trajectory:
-                self._mark_immersion_task("plan_transfer")
-                self._action_message = (
-                    "Earth→Mars transfer: ΔV "
-                    f"{trajectory.total_delta_v / 1000:.2f} km/s, "
-                    f"flight {trajectory.time_of_flight:.1f} days"
-                )
-            else:
-                self._action_message = "Earth→Mars transfer could not be created"
-
-        elif key == K_m:
-            if self.immersion_checklist:
-                self.immersion_checklist.toggle()
-            self.view_state.show_immersion_checklist = not self.view_state.show_immersion_checklist
-
-        # Period/comma for cycling fun facts
-        elif key == K_PERIOD:
-            if self.educational_panel and self.educational_panel.visible:
-                self.educational_panel.cycle_fact()
-
-        # Number keys for planet selection
-        elif key == K_0:
-            self.select_body(self.sun)
-            self._update_educational_panel()
-
-        elif K_1 <= key <= K_9:
-            planet_index = key - K_1
-            if planet_index < len(PLANET_ORDER):
-                planet_name = PLANET_ORDER[planet_index]
-                self.select_body(self.planets[planet_name])
-                self._update_educational_panel()
-
-        return True
+    # _handle_key is provided by InputHandlerMixin in input_handler.py
 
     def _update_ui_date(self):
         """Update all UI widgets with current date."""

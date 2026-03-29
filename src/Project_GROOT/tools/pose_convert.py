@@ -452,7 +452,7 @@ def main() -> Any:
             logger.info(f"  ✓ Valid frames: {stats['valid_frames']}/{stats['total_frames']}")
             logger.info(f"  ✓ Avg confidence: {stats['avg_confidence']:.3f}")
 
-        except Exception as e:  # noqa: BLE001
+        except (OSError, ValueError, KeyError, RuntimeError) as e:
             logger.info(f"  ✗ Error: {e}")
             continue
 
