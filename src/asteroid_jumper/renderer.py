@@ -1,7 +1,3 @@
-# ARCHITECTURE_DEBT:
-# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
-# It requires domain-aware structural extraction to isolate its internal classes appropriately.
-
 """Simulation renderer widget — PyQt6 QPainter-based canvas.
 
 Draws with Catppuccin Mocha colour palette to match Tools repo theme.
@@ -27,7 +23,9 @@ from PyQt6.QtGui import (
 from PyQt6.QtWidgets import QSizePolicy, QWidget
 
 if TYPE_CHECKING:
+    from asteroid_jumper.asteroid_shape import AsteroidShape
     from asteroid_jumper.controller import SimController
+    from asteroid_jumper.physics import RigidBody
 
 # Catppuccin Mocha colour palette
 C_BASE = QColor("#1e1e2e")
@@ -110,7 +108,7 @@ class AsteroidJumperRenderer(QWidget):
     def set_scale(self, scale: float) -> None:
         """Set zoom level (pixels per metre)."""
         if not (scale > 0):
-            raise ValueError('DbC Blocked: Precondition failed.')
+            raise ValueError("DbC Blocked: Precondition failed.")
         self._scale = scale
         self.update()
 
@@ -148,8 +146,6 @@ class AsteroidJumperRenderer(QWidget):
         painter.end()
 
     def mousePressEvent(self, event: object) -> None:  # noqa: N802
-        if not (isinstance(event):
-            raise ValueError(type(event)))
         from PyQt6.QtGui import QMouseEvent
 
         if isinstance(event, QMouseEvent):
@@ -305,18 +301,14 @@ class AsteroidJumperRenderer(QWidget):
         self._draw_craters(p, ast, shape)
         p.restore()
 
-    def _draw_craters(self, p: QPainter, ast: object, shape: object) -> None:
+    def _draw_craters(self, p: QPainter, ast: RigidBody, shape: AsteroidShape) -> None:
         """Draw decorative craters on the asteroid surface."""
-        from asteroid_jumper.physics import RigidBody
-
-        if not (isinstance(ast):
-            raise ValueError(RigidBody))
         crater_angles = [0.5, 1.8, 3.1, 4.7, 5.5]
         crater_sizes = [0.6, 0.4, 0.5, 0.3, 0.7]
         p.save()
         for ca, cs in zip(crater_angles, crater_sizes, strict=False):
-            cx_b = math.cos(ca) * shape.semi_a * 0.55  # type: ignore[attr-defined]
-            cy_b = math.sin(ca) * shape.semi_b * 0.55  # type: ignore[attr-defined]
+            cx_b = math.cos(ca) * shape.semi_a * 0.55
+            cy_b = math.sin(ca) * shape.semi_b * 0.55
             cos_a = math.cos(ast.angle)
             sin_a = math.sin(ast.angle)
             wx = cx_b * cos_a - cy_b * sin_a + ast.pos.x
@@ -547,13 +539,15 @@ class _SimpleSignal:
     """Lightweight callable signal (wraps a list of callbacks)."""
 
     def __init__(self) -> None:
-        self._slots: list[object] = []
+        from collections.abc import Callable
+
+        self._slots: list[Callable[..., object]] = []
 
     def connect(self, slot: object) -> None:
         if not (callable(slot)):
-            raise ValueError('DbC Blocked: Precondition failed.')
+            raise ValueError("DbC Blocked: Precondition failed.")
         self._slots.append(slot)
 
     def emit(self, *args: object) -> None:
         for slot in self._slots:
-            slot(*args)  # type: ignore[operator]
+            slot(*args)

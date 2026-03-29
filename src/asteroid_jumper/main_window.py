@@ -70,7 +70,9 @@ class AsteroidJumperWindow(QMainWindow):
         splitter.setStretchFactor(2, 0)
 
         # Status bar
-        self._status_msg("Drag on the asteroid to set jump direction · Click JUMP to launch")
+        self._status_msg(
+            "Drag on the asteroid to set jump direction · Click JUMP to launch"
+        )
 
     def _connect_signals(self) -> None:
         self._controls.jump_requested.connect(self._on_jump)
@@ -123,7 +125,9 @@ class _SimpleSignal:
     """Lightweight callable signal (wraps a list of callbacks)."""
 
     def __init__(self) -> None:
-        self._slots: list[object] = []
+        from collections.abc import Callable
+
+        self._slots: list[Callable[..., object]] = []
 
     def connect(self, slot: object) -> None:
         if not (callable(slot)):
@@ -132,4 +136,4 @@ class _SimpleSignal:
 
     def emit(self, *args: object) -> None:
         for slot in self._slots:
-            slot(*args)  # type: ignore[operator]
+            slot(*args)

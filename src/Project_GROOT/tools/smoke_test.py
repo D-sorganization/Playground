@@ -1,5 +1,4 @@
 import logging
-from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +19,7 @@ import sys
 from pathlib import Path
 
 
-def test_gpu() -> Any:
+def test_gpu() -> bool:
     """Test GPU and CUDA availability."""
     logger.info("\n=== GPU Test ===")
 
@@ -30,9 +29,8 @@ def test_gpu() -> Any:
         if torch.cuda.is_available():
             logger.info(f"✓ CUDA available: {torch.version.cuda}")
             logger.info(f"✓ GPU: {torch.cuda.get_device_name(0)}")
-            print(
-                f"✓ GPU memory: {torch.cuda.get_device_properties(0).total_memory / 1e9:.1f} GB"  # noqa: E501
-            )
+            gpu_mem_gb = torch.cuda.get_device_properties(0).total_memory / 1e9
+            logger.info("✓ GPU memory: %.1f GB", gpu_mem_gb)
 
             # Simple GPU test
             x = torch.randn(1000, 1000, device="cuda")
@@ -47,12 +45,12 @@ def test_gpu() -> Any:
     except ImportError:
         logger.info("✗ PyTorch not installed")
         return False
-    except Exception as e:  # noqa: BLE001
+    except RuntimeError as e:
         logger.info(f"✗ GPU test failed: {e}")
         return False
 
 
-def test_isaac_sim() -> Any:
+def test_isaac_sim() -> bool:
     """Test Isaac Sim installation."""
     logger.info("\n=== Isaac Sim Test ===")
 
@@ -79,7 +77,7 @@ def test_isaac_sim() -> Any:
         return False
 
 
-def test_isaac_lab() -> Any:
+def test_isaac_lab() -> bool:
     """Test Isaac Lab installation."""
     logger.info("\n=== Isaac Lab Test ===")
 
@@ -94,12 +92,12 @@ def test_isaac_lab() -> Any:
             logger.info("  Install Isaac Lab (see docs/SETUP.md)")
             return False
 
-    except Exception as e:  # noqa: BLE001
+    except (ImportError, RuntimeError) as e:
         logger.info(f"✗ Isaac Lab test failed: {e}")
         return False
 
 
-def test_pose_backend() -> Any:
+def test_pose_backend() -> bool:
     """Test pose estimation backend."""
     logger.info("\n=== Pose Estimation Test ===")
 
@@ -131,7 +129,7 @@ def test_pose_backend() -> Any:
         return False
 
 
-def test_dependencies() -> Any:
+def test_dependencies() -> bool:
     """Test Python dependencies."""
     logger.info("\n=== Dependencies Test ===")
 
@@ -158,7 +156,7 @@ def test_dependencies() -> Any:
     return all_ok
 
 
-def test_project_structure() -> Any:
+def test_project_structure() -> bool:
     """Test project directory structure."""
     logger.info("\n=== Project Structure Test ===")
 
@@ -187,7 +185,7 @@ def test_project_structure() -> Any:
     return all_ok
 
 
-def test_all() -> Any:
+def test_all() -> int:
     """Run all tests."""
     logger.info("=" * 60)
     logger.info("Project GROOT Smoke Test")
@@ -219,11 +217,13 @@ def test_all() -> Any:
         logger.info("✓ All tests passed!")
         return 0
     else:
-        logger.info("✗ Some tests failed. See docs/SETUP.md for installation instructions.")
+        logger.info(
+            "✗ Some tests failed. See docs/SETUP.md for installation instructions."
+        )
         return 1
 
 
-def main() -> Any:
+def main() -> int | None:
     parser = argparse.ArgumentParser(description="Project GROOT smoke test")
 
     parser.add_argument(

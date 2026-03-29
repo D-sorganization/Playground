@@ -1,8 +1,6 @@
 import logging
 from typing import Any
 
-from numba import jit
-
 logger = logging.getLogger(__name__)
 
 #!/usr/bin/env python3
@@ -196,7 +194,6 @@ class PoseConverter:
 
         logger.info(f"Initialized {pose_backend} pose extractor")
 
-    @jit(nopython=True, fastmath=True)
     def process_video(
         self,
         video_path: str,
@@ -279,7 +276,9 @@ class PoseConverter:
         )
 
         # Compute statistics
-        valid_frames = (confidences.mean(axis=1) > self.extractor.confidence_threshold).sum()
+        valid_frames = (
+            confidences.mean(axis=1) > self.extractor.confidence_threshold
+        ).sum()
         stats = {
             "total_frames": num_frames,
             "valid_frames": int(valid_frames),
@@ -289,7 +288,9 @@ class PoseConverter:
 
         return stats
 
-    def _compute_swing_phases(self, skeletons: np.ndarray, confidences: np.ndarray) -> np.ndarray:
+    def _compute_swing_phases(
+        self, skeletons: np.ndarray, confidences: np.ndarray
+    ) -> np.ndarray:
         """
         Compute swing phases based on wrist trajectory.
 
@@ -348,7 +349,7 @@ class PoseConverter:
 
     def _visualize_pose(
         self, frame: np.ndarray, keypoints: np.ndarray, confidence: np.ndarray
-    ) -> Any:
+    ) -> None:
         """Draw pose on frame for visualization."""
         # Simple visualization: draw keypoints
         h, w = frame.shape[:2]
@@ -364,7 +365,7 @@ class PoseConverter:
         cv2.waitKey(1)
 
 
-def main() -> Any:
+def main() -> None:
     parser = argparse.ArgumentParser(
         description="Extract poses from golf swing videos",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -449,10 +450,12 @@ def main() -> Any:
 
             all_stats.append({**video_entry, **stats})
 
-            logger.info(f"  ✓ Valid frames: {stats['valid_frames']}/{stats['total_frames']}")
+            logger.info(
+                f"  ✓ Valid frames: {stats['valid_frames']}/{stats['total_frames']}"
+            )
             logger.info(f"  ✓ Avg confidence: {stats['avg_confidence']:.3f}")
 
-        except Exception as e:  # noqa: BLE001
+        except (OSError, ValueError, KeyError, RuntimeError) as e:
             logger.info(f"  ✗ Error: {e}")
             continue
 
