@@ -29,7 +29,9 @@ from pathlib import Path
 try:
     import cv2
 except ImportError:
-    logger.info("Warning: OpenCV not installed. Install with: pip install opencv-python")
+    logger.info(
+        "Warning: OpenCV not installed. Install with: pip install opencv-python"
+    )
     cv2 = None
 
 
@@ -104,7 +106,9 @@ class VideoIngester:
         self.videos.append(entry)
         logger.info(
             "Added: %s (%.2fs, %d frames)",
-            video_id, entry['duration'], end_frame - start_frame,
+            video_id,
+            entry["duration"],
+            end_frame - start_frame,
         )
 
         return entry
@@ -165,7 +169,7 @@ class VideoIngester:
 
         logger.info(f"\n✓ Manifest saved: {self.output_path}")
         logger.info(f"  Total videos: {len(self.videos)}")
-        total_frames = sum(v['end_frame'] - v['start_frame'] for v in self.videos)
+        total_frames = sum(v["end_frame"] - v["start_frame"] for v in self.videos)
         logger.info("  Total frames: %d", total_frames)
         logger.info(f"  Total duration: {sum(v['duration'] for v in self.videos):.2f}s")
 
@@ -209,7 +213,9 @@ class VideoIngester:
             "height": height,
         }
 
-    def _generate_video_id(self, video_path: Path, start_frame: int, end_frame: int) -> str:
+    def _generate_video_id(
+        self, video_path: Path, start_frame: int, end_frame: int
+    ) -> str:
         """Generate unique video ID."""
         # Use stem + hash of path + frame range for uniqueness
         stem = video_path.stem

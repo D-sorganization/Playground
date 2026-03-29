@@ -276,7 +276,9 @@ class PoseConverter:
         )
 
         # Compute statistics
-        valid_frames = (confidences.mean(axis=1) > self.extractor.confidence_threshold).sum()
+        valid_frames = (
+            confidences.mean(axis=1) > self.extractor.confidence_threshold
+        ).sum()
         stats = {
             "total_frames": num_frames,
             "valid_frames": int(valid_frames),
@@ -286,7 +288,9 @@ class PoseConverter:
 
         return stats
 
-    def _compute_swing_phases(self, skeletons: np.ndarray, confidences: np.ndarray) -> np.ndarray:
+    def _compute_swing_phases(
+        self, skeletons: np.ndarray, confidences: np.ndarray
+    ) -> np.ndarray:
         """
         Compute swing phases based on wrist trajectory.
 
@@ -446,7 +450,9 @@ def main() -> None:
 
             all_stats.append({**video_entry, **stats})
 
-            logger.info(f"  ✓ Valid frames: {stats['valid_frames']}/{stats['total_frames']}")
+            logger.info(
+                f"  ✓ Valid frames: {stats['valid_frames']}/{stats['total_frames']}"
+            )
             logger.info(f"  ✓ Avg confidence: {stats['avg_confidence']:.3f}")
 
         except (OSError, ValueError, KeyError, RuntimeError) as e:

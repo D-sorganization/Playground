@@ -108,7 +108,7 @@ class AsteroidJumperRenderer(QWidget):
     def set_scale(self, scale: float) -> None:
         """Set zoom level (pixels per metre)."""
         if not (scale > 0):
-            raise ValueError('DbC Blocked: Precondition failed.')
+            raise ValueError("DbC Blocked: Precondition failed.")
         self._scale = scale
         self.update()
 
@@ -301,9 +301,7 @@ class AsteroidJumperRenderer(QWidget):
         self._draw_craters(p, ast, shape)
         p.restore()
 
-    def _draw_craters(
-        self, p: QPainter, ast: RigidBody, shape: AsteroidShape
-    ) -> None:
+    def _draw_craters(self, p: QPainter, ast: RigidBody, shape: AsteroidShape) -> None:
         """Draw decorative craters on the asteroid surface."""
         crater_angles = [0.5, 1.8, 3.1, 4.7, 5.5]
         crater_sizes = [0.6, 0.4, 0.5, 0.3, 0.7]
@@ -547,7 +545,7 @@ class _SimpleSignal:
 
     def connect(self, slot: object) -> None:
         if not (callable(slot)):
-            raise ValueError('DbC Blocked: Precondition failed.')
+            raise ValueError("DbC Blocked: Precondition failed.")
         self._slots.append(slot)
 
     def emit(self, *args: object) -> None:

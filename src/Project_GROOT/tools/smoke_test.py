@@ -217,7 +217,9 @@ def test_all() -> int:
         logger.info("✓ All tests passed!")
         return 0
     else:
-        logger.info("✗ Some tests failed. See docs/SETUP.md for installation instructions.")
+        logger.info(
+            "✗ Some tests failed. See docs/SETUP.md for installation instructions."
+        )
         return 1
 
 

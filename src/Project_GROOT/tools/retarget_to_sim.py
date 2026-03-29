@@ -66,7 +66,9 @@ class RobotConfig:
         self.joint_upper = np.array(config["joint_limits"]["upper"])
 
         # Velocity/acceleration limits
-        self.velocity_limits = np.array(config.get("velocity_limits", [10.0] * self.num_dofs))
+        self.velocity_limits = np.array(
+            config.get("velocity_limits", [10.0] * self.num_dofs)
+        )
         self.acceleration_limits = np.array(
             config.get("acceleration_limits", [50.0] * self.num_dofs)
         )
@@ -166,7 +168,9 @@ class PoseRetargeter:
             "timestamps": timestamps,
         }
 
-    def _simple_ik_mapping(self, skeleton: np.ndarray, club_head: np.ndarray) -> np.ndarray:
+    def _simple_ik_mapping(
+        self, skeleton: np.ndarray, club_head: np.ndarray
+    ) -> np.ndarray:
         """
         Simplified IK: heuristic mapping from human joints to robot DOFs.
 

@@ -94,7 +94,9 @@ class SwingDemonstrationDataset(Dataset):
         time_steps = np.linspace(0, 1, self.sequence_length)
 
         # State: q + qdot + time
-        state = np.concatenate([q, qdot, time_steps[:, None]], axis=1)  # (T, num_dofs*2 + 1)
+        state = np.concatenate(
+            [q, qdot, time_steps[:, None]], axis=1
+        )  # (T, num_dofs*2 + 1)
 
         # Action: q (position control)
         action = q
@@ -291,7 +293,10 @@ class ImitationTrainer:
 
             logger.info(
                 "Epoch %d/%d: loss=%.6f, lr=%.6f",
-                epoch, num_epochs, metrics['loss'], metrics['lr'],
+                epoch,
+                num_epochs,
+                metrics["loss"],
+                metrics["lr"],
             )
 
             # Save checkpoint
