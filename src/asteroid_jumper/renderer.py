@@ -305,7 +305,6 @@ class AsteroidJumperRenderer(QWidget):
 
     def _draw_craters(self, p: QPainter, ast: object, shape: object) -> None:
         """Draw decorative craters on the asteroid surface."""
-        from asteroid_jumper.physics import RigidBody
 
         crater_angles = [0.5, 1.8, 3.1, 4.7, 5.5]
         crater_sizes = [0.6, 0.4, 0.5, 0.3, 0.7]
