@@ -1,7 +1,4 @@
 import logging
-from typing import Any
-
-from numba import jit
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +66,6 @@ class PolicyEvaluator:
         logger.info(f"Loaded policy: {policy_path}")
         logger.info(f"Output directory: {output_dir}")
 
-    @jit(nopython=True, fastmath=True)
     def run_rollouts(self, num_rollouts: int = 50, record_video: bool = False) -> list[dict]:
         """
         Run multiple policy rollouts and collect metrics.
@@ -157,7 +153,7 @@ class PolicyEvaluator:
 
         return summary
 
-    def save_results(self, rollout_stats: list[dict], summary: dict) -> Any:
+    def save_results(self, rollout_stats: list[dict], summary: dict) -> None:
         """Save evaluation results to disk."""
         # Save raw rollout data
         results_file = self.output_dir / "rollout_results.json"
@@ -173,7 +169,7 @@ class PolicyEvaluator:
         logger.info(f"  Rollout data: {results_file}")
         logger.info(f"  Summary: {summary_file}")
 
-    def generate_plots(self, rollout_stats: list[dict]) -> Any:
+    def generate_plots(self, rollout_stats: list[dict]) -> None:
         """Generate evaluation plots."""
         if plt is None:
             logger.info("Skipping plots (matplotlib not available)")
@@ -254,7 +250,7 @@ class PolicyEvaluator:
 
         logger.info(f"✓ Plots saved to {plots_dir}")
 
-    def generate_report(self, summary: dict) -> Any:
+    def generate_report(self, summary: dict) -> None:
         """Generate HTML evaluation report."""
         report_path = self.output_dir / "report.html"
 
@@ -365,7 +361,7 @@ class PolicyEvaluator:
 
         logger.info(f"✓ Report generated: {report_path}")
 
-    def print_summary(self, summary: dict) -> Any:
+    def print_summary(self, summary: dict) -> None:
         """Print summary to console."""
         logger.info("\n" + "=" * 60)
         logger.info("EVALUATION SUMMARY")
@@ -391,7 +387,7 @@ class PolicyEvaluator:
         logger.info("\n" + "=" * 60)
 
 
-def main() -> Any:
+def main() -> None:
     parser = argparse.ArgumentParser(description="Evaluate trained golf swing policy")
 
     parser.add_argument(

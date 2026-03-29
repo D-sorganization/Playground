@@ -63,10 +63,10 @@ class SwingDemonstrationDataset(Dataset):
 
         logger.info(f"Loaded {len(self.demos)} demonstrations")
 
-    def __len__(self) -> Any:
+    def __len__(self) -> int:
         return len(self.demos)
 
-    def __getitem__(self, idx) -> Any:
+    def __getitem__(self, idx: int) -> dict[str, torch.Tensor]:
         """Return a demonstration sequence."""
         demo = self.demos[idx]
 
@@ -113,7 +113,7 @@ class PolicyNetwork(nn.Module):
         self,
         state_dim: int,
         action_dim: int,
-        hidden_dims: list[int] = None,
+        hidden_dims: list[int] | None = None,
     ):
         if hidden_dims is None:
             hidden_dims = [256, 256, 128]
@@ -133,7 +133,7 @@ class PolicyNetwork(nn.Module):
 
         self.network = nn.Sequential(*layers)
 
-    def forward(self, state) -> Any:
+    def forward(self, state: torch.Tensor) -> torch.Tensor:
         """Forward pass."""
         return self.network(state)
 
@@ -247,7 +247,7 @@ class ImitationTrainer:
 
         return {"loss": avg_loss, "lr": self.scheduler.get_last_lr()[0]}
 
-    def save_checkpoint(self, is_best: bool = False) -> Any:
+    def save_checkpoint(self, is_best: bool = False) -> None:
         """Save model checkpoint."""
         checkpoint = {
             "epoch": self.epoch,
@@ -272,7 +272,7 @@ class ImitationTrainer:
             torch.save(checkpoint, best_path)
             logger.info(f"  ✓ Saved best model (epoch {self.epoch})")
 
-    def train(self) -> Any:
+    def train(self) -> None:
         """Main training loop."""
         num_epochs = self.config["train"]["num_epochs"]
 
@@ -289,8 +289,9 @@ class ImitationTrainer:
             self.writer.add_scalar("train/loss", metrics["loss"], epoch)
             self.writer.add_scalar("train/lr", metrics["lr"], epoch)
 
-            print(
-                f"Epoch {epoch}/{num_epochs}: loss={metrics['loss']:.6f}, lr={metrics['lr']:.6f}"  # noqa: E501
+            logger.info(
+                "Epoch %d/%d: loss=%.6f, lr=%.6f",
+                epoch, num_epochs, metrics['loss'], metrics['lr'],
             )
 
             # Save checkpoint
@@ -308,7 +309,7 @@ class ImitationTrainer:
         self.writer.close()
 
 
-def main() -> Any:
+def main() -> None:
     parser = argparse.ArgumentParser(description="Train imitation learning policy")
 
     parser.add_argument(

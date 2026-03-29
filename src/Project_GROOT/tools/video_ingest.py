@@ -1,5 +1,4 @@
 import logging
-from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -103,7 +102,10 @@ class VideoIngester:
         }
 
         self.videos.append(entry)
-        print(f"Added: {video_id} ({entry['duration']:.2f}s, " f"{end_frame - start_frame} frames)")
+        logger.info(
+            "Added: %s (%.2fs, %d frames)",
+            video_id, entry['duration'], end_frame - start_frame,
+        )
 
         return entry
 
@@ -113,8 +115,8 @@ class VideoIngester:
         golfer_name: str = "Unknown",
         video_source: str = "local",
         recursive: bool = False,
-        extensions: tuple = (".mp4", ".avi", ".mov", ".MP4", ".AVI", ".MOV"),
-    ):
+        extensions: tuple[str, ...] = (".mp4", ".avi", ".mov", ".MP4", ".AVI", ".MOV"),
+    ) -> None:
         """
         Add all videos from a directory.
 
@@ -145,10 +147,10 @@ class VideoIngester:
                     golfer_name=golfer_name,
                     video_source=video_source,
                 )
-            except Exception as e:  # noqa: BLE001
+            except (OSError, ValueError, RuntimeError) as e:
                 logger.info(f"Error processing {video_file}: {e}")
 
-    def save(self) -> Any:
+    def save(self) -> None:
         """Save manifest to JSON file."""
         self.output_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -163,7 +165,8 @@ class VideoIngester:
 
         logger.info(f"\n✓ Manifest saved: {self.output_path}")
         logger.info(f"  Total videos: {len(self.videos)}")
-        print(f"  Total frames: " f"{sum(v['end_frame'] - v['start_frame'] for v in self.videos)}")
+        total_frames = sum(v['end_frame'] - v['start_frame'] for v in self.videos)
+        logger.info("  Total frames: %d", total_frames)
         logger.info(f"  Total duration: {sum(v['duration'] for v in self.videos):.2f}s")
 
     def _get_video_properties(self, video_path: Path) -> dict:
@@ -215,7 +218,7 @@ class VideoIngester:
         return video_id
 
 
-def main() -> Any:
+def main() -> None:
     parser = argparse.ArgumentParser(
         description="Ingest golf swing videos and create manifest",
         formatter_class=argparse.RawDescriptionHelpFormatter,

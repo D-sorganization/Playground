@@ -1,7 +1,5 @@
 import logging
 
-from numba import jit
-
 logger = logging.getLogger(__name__)
 
 #!/usr/bin/env python3
@@ -41,6 +39,14 @@ except ImportError:
     logger.info("Warning: scipy not installed. Install with: pip install scipy")
     gaussian_filter1d = None
     interp1d = None
+
+
+def _vector_angles_batch(v1: np.ndarray, v2: np.ndarray) -> np.ndarray:
+    """Compute angles between paired row-vectors (T, 3) -> (T,)."""
+    v1_norm = v1 / (np.linalg.norm(v1, axis=1, keepdims=True) + 1e-8)
+    v2_norm = v2 / (np.linalg.norm(v2, axis=1, keepdims=True) + 1e-8)
+    cos_angles = np.clip(np.sum(v1_norm * v2_norm, axis=1), -1.0, 1.0)
+    return np.arccos(cos_angles)
 
 
 class RobotConfig:
@@ -160,7 +166,6 @@ class PoseRetargeter:
             "timestamps": timestamps,
         }
 
-    @jit(nopython=True, fastmath=True)
     def _simple_ik_mapping(self, skeleton: np.ndarray, club_head: np.ndarray) -> np.ndarray:
         """
         Simplified IK: heuristic mapping from human joints to robot DOFs.
@@ -211,30 +216,33 @@ class PoseRetargeter:
         # 7-9: right_shoulder (pitch, roll, yaw)
         # 10: right_elbow
 
-        for t in range(T):
-            # Torso orientation from shoulder line
-            shoulder_vec = right_shoulder[t] - left_shoulder[t]
-            torso_yaw = np.arctan2(shoulder_vec[0], shoulder_vec[2])
-            q[t, 1] = torso_yaw
+        # Vectorized: compute all frames at once using numpy broadcasting
 
-            # Left arm
-            left_upper = left_elbow[t] - left_shoulder[t]
-            left_forearm = left_wrist[t] - left_elbow[t]
+        # Torso orientation from shoulder line
+        shoulder_vec = right_shoulder - left_shoulder  # (T, 3)
+        q[:, 1] = np.arctan2(shoulder_vec[:, 0], shoulder_vec[:, 2])
 
-            # Shoulder pitch (vertical angle)
-            q[t, 3] = np.arctan2(-left_upper[1], np.linalg.norm(left_upper[[0, 2]]))
+        # Left arm vectors (T, 3)
+        left_upper = left_elbow - left_shoulder
+        left_forearm = left_wrist - left_elbow
 
-            # Elbow flexion
-            elbow_angle = self._vector_angle(left_upper, left_forearm)
-            q[t, 6] = np.pi - elbow_angle  # Elbow flexion
+        # Left shoulder pitch
+        left_horiz = np.linalg.norm(left_upper[:, [0, 2]], axis=1)
+        q[:, 3] = np.arctan2(-left_upper[:, 1], left_horiz)
 
-            # Right arm (mirror)
-            right_upper = right_elbow[t] - right_shoulder[t]
-            right_forearm = right_wrist[t] - right_elbow[t]
+        # Left elbow flexion
+        q[:, 6] = np.pi - _vector_angles_batch(left_upper, left_forearm)
 
-            q[t, 7] = np.arctan2(-right_upper[1], np.linalg.norm(right_upper[[0, 2]]))
-            elbow_angle = self._vector_angle(right_upper, right_forearm)
-            q[t, 10] = np.pi - elbow_angle
+        # Right arm vectors (T, 3)
+        right_upper = right_elbow - right_shoulder
+        right_forearm = right_wrist - right_elbow
+
+        # Right shoulder pitch
+        right_horiz = np.linalg.norm(right_upper[:, [0, 2]], axis=1)
+        q[:, 7] = np.arctan2(-right_upper[:, 1], right_horiz)
+
+        # Right elbow flexion
+        q[:, 10] = np.pi - _vector_angles_batch(right_upper, right_forearm)
 
         # Scale to reasonable ranges (heuristic)
         q = np.clip(q, -np.pi, np.pi)
@@ -246,13 +254,6 @@ class PoseRetargeter:
             q = q[:, :num_dofs]
 
         return q
-
-    def _vector_angle(self, v1: np.ndarray, v2: np.ndarray) -> float:
-        """Compute angle between two vectors."""
-        v1_norm = v1 / (np.linalg.norm(v1) + 1e-8)
-        v2_norm = v2 / (np.linalg.norm(v2) + 1e-8)
-        cos_angle = np.clip(np.dot(v1_norm, v2_norm), -1.0, 1.0)
-        return np.arccos(cos_angle)
 
 
 def validate_trajectory(
@@ -310,7 +311,7 @@ def validate_trajectory(
     return report
 
 
-def main() -> Any:
+def main() -> None:
     parser = argparse.ArgumentParser(
         description="Retarget human poses to robot joint space",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -425,7 +426,7 @@ def main() -> Any:
                 for warning in validation["warnings"][:2]:  # Show first 2
                     logger.info(f"      WARNING: {warning}")
 
-        except Exception as e:  # noqa: BLE001
+        except (OSError, ValueError, KeyError, RuntimeError) as e:
             logger.info(f"  ✗ {pose_file.name}: {e}")
             all_reports.append(
                 {

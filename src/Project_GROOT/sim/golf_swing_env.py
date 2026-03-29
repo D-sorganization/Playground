@@ -16,6 +16,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+import gymnasium as gym
 import omni.isaac.lab.sim as sim_utils
 import torch
 from omni.isaac.lab.assets import Articulation, ArticulationCfg
@@ -97,7 +98,7 @@ class GolfSwingEnv(DirectRLEnv):
         self.max_clubhead_speed = torch.zeros(self.num_envs, device=self.device)
         self.episode_swing_count = torch.zeros(self.num_envs, device=self.device)
 
-    def _setup_scene(self) -> Any:
+    def _setup_scene(self) -> None:
         """Setup the scene with robot and environment objects."""
         # Create robot articulation
         self.robot = Articulation(self.cfg.robot_cfg)
@@ -114,7 +115,7 @@ class GolfSwingEnv(DirectRLEnv):
         cfg = sim_utils.DomeLightCfg(intensity=2000.0, color=(0.75, 0.75, 0.75))
         cfg.func("/World/Light", cfg)
 
-    def _pre_physics_step(self, actions: torch.Tensor) -> Any:
+    def _pre_physics_step(self, actions: torch.Tensor) -> None:
         """Process actions before physics step."""
         # Scale actions
         self.actions = actions * self.cfg.action_scale
@@ -122,7 +123,7 @@ class GolfSwingEnv(DirectRLEnv):
         # Set joint position targets (PD control)
         self.joint_pos_target = self.robot.data.default_joint_pos + self.actions
 
-    def _apply_action(self) -> Any:
+    def _apply_action(self) -> None:
         """Apply actions to the robot."""
         # Apply joint position targets
         self.robot.set_joint_position_target(self.joint_pos_target)
@@ -217,7 +218,7 @@ class GolfSwingEnv(DirectRLEnv):
 
         return terminated, truncated
 
-    def _reset_idx(self, env_ids: torch.Tensor | None) -> Any:
+    def _reset_idx(self, env_ids: torch.Tensor | None) -> None:
         """Reset specified environments."""
         if env_ids is None:
             env_ids = torch.arange(self.num_envs, device=self.device)
@@ -241,7 +242,7 @@ class GolfSwingEnv(DirectRLEnv):
         # Reset buffers
         super()._reset_idx(env_ids)
 
-    def _update_clubhead_state(self) -> Any:
+    def _update_clubhead_state(self) -> None:
         """Update clubhead position and velocity from robot state."""
         # Get end-effector (right hand) link state
         # This assumes the club is attached to the right hand
@@ -292,8 +293,6 @@ class GolfSwingEnv(DirectRLEnv):
 
 
 # Register environment
-import gymnasium as gym  # noqa: E402
-
 gym.register(
     id="GolfSwing-v0",
     entry_point="sim.golf_swing_env:GolfSwingEnv",

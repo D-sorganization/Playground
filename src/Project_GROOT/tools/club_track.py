@@ -152,7 +152,7 @@ class ClubTracker:
         pose_file: str,
         output_file: str,
         video_path: str | None = None,
-    ):
+    ) -> dict[str, float]:
         """
         Add club tracking data to existing pose .npz file.
 
@@ -245,7 +245,7 @@ class ClubTracker:
         return cumulative
 
 
-def main() -> Any:
+def main() -> None:
     parser = argparse.ArgumentParser(
         description="Track golf club trajectory from pose data",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -333,7 +333,7 @@ def main() -> Any:
 
             logger.info(f"{video_id}: max speed = {stats['max_clubhead_speed']:.1f} m/s")
 
-        except Exception as e:  # noqa: BLE001
+        except (OSError, ValueError, KeyError, RuntimeError) as e:
             logger.info(f"Error processing {video_id}: {e}")
             continue
 
@@ -346,7 +346,10 @@ def main() -> Any:
     if all_stats:
         max_speeds = [s["max_clubhead_speed"] for s in all_stats]
         logger.info(f"\n✓ Processed {len(all_stats)} videos")
-        print(f"  Clubhead speed range: {min(max_speeds):.1f} - {max(max_speeds):.1f} m/s")
+        logger.info(
+            "  Clubhead speed range: %.1f - %.1f m/s",
+            min(max_speeds), max(max_speeds),
+        )
         logger.info(f"  Mean max speed: {np.mean(max_speeds):.1f} m/s")
         logger.info(f"  Stats saved to {stats_file}")
 
@@ -355,7 +358,7 @@ def main() -> Any:
         visualize_club_stats(all_stats)
 
 
-def visualize_club_stats(stats: list) -> Any:
+def visualize_club_stats(stats: list[dict[str, object]]) -> None:
     """Visualize club tracking statistics."""
     try:
         import matplotlib.pyplot as plt
