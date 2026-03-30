@@ -87,7 +87,7 @@ report += """
 """
 
 for group, weight in GROUPS.items():
-    report += f"- **{group}** ({weight*100}%): {grouped_averages[group]:.2f}/10\n"
+    report += f"- **{group}** ({weight * 100}%): {grouped_averages[group]:.2f}/10\n"
 
 report += f"""
 ## Weighted Average
