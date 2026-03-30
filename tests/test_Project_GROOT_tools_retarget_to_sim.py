@@ -1,10 +1,10 @@
-"""Auto-generated syntax verification test suite for Project_GROOT.tools.retarget_to_sim."""
+"""Auto-generated syntax verification tests for retarget_to_sim."""
 
 import src.Project_GROOT.tools.retarget_to_sim as target_module
 
 
 def test_module_syntax_and_import():
-    """Verify Project_GROOT.tools.retarget_to_sim can be successfully imported and parsed."""
+    """Verify Project_GROOT.tools.retarget_to_sim can be imported."""
     assert target_module is not None
 
 

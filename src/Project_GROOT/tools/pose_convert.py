@@ -1,8 +1,3 @@
-import logging
-from typing import Any
-
-logger = logging.getLogger(__name__)
-
 #!/usr/bin/env python3
 """
 Pose Conversion Tool for Project GROOT
@@ -23,8 +18,10 @@ Usage:
 
 import argparse
 import json
+import logging
 import warnings
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 
@@ -32,7 +29,6 @@ try:
     import cv2
 except ImportError:
     cv2 = None
-    logger.info("Warning: OpenCV not installed")
 
 try:
     from tqdm import tqdm
@@ -40,6 +36,9 @@ except ImportError:
 
     def tqdm(x, **kwargs) -> Any:
         return x  # Fallback
+
+
+logger = logging.getLogger(__name__)
 
 
 class PoseExtractor:

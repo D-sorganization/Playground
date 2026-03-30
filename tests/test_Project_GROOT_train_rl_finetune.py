@@ -4,7 +4,7 @@ import src.Project_GROOT.train.rl_finetune as target_module
 
 
 def test_module_syntax_and_import():
-    """Verify Project_GROOT.train.rl_finetune can be successfully imported and parsed."""
+    """Verify Project_GROOT.train.rl_finetune can be imported."""
     assert target_module is not None
 
 

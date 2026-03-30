@@ -1,10 +1,10 @@
-"""Auto-generated syntax verification test suite for Project_GROOT.tools.pose_convert."""
+"""Auto-generated syntax verification tests for pose_convert."""
 
 import src.Project_GROOT.tools.pose_convert as target_module
 
 
 def test_module_syntax_and_import():
-    """Verify Project_GROOT.tools.pose_convert can be successfully imported and parsed."""
+    """Verify Project_GROOT.tools.pose_convert can be imported."""
     assert target_module is not None
 
 

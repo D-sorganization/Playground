@@ -1,7 +1,3 @@
-import logging
-
-logger = logging.getLogger(__name__)
-
 #!/usr/bin/env python3
 """
 Video Ingestion Tool for Project GROOT
@@ -24,7 +20,10 @@ Usage:
 import argparse
 import hashlib
 import json
+import logging
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 try:
     import cv2

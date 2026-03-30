@@ -1,8 +1,3 @@
-import logging
-from typing import Any
-
-logger = logging.getLogger(__name__)
-
 #!/usr/bin/env python3
 """
 Club Tracking Tool for Project GROOT
@@ -21,7 +16,9 @@ Usage:
 
 import argparse
 import json
+import logging
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 
@@ -36,6 +33,9 @@ except ImportError:
 
     def tqdm(x, **kwargs) -> Any:
         return x
+
+
+logger = logging.getLogger(__name__)
 
 
 class ClubTracker:

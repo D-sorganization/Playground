@@ -4,7 +4,7 @@ import src.Project_GROOT.eval.rollout_eval as target_module
 
 
 def test_module_syntax_and_import():
-    """Verify Project_GROOT.eval.rollout_eval can be successfully imported and parsed."""
+    """Verify Project_GROOT.eval.rollout_eval can be imported."""
     assert target_module is not None
 
 
