@@ -198,7 +198,7 @@ def run_assessment(assessment_id: str, output_path: Path) -> int:
     elif assessment_id == "D":  # Error Handling
         try_count = count_occurrences(r"try:", python_files)
         except_count = count_occurrences(r"except\s+.*:", python_files)
-        bare_except_count = count_occurrences(r"except Exception as e:", python_files)
+        bare_except_count = count_occurrences(r"except Exception as e:", python_files)  # noqa: BLE001
         findings.append(f"- Try blocks: {try_count}")
         findings.append(f"- Except blocks: {except_count}")
         findings.append(f"- Bare except blocks: {bare_except_count}")
@@ -207,7 +207,7 @@ def run_assessment(assessment_id: str, output_path: Path) -> int:
             findings.append(
                 "MAJOR: Found "
                 f"{bare_except_count} bare "
-                "'except Exception as e:' blocks. "
+                "'except Exception as e:' blocks. "  # noqa: BLE001
                 "Catch specific exceptions."
             )
 
