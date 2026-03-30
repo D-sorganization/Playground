@@ -1,7 +1,3 @@
-import logging
-
-logger = logging.getLogger(__name__)
-
 #!/usr/bin/env python3
 """
 RL Fine-tuning Script for Project GROOT
@@ -17,11 +13,14 @@ Usage:
 """
 
 import argparse
+import logging
 from pathlib import Path
 
 import numpy as np
 import torch
 import yaml
+
+logger = logging.getLogger(__name__)
 
 # Isaac Lab imports (these would be actual imports in a full implementation)
 # from omni.isaac.lab_tasks.utils.wrappers.rl_games import RlGamesVecEnvWrapper

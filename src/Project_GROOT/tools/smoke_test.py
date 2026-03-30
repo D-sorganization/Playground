@@ -1,7 +1,3 @@
-import logging
-
-logger = logging.getLogger(__name__)
-
 #!/usr/bin/env python3
 """
 Smoke Test for Project GROOT
@@ -15,8 +11,11 @@ Usage:
 """
 
 import argparse
+import logging
 import sys
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 
 def test_gpu() -> bool:

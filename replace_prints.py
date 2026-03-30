@@ -1,7 +1,7 @@
 import os
 import re
 
-for r, d, f in os.walk("."):
+for r, _d, f in os.walk("."):
     if ".git" in r or "venv" in r or ".venv" in r or "node_modules" in r:
         continue
     for file in f:

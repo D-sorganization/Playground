@@ -41,7 +41,7 @@ class Vec2(NamedTuple):
         return Vec2(self.x - other.x, self.y - other.y)
 
     def __mul__(self, scalar: object) -> Vec2:
-        if not isinstance(scalar, (int, float)):
+        if not isinstance(scalar, int | float):
             raise ValueError("Vec2 * scalar required")
         return Vec2(self.x * scalar, self.y * scalar)
 

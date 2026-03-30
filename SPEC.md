@@ -2,7 +2,7 @@
 
 <!--
   TEMPLATE VERSION: 1.0.0
-  LAST UPDATED: 2026-03-28
+  LAST UPDATED: 2026-03-30
 
   This is the canonical specification template for all repositories in the
   D-sorganization fleet. Every repo MUST have a SPEC.md at its root.
@@ -28,7 +28,7 @@
 | **License** | MIT |
 | **Current Version** | N/A |
 | **Spec Version** | 1.0.0 |
-| **Last Spec Update** | 2026-03-28 |
+| **Last Spec Update** | 2026-03-30 |
 
 ## 2. Purpose & Mission
 
@@ -100,6 +100,7 @@ Playground/
 | F3 | Solar System Model | ✅ | Celestial mechanics and orbital simulation demo |
 | F4 | Project GROOT Simulation | 🔄 | Core simulation engine with environment and agent interactions |
 | F5 | Fleet CI Compliance Template | ✅ | Reference CI/CD configuration enforcing fleet standards |
+| F6 | Assessment aggregation tooling | ✅ | Builds per-category assessments and compiles `docs/assessments/Comprehensive_Assessment.md` |
 
 ### API / Interface Contract
 
@@ -132,6 +133,7 @@ Configuration is managed via:
 - **Config files**: YAML specifications in `src/Project_GROOT/conf/`
 - **CLI arguments**: Scripts in `src/Project_GROOT/tools/` accept configuration overrides
 - **.fleetrc**: Fleet protocol compliance configuration at repository root
+- **Assessment tooling**: `make_comprehensive.py` compiles the generated category assessments into the repository-wide comprehensive report
 
 ## 7. Testing Specification
 

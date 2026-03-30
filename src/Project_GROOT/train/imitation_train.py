@@ -1,8 +1,3 @@
-import logging
-from typing import Any
-
-logger = logging.getLogger(__name__)
-
 #!/usr/bin/env python3
 """
 Imitation Learning Training Script for Project GROOT
@@ -16,7 +11,9 @@ Usage:
 """
 
 import argparse
+import logging
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 import torch
@@ -26,12 +23,17 @@ import yaml
 from torch.utils.data import DataLoader, Dataset
 from torch.utils.tensorboard import SummaryWriter
 
+logger = logging.getLogger(__name__)
+
 try:
     from tqdm import tqdm
 except ImportError:
 
     def tqdm(x, **kwargs) -> Any:
         return x
+
+
+logger = logging.getLogger(__name__)
 
 
 class SwingDemonstrationDataset(Dataset):

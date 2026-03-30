@@ -1,10 +1,10 @@
-"""Auto-generated syntax verification test suite for Project_GROOT.sim.golf_swing_env."""
+"""Auto-generated syntax verification tests for golf_swing_env."""
 
 import src.Project_GROOT.sim.golf_swing_env as target_module
 
 
 def test_module_syntax_and_import():
-    """Verify Project_GROOT.sim.golf_swing_env can be successfully imported and parsed."""
+    """Verify Project_GROOT.sim.golf_swing_env can be imported."""
     assert target_module is not None
 
 

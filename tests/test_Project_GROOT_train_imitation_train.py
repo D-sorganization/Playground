@@ -1,10 +1,10 @@
-"""Auto-generated syntax verification test suite for Project_GROOT.train.imitation_train."""
+"""Auto-generated syntax verification tests for imitation_train."""
 
 import src.Project_GROOT.train.imitation_train as target_module
 
 
 def test_module_syntax_and_import():
-    """Verify Project_GROOT.train.imitation_train can be successfully imported and parsed."""
+    """Verify Project_GROOT.train.imitation_train can be imported."""
     assert target_module is not None
 
 

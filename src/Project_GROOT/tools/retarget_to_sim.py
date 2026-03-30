@@ -1,7 +1,3 @@
-import logging
-
-logger = logging.getLogger(__name__)
-
 #!/usr/bin/env python3
 """
 Retargeting Tool for Project GROOT
@@ -18,11 +14,14 @@ Usage:
 
 import argparse
 import json
+import logging
 from pathlib import Path
 from typing import Any
 
 import numpy as np
 import yaml
+
+logger = logging.getLogger(__name__)
 
 try:
     from tqdm import tqdm
@@ -31,6 +30,8 @@ except ImportError:
     def tqdm(x, **kwargs) -> Any:
         return x
 
+
+logger = logging.getLogger(__name__)
 
 try:
     from scipy.interpolate import interp1d
