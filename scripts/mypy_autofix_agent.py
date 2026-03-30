@@ -23,12 +23,15 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import logging
 import re
 import subprocess
 import sys
 from collections import defaultdict
 from dataclasses import dataclass, field
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -164,7 +167,9 @@ def parse_mypy_output(output: str) -> list[MypyError]:
     """Parse mypy output into structured errors."""
     errors = []
     # Pattern: file.py:line:col: severity: message  [error-code]
-    pattern = re.compile(r"^(.+?):(\d+):(\d+):\s+(error|note):\s+(.+?)(?:\s+\[([^\]]+)\])?\s*$")
+    pattern = re.compile(
+        r"^(.+?):(\d+):(\d+):\s+(error|note):\s+(.+?)(?:\s+\[([^\]]+)\])?\s*$"
+    )
     for line in output.splitlines():
         match = pattern.match(line.strip())
         if match:
@@ -330,7 +335,9 @@ def fix_union_attr(lines: list[str], error: MypyError) -> Fix | None:
     return Fix(
         file=error.file,
         line=error.line,
-        description=(f"Add isinstance({var_name}, {target_type}) narrowing for union-attr"),
+        description=(
+            f"Add isinstance({var_name}, {target_type}) narrowing for union-attr"
+        ),
         strategy="real-fix",
         original_code=line.strip(),
     )
@@ -516,16 +523,16 @@ def run_agent(
 
     # Step 1: Run mypy
     if verbose:
-        print(f">>> Running mypy on targets: {targets or 'default'}...")
+        logger.info(f">>> Running mypy on targets: {targets or 'default'}...")
     output = run_mypy(config_file, targets)
     errors = parse_mypy_output(output)
     report.total_errors = len(errors)
 
     if verbose:
-        print(f">>> Found {len(errors)} mypy errors")
+        logger.info(f">>> Found {len(errors)} mypy errors")
 
     if not errors:
-        print("No mypy errors found.")
+        logger.info("No mypy errors found.")
         return report
 
     # Step 2: Group errors by file
@@ -534,7 +541,9 @@ def run_agent(
         if is_safe_path(error.file):
             errors_by_file[error.file].append(error)
         else:
-            report.skipped_reasons.append(f"Skipped {error.file}:{error.line} - outside safe path")
+            report.skipped_reasons.append(
+                f"Skipped {error.file}:{error.line} - outside safe path"
+            )
 
     # Step 3: Apply fixes (file by file, respecting limits)
     files_modified = 0
@@ -551,10 +560,14 @@ def run_agent(
 
     for filepath, file_errors in sorted(errors_by_file.items()):
         if files_modified >= max_files:
-            report.skipped_reasons.append(f"Skipped {filepath} - max files ({max_files}) reached")
+            report.skipped_reasons.append(
+                f"Skipped {filepath} - max files ({max_files}) reached"
+            )
             continue
         if total_fixes >= max_fixes:
-            report.skipped_reasons.append(f"Skipped {filepath} - max fixes ({max_fixes}) reached")
+            report.skipped_reasons.append(
+                f"Skipped {filepath} - max fixes ({max_fixes}) reached"
+            )
             continue
 
         lines = read_file_lines(filepath)
@@ -585,8 +598,8 @@ def run_agent(
                     f"  [{fix.strategy}] {fix.file}:{fix.line} - {fix.description}"
                 )
                 if verbose:
-                    print(f"  FIX: {fix.file}:{fix.line} [{fix.strategy}]")
-                    print(f"       {fix.description}")
+                    logger.info(f"  FIX: {fix.file}:{fix.line} [{fix.strategy}]")
+                    logger.info(f"       {fix.description}")
             else:
                 report.skipped_reasons.append(
                     "No fix available: "
@@ -607,29 +620,29 @@ def run_agent(
 
 def print_report(report: AgentReport) -> None:
     """Print a human-readable report."""
-    print("\n" + "=" * 60)
-    print("  MYPY AUTOFIX AGENT REPORT")
-    print("=" * 60)
-    print(f"  Total mypy errors found:  {report.total_errors}")
-    print(f"  Errors fixed:             {report.errors_fixed}")
-    print(f"    Real fixes:             {report.real_fixes}")
-    print(f"    Suppressions:           {report.suppressions}")
-    print(f"  Files modified:           {len(report.files_modified)}")
+    logger.info("\n" + "=" * 60)
+    logger.info("  MYPY AUTOFIX AGENT REPORT")
+    logger.info("=" * 60)
+    logger.info(f"  Total mypy errors found:  {report.total_errors}")
+    logger.info(f"  Errors fixed:             {report.errors_fixed}")
+    logger.info(f"    Real fixes:             {report.real_fixes}")
+    logger.info(f"    Suppressions:           {report.suppressions}")
+    logger.info(f"  Files modified:           {len(report.files_modified)}")
 
     if report.fixes_applied:
-        print("\n  Fixes applied:")
+        logger.info("\n  Fixes applied:")
         for fix_desc in report.fixes_applied:
-            print(f"  {fix_desc}")
+            logger.info(f"  {fix_desc}")
 
     if report.skipped_reasons:
-        print(f"\n  Skipped ({len(report.skipped_reasons)}):")
+        logger.info(f"\n  Skipped ({len(report.skipped_reasons)}):")
         # Only show first 10 skipped reasons
         for reason in report.skipped_reasons[:10]:
-            print(f"    - {reason}")
+            logger.info(f"    - {reason}")
         if len(report.skipped_reasons) > 10:
-            print(f"    ... and {len(report.skipped_reasons) - 10} more")
+            logger.info(f"    ... and {len(report.skipped_reasons) - 10} more")
 
-    print("=" * 60)
+    logger.info("=" * 60)
 
 
 def main() -> int:

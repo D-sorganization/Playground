@@ -114,7 +114,9 @@ class ClubTracker:
 
         # Normalize
         wrist_direction_norm = np.linalg.norm(wrist_direction, axis=1, keepdims=True)
-        wrist_direction_norm = np.clip(wrist_direction_norm, 1e-6, None)  # Avoid div by zero
+        wrist_direction_norm = np.clip(
+            wrist_direction_norm, 1e-6, None
+        )  # Avoid div by zero
         wrist_direction_unit = wrist_direction / wrist_direction_norm
 
         # Extend line from grip through hands to estimate clubhead
@@ -199,7 +201,9 @@ class ClubTracker:
             "total_path_length": float(club_path[-1]),
         }
 
-    def _compute_clubhead_speed(self, club_head: np.ndarray, timestamps: np.ndarray) -> np.ndarray:
+    def _compute_clubhead_speed(
+        self, club_head: np.ndarray, timestamps: np.ndarray
+    ) -> np.ndarray:
         """
         Compute clubhead speed from trajectory.
 
@@ -319,7 +323,9 @@ def main() -> None:
                 pose_file=str(pose_file),
                 output_file=str(output_file),
                 video_path=(
-                    video_entry.get("video_path") if args.method == "optical_flow" else None
+                    video_entry.get("video_path")
+                    if args.method == "optical_flow"
+                    else None
                 ),
             )
 
@@ -331,7 +337,9 @@ def main() -> None:
                 }
             )
 
-            logger.info(f"{video_id}: max speed = {stats['max_clubhead_speed']:.1f} m/s")
+            logger.info(
+                f"{video_id}: max speed = {stats['max_clubhead_speed']:.1f} m/s"
+            )
 
         except (OSError, ValueError, KeyError, RuntimeError) as e:
             logger.info(f"Error processing {video_id}: {e}")
@@ -348,7 +356,8 @@ def main() -> None:
         logger.info(f"\n✓ Processed {len(all_stats)} videos")
         logger.info(
             "  Clubhead speed range: %.1f - %.1f m/s",
-            min(max_speeds), max(max_speeds),
+            min(max_speeds),
+            max(max_speeds),
         )
         logger.info(f"  Mean max speed: {np.mean(max_speeds):.1f} m/s")
         logger.info(f"  Stats saved to {stats_file}")

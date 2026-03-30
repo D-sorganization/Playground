@@ -53,7 +53,9 @@ class TestQualityChecker(unittest.TestCase):
         self.checker.check_imports(test_file)
 
         # Should find one wildcard import issue
-        import_issues = [issue for issue in self.checker.issues if issue[1] == "wildcard_import"]
+        import_issues = [
+            issue for issue in self.checker.issues if issue[1] == "wildcard_import"
+        ]
         self.assertEqual(len(import_issues), 1)
 
     def test_should_skip_file(self) -> None:

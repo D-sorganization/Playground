@@ -66,7 +66,9 @@ class PolicyEvaluator:
         logger.info(f"Loaded policy: {policy_path}")
         logger.info(f"Output directory: {output_dir}")
 
-    def run_rollouts(self, num_rollouts: int = 50, record_video: bool = False) -> list[dict]:
+    def run_rollouts(
+        self, num_rollouts: int = 50, record_video: bool = False
+    ) -> list[dict]:
         """
         Run multiple policy rollouts and collect metrics.
 

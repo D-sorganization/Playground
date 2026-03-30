@@ -37,7 +37,9 @@ if str(_REPO_ROOT) not in sys.path:
 def setup_script_logging(name):
     import logging
 
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+    logging.basicConfig(
+        level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+    )
     return logging.getLogger(name)
 
 
@@ -297,4 +299,4 @@ if __name__ == "__main__":
     repo_root = Path.cwd()
     results = run_review(repo_root)
     generate_markdown_report(results, args.output)
-    print(f"Report generated at {args.output}")
+    logger.info(f"Report generated at {args.output}")
