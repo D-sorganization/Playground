@@ -108,7 +108,12 @@ def analyze_todos() -> tuple[list[Finding], list[Finding]]:
             return None
 
         if re.search(r"\b" + todo_str + r"\b", content):
-            return {"file": filepath, "line": lineno, "text": content, "type": "TRACKED_TASK"}
+            return {
+                "file": filepath,
+                "line": lineno,
+                "text": content,
+                "type": "TRACKED_TASK",
+            }
 
         for m_marker in fixme_markers:
             if re.search(r"\b" + m_marker + r"\b", content):
@@ -351,7 +356,9 @@ def generate_report() -> None:
     report.append("|---|---|---|---|")
     for item in fixmes:
         text = item.get("text", "").replace("|", "\\|")
-        report.append(f"| `{item['file']}` | {item['line']} | {text[:100]} | {item['type']} |")
+        report.append(
+            f"| `{item['file']}` | {item['line']} | {text[:100]} | {item['type']} |"
+        )
 
     # Recommended Implementation Order
     report.append("\n## Recommended Implementation Order")
