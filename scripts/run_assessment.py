@@ -128,7 +128,7 @@ def count_occurrences(pattern: str, files: list[Path]) -> int:
         try:
             content = file.read_text(encoding="utf-8", errors="ignore")
             count += len(re.findall(pattern, content))
-        except Exception:  # noqa: BLE001
+        except Exception:  # noqa: BLE001  # noqa: BLE001
             pass
     return count
 
@@ -384,7 +384,7 @@ def run_assessment(assessment_id: str, output_path: Path) -> int:
                 )
                 if line_count > 300:
                     large_files += 1
-            except Exception:  # noqa: BLE001
+            except Exception:  # noqa: BLE001  # noqa: BLE001
                 pass
 
         findings.append(f"- Large files (>300 lines): {large_files}")
