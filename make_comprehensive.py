@@ -58,11 +58,16 @@ grouped_scores = {group: [] for group in GROUPS}
 for cat, score in scores.items():
     grouped_scores[CATEGORIES[cat][1]].append(score)
 
-grouped_averages = {group: sum(vals)/len(vals) if vals else 0 for group, vals in grouped_scores.items()}
+grouped_averages = {
+    group: sum(vals) / len(vals) if vals else 0
+    for group, vals in grouped_scores.items()
+}
 
-weighted_average = sum(grouped_averages[group] * weight for group, weight in GROUPS.items())
+weighted_average = sum(
+    grouped_averages[group] * weight for group, weight in GROUPS.items()
+)
 
-report = f"""# Comprehensive Assessment
+report = """# Comprehensive Assessment
 
 ## Grade Table
 
@@ -75,7 +80,7 @@ for cat in sorted(scores.keys()):
     score = scores[cat]
     report += f"| {cat} | {name} | {score}/10 | {group} |\n"
 
-report += f"""
+report += """
 
 ## Grouped Scores
 
