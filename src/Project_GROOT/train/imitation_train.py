@@ -23,6 +23,8 @@ import yaml
 from torch.utils.data import DataLoader, Dataset
 from torch.utils.tensorboard import SummaryWriter
 
+logger = logging.getLogger(__name__)
+
 try:
     from tqdm import tqdm
 except ImportError:

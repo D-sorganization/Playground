@@ -21,6 +21,8 @@ from typing import Any
 import numpy as np
 import yaml
 
+logger = logging.getLogger(__name__)
+
 try:
     from tqdm import tqdm
 except ImportError:

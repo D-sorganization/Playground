@@ -25,6 +25,8 @@ from typing import Any
 
 import numpy as np
 
+logger = logging.getLogger(__name__)
+
 try:
     import cv2
 except ImportError:
