@@ -206,7 +206,9 @@ def run_assessment(assessment_id: str, output_path: Path) -> int:
             score -= min(5, bare_except_count)
             findings.append(
                 "MAJOR: Found "
-                f"{bare_except_count} bare 'except Exception as e:' blocks. Catch specific exceptions."
+                f"{bare_except_count} bare "
+                "'except Exception as e:' blocks. "
+                "Catch specific exceptions."
             )
 
     elif assessment_id == "F":  # Security

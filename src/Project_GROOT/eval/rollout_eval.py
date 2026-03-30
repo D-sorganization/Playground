@@ -1,7 +1,3 @@
-import logging
-
-logger = logging.getLogger(__name__)
-
 #!/usr/bin/env python3
 """
 Rollout Evaluation Script for Project GROOT
@@ -23,11 +19,14 @@ Usage:
 
 import argparse
 import json
+import logging
 from pathlib import Path
 
 import numpy as np
 import torch
 import yaml
+
+logger = logging.getLogger(__name__)
 
 try:
     import matplotlib
