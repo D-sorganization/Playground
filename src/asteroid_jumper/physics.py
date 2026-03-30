@@ -26,12 +26,16 @@ class Vec2(NamedTuple):
     x: float = 0.0
     y: float = 0.0
 
-    def __add__(self, other: object) -> Vec2:  # noqa: PYI034  # override with wider type
+    def __add__(
+        self, other: object
+    ) -> Vec2:  # noqa: PYI034  # override with wider type
         if not isinstance(other, Vec2):
             raise ValueError("Vec2 + Vec2 required")
         return Vec2(self.x + other.x, self.y + other.y)
 
-    def __sub__(self, other: object) -> Vec2:  # noqa: PYI034  # override with wider type
+    def __sub__(
+        self, other: object
+    ) -> Vec2:  # noqa: PYI034  # override with wider type
         if not isinstance(other, Vec2):
             raise ValueError("Vec2 - Vec2 required")
         return Vec2(self.x - other.x, self.y - other.y)
@@ -131,23 +135,23 @@ class RigidBody:
 def moment_of_inertia_ellipse(mass: float, a: float, b: float) -> float:
     """Moment of inertia for a solid ellipse with semi-axes a, b."""
     if not (mass > 0):
-        raise ValueError('DbC Blocked: Precondition failed.')
+        raise ValueError("DbC Blocked: Precondition failed.")
     if not (a > 0 and b > 0):
-        raise ValueError('DbC Blocked: Precondition failed.')
+        raise ValueError("DbC Blocked: Precondition failed.")
     return 0.25 * mass * (a**2 + b**2)
 
 
 def moment_of_inertia_disk(mass: float, radius: float) -> float:
     """Moment of inertia for a solid disk."""
     if not (mass > 0 and radius > 0):
-        raise ValueError('DbC Blocked: Precondition failed.')
+        raise ValueError("DbC Blocked: Precondition failed.")
     return 0.5 * mass * radius**2
 
 
 def moment_of_inertia_rod(mass: float, length: float) -> float:
     """Moment of inertia for a thin rod about its centre."""
     if not (mass > 0 and length > 0):
-        raise ValueError('DbC Blocked: Precondition failed.')
+        raise ValueError("DbC Blocked: Precondition failed.")
     return mass * length**2 / 12.0
 
 
@@ -245,9 +249,9 @@ class SpringLaunch:
 
     def __post_init__(self) -> None:
         if not (self.total_impulse >= 0):
-            raise ValueError('DbC Blocked: Precondition failed.')
+            raise ValueError("DbC Blocked: Precondition failed.")
         if not (self.duration > 0):
-            raise ValueError('DbC Blocked: Precondition failed.')
+            raise ValueError("DbC Blocked: Precondition failed.")
 
     @property
     def is_complete(self) -> bool:
@@ -261,7 +265,7 @@ class SpringLaunch:
         or None if the launch is already complete.
         """
         if not (dt > 0):
-            raise ValueError('DbC Blocked: Precondition failed.')
+            raise ValueError("DbC Blocked: Precondition failed.")
         if self.is_complete:
             return None
         remaining = self.duration - self.elapsed
@@ -328,7 +332,7 @@ class SimState:
 def step_simulation(state: SimState, dt: float) -> None:
     """Advance the simulation by *dt* seconds (mutates *state*)."""
     if not (dt > 0):
-        raise ValueError('DbC Blocked: Precondition failed.')
+        raise ValueError("DbC Blocked: Precondition failed.")
 
     if state.spring is not None and not state.spring.is_complete:
         result = state.spring.step(dt)
