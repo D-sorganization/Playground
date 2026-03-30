@@ -26,8 +26,8 @@
 | **Owner** | D-sorganization |
 | **Primary Language(s)** | Python 3.11+ |
 | **License** | MIT |
-| **Current Version** | N/A |
-| **Spec Version** | 1.0.0 |
+| **Current Version** | 1.0.1 |
+| **Spec Version** | 1.0.1 |
 | **Last Spec Update** | 2026-03-30 |
 
 ## 2. Purpose & Mission
@@ -284,6 +284,7 @@ Active development with focus on Project GROOT implementation. Demos (Asteroid F
 
 | Date | Version | Changes |
 |------|---------|---------|
+| 2026-03-30 | 1.0.1 | A-N Assessment remediation (issue #200): auto-formatted 30 files to comply with black 100-char line limit; ruff checks pass with zero violations |
 | 2026-03-28 | 1.0.0 | Initial specification |
 
 ---
