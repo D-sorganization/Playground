@@ -34,6 +34,7 @@ class TI89Calculator:
     _TRANSFORMATIONS_CACHE: tuple | None = None
 
     def __init__(self) -> None:
+        """Initialise the calculator and populate class-level caches on first use."""
         if TI89Calculator._ALLOWED_FUNCTIONS_CACHE is None:
             TI89Calculator._ALLOWED_FUNCTIONS_CACHE = self._build_allowed_functions()
         self._allowed_functions = TI89Calculator._ALLOWED_FUNCTIONS_CACHE
@@ -58,10 +59,12 @@ class TI89Calculator:
 
     @property
     def allowed_functions(self) -> Mapping[str, object]:
+        """Return the mapping of whitelisted SymPy function names."""
         return self._allowed_functions
 
     @property
     def safe_globals(self) -> Mapping[str, object]:
+        """Return the restricted global namespace used during expression parsing."""
         return self._SAFE_GLOBALS_CACHE
 
     def evaluate(
@@ -231,6 +234,7 @@ class TI89Calculator:
     def _parse_expression(
         self, expression: str, symbols: Mapping[str, sp.Symbol | sp.Expr]
     ) -> sp.Expr:
+        """Parse a string expression into a SymPy Expr using the safe namespace."""
         # Optimization: Avoid copying the large allowed_functions dict if no symbols
         # are provided
         local_dict = self._allowed_functions
@@ -248,6 +252,7 @@ class TI89Calculator:
     def _parse_equation(
         self, equation: str, symbols: Mapping[str, sp.Symbol | sp.Expr]
     ) -> sp.Eq:
+        """Parse an equation string (``lhs=rhs`` or bare expression) into a SymPy Eq."""
         if "=" in equation:
             lhs, rhs = equation.split("=", maxsplit=1)
         else:
@@ -257,15 +262,18 @@ class TI89Calculator:
         return sp.Eq(lhs_expr, rhs_expr)
 
     def _build_symbol_map(self, variables: Iterable[str]) -> Mapping[str, sp.Symbol]:
+        """Build a mapping from variable name strings to SymPy Symbol objects."""
         return {name: sp.Symbol(name) for name in variables}
 
     def _normalize_limit_direction(self, direction: str) -> str:
+        """Convert a human-readable direction label to the SymPy ``dir`` token."""
         direction_map = {"two-sided": "+-", "left": "-", "right": "+"}
         if direction not in direction_map:
             raise ValueError("Direction must be 'two-sided', 'left', or 'right'")
         return direction_map[direction]
 
     def _hat(self, vector: Iterable[object]) -> sp.Matrix:
+        """Return the 3x3 skew-symmetric matrix (hat map) of a 3-element vector."""
         matrix = sp.Matrix(vector)
         elements = list(matrix)
         if len(elements) != 3:
@@ -274,12 +282,14 @@ class TI89Calculator:
         return sp.Matrix([[0, -z, y], [z, 0, -x], [-y, x, 0]])
 
     def _vee(self, matrix: Iterable[Iterable[object]]) -> sp.Matrix:
+        """Extract the 3-element vector from a 3x3 skew-symmetric matrix (vee map)."""
         skew = sp.Matrix(matrix)
         if skew.shape != (3, 3):
             raise ValueError("vee expects a 3x3 skew-symmetric matrix")
         return sp.Matrix([skew[2, 1], skew[0, 2], skew[1, 0]])
 
     def _se3_hat(self, screw: Iterable[object]) -> sp.Matrix:
+        """Build the 4x4 se(3) Lie algebra element from a 6-element screw axis."""
         vector = sp.Matrix(screw)
         elements = list(vector)
         if len(elements) != 6:
@@ -291,6 +301,7 @@ class TI89Calculator:
         return sp.Matrix.vstack(upper, sp.Matrix([[0, 0, 0, 0]]))
 
     def _se3_vee(self, matrix: Iterable[Iterable[object]]) -> sp.Matrix:
+        """Extract the 6-element screw axis from a 4x4 se(3) matrix (vee map)."""
         transform = sp.Matrix(matrix)
         if transform.shape != (4, 4):
             raise ValueError("se3_vee expects a 4x4 matrix")
@@ -304,6 +315,8 @@ class TI89Calculator:
         point: Iterable[object],
         pitch: object | None = None,
     ) -> sp.Matrix:
+        """Compute the 6D screw axis from angular velocity, a reference point,
+        and optional pitch."""
         angular_vector = sp.Matrix(omega)
         angular_elements = list(angular_vector)
         if len(angular_elements) != 3:
@@ -319,23 +332,28 @@ class TI89Calculator:
         return sp.Matrix.vstack(angular, linear)
 
     def _matrix_exp(self, matrix: Iterable[Iterable[object]]) -> sp.Matrix:
+        """Compute the matrix exponential of a square SymPy matrix."""
         return sp.Matrix(matrix).exp()
 
     def _matrix_log(self, matrix: Iterable[Iterable[object]]) -> sp.Matrix:
+        """Compute the principal matrix logarithm of a square SymPy matrix."""
         return sp.Matrix(matrix).log()
 
     def _matrix_power(
         self, matrix: Iterable[Iterable[object]], power: object
     ) -> sp.Matrix:
+        """Raise a SymPy matrix to a symbolic or numeric power."""
         return sp.Matrix(matrix) ** sp.sympify(power)
 
     def _twist_exponential(
         self, screw: Iterable[object], theta: object = 1
     ) -> sp.Matrix:
+        """Return the SE(3) group element obtained by exponentiating a twist."""
         hat_matrix = self._se3_hat(screw)
         return sp.exp(hat_matrix * sp.sympify(theta))
 
     def _adjoint_transform(self, transform: Iterable[Iterable[object]]) -> sp.Matrix:
+        """Compute the 6x6 adjoint representation of a 4x4 SE(3) transform."""
         matrix = sp.Matrix(transform)
         if matrix.shape != (4, 4):
             raise ValueError("adjoint expects a 4x4 homogeneous transform")
@@ -347,10 +365,12 @@ class TI89Calculator:
         return sp.Matrix.vstack(upper, lower)
 
     def _block_diag(self, *blocks: Iterable[Iterable[object]]) -> sp.Matrix:
+        """Assemble a block-diagonal matrix from a sequence of square sub-matrices."""
         matrices = [sp.Matrix(block) for block in blocks]
         return sp.diag(*matrices)
 
     def _build_allowed_functions(self) -> Mapping[str, object]:
+        """Build the whitelist of safe SymPy functions available in expressions."""
         return {
             "I": sp.I,
             "i": sp.I,
