@@ -144,8 +144,8 @@ def main() -> None:
         logger.info(f"  stdout: {e.stdout}")
         logger.info(f"  stderr: {e.stderr}")
         sys.exit(1)
-    except Exception as e:  # noqa: BLE001
-        logger.info(f"\n[ERROR] Unexpected error: {e}")
+    except OSError as e:  # AUTO-FIXED: catch specific OSError instead of Exception
+        logger.info(f"\n[ERROR] Unexpected OS error: {e}")
         sys.exit(1)
 
 
