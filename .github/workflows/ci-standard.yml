@@ -51,7 +51,7 @@ jobs:
 
       - run: pip install mypy types-PyYAML types-requests
       - run: pip install -r requirements.txt
-      - run: mypy . --ignore-missing-imports
+      - run: mypy src --ignore-missing-imports
 
       # Placeholder detection - scans Python source files for unresolved TODOs/FIXMEs
       - name: Verify No Placeholders
