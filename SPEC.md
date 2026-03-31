@@ -27,8 +27,8 @@
 | **Primary Language(s)** | Python 3.11+ |
 | **License** | MIT |
 | **Current Version** | 1.0.1 |
-| **Spec Version** | 1.0.1 |
-| **Last Spec Update** | 2026-03-30 |
+| **Spec Version** | 1.0.4 |
+| **Last Spec Update** | 2026-03-31 |
 
 ## 2. Purpose & Mission
 
@@ -285,6 +285,9 @@ Active development with focus on Project GROOT implementation. Demos (Asteroid F
 | Date | Version | Changes |
 |------|---------|---------|
 | 2026-03-30 | 1.0.1 | A-N Assessment remediation (issue #200): auto-formatted 30 files to comply with black 100-char line limit; ruff checks pass with zero violations |
+| 2026-03-31 | 1.0.2 | CI maintenance: hardened the review-comment archiver against empty tracking JSON, narrowed the blocking mypy invocation to `src/` so self-hosted quality-gate runs no longer fail on duplicate `src.*` module discovery, and added explicit typing to the contract decorators used by the checked source tree. |
+| 2026-03-31 | 1.0.3 | Self-hosted CI follow-up: updated the generated Project GROOT and Asteroid Jumper import-smoke tests to skip cleanly when optional runtime dependencies like `torch`, `gymnasium`, or `PyQt6` are intentionally absent from the blocking CI runner image. |
+| 2026-03-31 | 1.0.4 | Self-hosted CI stabilization: aligned the Asteroid Jumper test suite with the current contract-enforced `ValueError` behavior so the blocking Linux test job validates the actual runtime invariants rather than outdated `AssertionError` expectations. |
 | 2026-03-28 | 1.0.0 | Initial specification |
 
 ---

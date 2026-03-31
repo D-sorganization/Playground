@@ -1,5 +1,11 @@
 """Auto-generated syntax verification tests for golf_swing_env."""
 
+import pytest
+
+pytest.importorskip("gymnasium")
+pytest.importorskip("omni")
+pytest.importorskip("torch")
+
 import src.Project_GROOT.sim.golf_swing_env as target_module
 
 

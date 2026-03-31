@@ -1,5 +1,9 @@
 """Auto-generated syntax verification tests for imitation_train."""
 
+import pytest
+
+pytest.importorskip("torch")
+
 import src.Project_GROOT.train.imitation_train as target_module
 
 

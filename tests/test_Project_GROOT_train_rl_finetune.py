@@ -1,5 +1,9 @@
 """Auto-generated syntax verification test suite for Project_GROOT.train.rl_finetune."""
 
+import pytest
+
+pytest.importorskip("torch")
+
 import src.Project_GROOT.train.rl_finetune as target_module
 
 
