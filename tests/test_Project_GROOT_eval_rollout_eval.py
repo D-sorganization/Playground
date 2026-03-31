@@ -1,5 +1,9 @@
 """Auto-generated syntax verification test suite for Project_GROOT.eval.rollout_eval."""
 
+import pytest
+
+pytest.importorskip("torch")
+
 import src.Project_GROOT.eval.rollout_eval as target_module
 
 
