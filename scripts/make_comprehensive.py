@@ -1,5 +1,8 @@
 import re
 from pathlib import Path
+import logging
+
+logger = logging.getLogger(__name__)
 
 CATEGORIES = {
     "A": ("Code Structure", "Code"),
@@ -32,7 +35,7 @@ GROUPS = {
 scores = {}
 findings = []
 
-for file in Path("docs/assessments").glob("Assessment_*.md"):
+for file in Path("docs/assessments").glob("Assessment_*_CATEGORY.md"):
     if file.name.count("_") < 2 and "CICD" not in file.name:
         continue
     if "Results" in file.name:
@@ -106,4 +109,4 @@ else:
         report += f"- {f}\n"
 
 Path("docs/assessments/Comprehensive_Assessment.md").write_text(report)
-print(report)
+logger.info("Generated docs/assessments/Comprehensive_Assessment.md")

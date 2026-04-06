@@ -7,12 +7,12 @@
 | A | Code Structure | 10.0/10 | Code |
 | B | Documentation | 10.0/10 | Docs |
 | C | Test Coverage | 10.0/10 | Testing |
-| D | Error Handling | 7.0/10 | Code |
+| D | Error Handling | 8.0/10 | Code |
 | E | Performance | 10.0/10 | Perf |
 | F | Security | 10.0/10 | Security |
 | G | Dependencies | 10.0/10 | Ops |
 | H | CI/CD | 10.0/10 | Ops |
-| I | Code Style | 8.0/10 | Code |
+| I | Code Style | 7.0/10 | Code |
 | J | API Design | 9.0/10 | Design |
 | K | Data Handling | 10.0/10 | Design |
 | L | Logging | 10.0/10 | Ops |
@@ -39,6 +39,6 @@
 
 - J: MINOR: Improve type hint coverage (> 80%).
 - O: MAJOR: Found 17 large files. Refactor modules.
-- D: MAJOR: Found 3 bare 'except Exception as e:' blocks. Catch specific exceptions.
 - M: MINOR: No standard configuration files found.
 - M: MINOR: No configuration mechanism detected (env vars or config files).
+- D: MAJOR: Found 2 bare 'except Exception as e:' blocks. Catch specific exceptions.
