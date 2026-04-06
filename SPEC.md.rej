@@ -1,0 +1,11 @@
+--- SPEC.md
++++ SPEC.md
+@@ -12,7 +12,7 @@
+
+ | Field | Value |
+ |-------|-------|
+-| Spec Version | 1.0.6 |
++| Spec Version | 1.0.7 |
+ | Last Updated | 2026-04-06 |
+ | Primary Maintainer | Jules Agent Fleet |
+ | Status | Active |
