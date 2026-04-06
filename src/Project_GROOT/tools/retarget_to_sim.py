@@ -19,7 +19,11 @@ from pathlib import Path
 from typing import Any
 
 import numpy as np
-import yaml
+
+try:
+    import yaml
+except ImportError:  # pragma: no cover - exercised implicitly in CI import smoke tests
+    yaml = None
 
 logger = logging.getLogger(__name__)
 
@@ -55,6 +59,11 @@ class RobotConfig:
 
     def __init__(self, config_path: str):
         """Load robot configuration from YAML."""
+        if yaml is None:
+            raise ImportError(
+                "PyYAML is required to load robot configurations. Install with "
+                "'pip install PyYAML'."
+            )
         with open(config_path) as f:
             config = yaml.safe_load(f)
 
