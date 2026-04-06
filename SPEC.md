@@ -27,19 +27,19 @@
 | **Primary Language(s)** | Python 3.11+ |
 | **License** | MIT |
 | **Current Version** | 1.0.1 |
-| **Spec Version** | 1.0.4 |
-| **Last Spec Update** | 2026-03-31 |
+| **Spec Version** | 1.0.6 |
+| **Last Spec Update** | 2026-04-06 |
 
 ## 2. Purpose & Mission
 
-The Playground is a fleet-wide sandbox for testing, experimentation, and learning. It serves as the hub for demo projects, experimental code, and Project GROOT (simulation, evaluation, and training framework). The repository enforces A-tier fleet protocol compliance while providing a safe environment for new ideas without production code constraints.
+The Playground is a fleet-wide sandbox for testing, experimentation, and learning. It serves as the hub for demo projects, experimental code, and Project GROOT (simulation, evaluation, and training framework). The repository enforces A-tier fleet protocol compliance while providing a safe environment for new ideas without production code constraints. Historical experiments can remain under `archive/`, but they are explicitly out of the maintained source surface.
 
 ## 3. Goals & Non-Goals
 
 ### Goals
 
 - Sandbox for testing new ideas and experimental implementations
-- Host demo projects (Asteroid Field Navigator, Calculator, Solar System Model)
+- Host maintained demo projects and experimental sandboxes without confusing archived snapshots for live code
 - Implement and validate Project GROOT simulation, training, and evaluation pipelines
 - Enforce fleet CI standards and provide compliant CI templates for other repositories
 - Maintain clean dependency slate and minimal external requirements
@@ -69,6 +69,7 @@ Playground/
 │       ├── data/               # Datasets and data processing
 │       ├── docs/               # Project documentation
 │       └── tools/              # Utility scripts and tools
+├── archive/                    # Historical snapshots excluded from active lint/test collection
 ├── tests/                       # Test suite (20 test files)
 ├── tools/                       # MATLAB utilities and scripts
 ├── .github/workflows/           # CI/CD pipelines (41 workflows)
@@ -85,9 +86,8 @@ Playground/
 | GROOT Training | `src/Project_GROOT/train/` | Training pipelines and model optimization |
 | GROOT Evaluation | `src/Project_GROOT/eval/` | Evaluation and benchmarking framework |
 | GROOT Data | `src/Project_GROOT/data/` | Dataset management and preprocessing |
-| Calculator Demo | `src/` | Simple calculator implementation demo |
-| Solar System Model | `src/` | Orbital mechanics and celestial body simulation demo |
 | MATLAB Tools | `tools/` | MATLAB utilities for analysis and visualization |
+| Archive Snapshots | `archive/` | Historical references retained outside the maintained source surface |
 
 ## 5. Desired Functionality
 
@@ -96,15 +96,14 @@ Playground/
 | # | Feature | Status | Description |
 |---|---------|--------|-------------|
 | F1 | Asteroid Field Navigator | ✅ | Demo project with collision detection and navigation mechanics |
-| F2 | Calculator Demo | ✅ | Simple calculator implementation showcase |
-| F3 | Solar System Model | ✅ | Celestial mechanics and orbital simulation demo |
-| F4 | Project GROOT Simulation | 🔄 | Core simulation engine with environment and agent interactions |
-| F5 | Fleet CI Compliance Template | ✅ | Reference CI/CD configuration enforcing fleet standards |
-| F6 | Assessment aggregation tooling | ✅ | Builds per-category assessments and compiles `docs/assessments/Comprehensive_Assessment.md` |
+| F2 | Archived experiment quarantine | ✅ | Keeps historical snapshots available for reference without treating them as maintained code |
+| F3 | Project GROOT Simulation | 🔄 | Core simulation engine with environment and agent interactions |
+| F4 | Fleet CI Compliance Template | ✅ | Reference CI/CD configuration enforcing fleet standards |
+| F5 | Assessment aggregation tooling | ✅ | Builds per-category assessments and compiles `docs/assessments/Comprehensive_Assessment.md` |
 
 ### API / Interface Contract
 
-The Playground does not expose a public API or library interface. Each demo project is self-contained and runnable independently. Project GROOT provides internal interfaces for simulation, training, and evaluation workflows consumed within the repository only.
+The Playground does not expose a public API or library interface. Maintained projects live under `src/` and `tests/`. Project GROOT provides internal interfaces for simulation, training, and evaluation workflows consumed within the repository only. Archived content under `archive/` is intentionally excluded from the normal maintained execution path.
 
 ## 6. Data & Configuration
 
@@ -160,8 +159,7 @@ Test pyramid approach with emphasis on unit tests covering individual components
 
 - [ ] Unit tests for asteroid collision detection algorithms pass with 100% pass rate
 - [ ] GROOT simulation environment initializes correctly with parametric configurations
-- [ ] Calculator demo handles edge cases (division by zero, large numbers, type errors)
-- [ ] Solar system model produces physically plausible orbital trajectories
+- [ ] Archived snapshots remain excluded from normal lint/test collection unless explicitly restored
 - [ ] Live simulation markers correctly skip in fast CI runs
 - [ ] All 20 test files execute without errors on Python 3.11+3.12
 
@@ -198,7 +196,7 @@ Test pyramid approach with emphasis on unit tests covering individual components
 
 | Package | Version | Purpose |
 |---------|---------|---------|
-| (None) | N/A | Clean slate — no external runtime dependencies |
+| PyYAML | >=6.0 | YAML configuration parsing for maintained Project GROOT tools |
 
 ### Development Dependencies
 
@@ -284,6 +282,8 @@ Active development with focus on Project GROOT implementation. Demos (Asteroid F
 
 | Date | Version | Changes |
 |------|---------|---------|
+| 2026-04-06 | 1.0.6 | Declared `PyYAML` as a runtime dependency because maintained Project GROOT tooling imports `yaml` during normal module loading in CI. |
+| 2026-04-06 | 1.0.5 | Quarantined historical archive content from the maintained source surface by documenting `archive/` as reference-only material and excluding it from standard lint/test traversal. |
 | 2026-03-30 | 1.0.1 | A-N Assessment remediation (issue #200): auto-formatted 30 files to comply with black 100-char line limit; ruff checks pass with zero violations |
 | 2026-03-31 | 1.0.2 | CI maintenance: hardened the review-comment archiver against empty tracking JSON, narrowed the blocking mypy invocation to `src/` so self-hosted quality-gate runs no longer fail on duplicate `src.*` module discovery, and added explicit typing to the contract decorators used by the checked source tree. |
 | 2026-03-31 | 1.0.3 | Self-hosted CI follow-up: updated the generated Project GROOT and Asteroid Jumper import-smoke tests to skip cleanly when optional runtime dependencies like `torch`, `gymnasium`, or `PyQt6` are intentionally absent from the blocking CI runner image. |

@@ -4,6 +4,7 @@ pytest
 pytest-cov
 numpy
 matplotlib
+PyYAML>=6.0
 # GUI dependencies for golf swing tools (optional)
 # mujoco  # Commented out - requires special installation
 # PyQt6   # Commented out - large dependency
