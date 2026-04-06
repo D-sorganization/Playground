@@ -316,16 +316,14 @@ def run_assessment(assessment_id: str, output_path: Path) -> int:
             findings.append("INFO: Raw file I/O detected. Consider structured formats.")
 
     elif assessment_id == "L":  # Logging
-        print_count = count_occurrences(r"print\(", python_files)
+        print_count = count_occurrences(r"(?m)^\s*print\(", python_files)
         logger_count = count_occurrences(
             r"logger\.(info|error|warning|debug)", python_files
         )
-        findings.append(f"- logger.info() calls: {print_count}")
+        findings.append(f"- print() calls: {print_count}")
         findings.append(f"- logger usages: {logger_count}")
         if print_count > 0:
-            findings.append(
-                "MAJOR: 'logger.info()' statements found. Use 'logging' instead."
-            )
+            findings.append("MAJOR: 'print()' statements found. Use 'logging' instead.")
             score -= int(min(3, print_count * 0.1))
         if logger_count == 0 and file_count > 0:
             score -= 2
