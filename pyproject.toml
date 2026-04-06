@@ -7,7 +7,7 @@ name = "playground"
 version = "0.1.0"
 description = "Fleet-wide playground for testing and experimentation"
 requires-python = ">=3.11"
-dependencies = []
+dependencies = ["PyYAML>=6.0"]
 
 [tool.setuptools.packages.find]
 where = ["src"]

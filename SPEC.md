@@ -27,7 +27,7 @@
 | **Primary Language(s)** | Python 3.11+ |
 | **License** | MIT |
 | **Current Version** | 1.0.1 |
-| **Spec Version** | 1.0.5 |
+| **Spec Version** | 1.0.6 |
 | **Last Spec Update** | 2026-04-06 |
 
 ## 2. Purpose & Mission
@@ -196,7 +196,7 @@ Test pyramid approach with emphasis on unit tests covering individual components
 
 | Package | Version | Purpose |
 |---------|---------|---------|
-| (None) | N/A | Clean slate — no external runtime dependencies |
+| PyYAML | >=6.0 | YAML configuration parsing for maintained Project GROOT tools |
 
 ### Development Dependencies
 
@@ -282,6 +282,7 @@ Active development with focus on Project GROOT implementation. Demos (Asteroid F
 
 | Date | Version | Changes |
 |------|---------|---------|
+| 2026-04-06 | 1.0.6 | Declared `PyYAML` as a runtime dependency because maintained Project GROOT tooling imports `yaml` during normal module loading in CI. |
 | 2026-04-06 | 1.0.5 | Quarantined historical archive content from the maintained source surface by documenting `archive/` as reference-only material and excluding it from standard lint/test traversal. |
 | 2026-03-30 | 1.0.1 | A-N Assessment remediation (issue #200): auto-formatted 30 files to comply with black 100-char line limit; ruff checks pass with zero violations |
 | 2026-03-31 | 1.0.2 | CI maintenance: hardened the review-comment archiver against empty tracking JSON, narrowed the blocking mypy invocation to `src/` so self-hosted quality-gate runs no longer fail on duplicate `src.*` module discovery, and added explicit typing to the contract decorators used by the checked source tree. |
