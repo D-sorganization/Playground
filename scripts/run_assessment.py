@@ -198,7 +198,9 @@ def run_assessment(assessment_id: str, output_path: Path) -> int:
     elif assessment_id == "D":  # Error Handling
         try_count = count_occurrences(r"try:", python_files)
         except_count = count_occurrences(r"except\s+.*:", python_files)
-        bare_except_count = count_occurrences(r"except Exception as e:", python_files)  # noqa: BLE001
+        bare_except_count = count_occurrences(
+            r"except Exception as e:", python_files
+        )  # noqa: BLE001
         findings.append(f"- Try blocks: {try_count}")
         findings.append(f"- Except blocks: {except_count}")
         findings.append(f"- Bare except blocks: {bare_except_count}")
@@ -323,9 +325,7 @@ def run_assessment(assessment_id: str, output_path: Path) -> int:
         findings.append(f"- print() calls: {print_count}")
         findings.append(f"- logger usages: {logger_count}")
         if print_count > 0:
-            findings.append(
-                "MAJOR: 'print()' statements found. Use 'logging' instead."
-            )
+            findings.append("MAJOR: 'print()' statements found. Use 'logging' instead.")
             score -= int(min(3, print_count * 0.1))
         if logger_count == 0 and file_count > 0:
             score -= 2
