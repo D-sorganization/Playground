@@ -33,9 +33,6 @@ except ImportError:
         return x
 
 
-logger = logging.getLogger(__name__)
-
-
 class SwingDemonstrationDataset(Dataset):
     """Dataset of retargeted golf swing demonstrations."""
 
