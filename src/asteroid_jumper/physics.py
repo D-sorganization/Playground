@@ -131,23 +131,29 @@ class RigidBody:
 def moment_of_inertia_ellipse(mass: float, a: float, b: float) -> float:
     """Moment of inertia for a solid ellipse with semi-axes a, b."""
     if not (mass > 0):
-        raise ValueError("DbC Blocked: Precondition failed.")
+        raise ValueError(f"mass must be positive, got {mass}")
     if not (a > 0 and b > 0):
-        raise ValueError("DbC Blocked: Precondition failed.")
+        raise ValueError(
+            f"ellipse semi-axes a and b must both be positive, got a={a}, b={b}"
+        )
     return 0.25 * mass * (a**2 + b**2)
 
 
 def moment_of_inertia_disk(mass: float, radius: float) -> float:
     """Moment of inertia for a solid disk."""
-    if not (mass > 0 and radius > 0):
-        raise ValueError("DbC Blocked: Precondition failed.")
+    if not (mass > 0):
+        raise ValueError(f"mass must be positive, got {mass}")
+    if not (radius > 0):
+        raise ValueError(f"radius must be positive, got {radius}")
     return 0.5 * mass * radius**2
 
 
 def moment_of_inertia_rod(mass: float, length: float) -> float:
     """Moment of inertia for a thin rod about its centre."""
-    if not (mass > 0 and length > 0):
-        raise ValueError("DbC Blocked: Precondition failed.")
+    if not (mass > 0):
+        raise ValueError(f"mass must be positive, got {mass}")
+    if not (length > 0):
+        raise ValueError(f"length must be positive, got {length}")
     return mass * length**2 / 12.0
 
 
@@ -245,9 +251,11 @@ class SpringLaunch:
 
     def __post_init__(self) -> None:
         if not (self.total_impulse >= 0):
-            raise ValueError("DbC Blocked: Precondition failed.")
+            raise ValueError(
+                f"total_impulse must be non-negative, got {self.total_impulse}"
+            )
         if not (self.duration > 0):
-            raise ValueError("DbC Blocked: Precondition failed.")
+            raise ValueError(f"duration must be positive, got {self.duration}")
 
     @property
     def is_complete(self) -> bool:
@@ -261,7 +269,7 @@ class SpringLaunch:
         or None if the launch is already complete.
         """
         if not (dt > 0):
-            raise ValueError("DbC Blocked: Precondition failed.")
+            raise ValueError(f"dt must be positive, got {dt}")
         if self.is_complete:
             return None
         remaining = self.duration - self.elapsed
@@ -328,7 +336,7 @@ class SimState:
 def step_simulation(state: SimState, dt: float) -> None:
     """Advance the simulation by *dt* seconds (mutates *state*)."""
     if not (dt > 0):
-        raise ValueError("DbC Blocked: Precondition failed.")
+        raise ValueError(f"dt must be positive, got {dt}")
 
     if state.spring is not None and not state.spring.is_complete:
         result = state.spring.step(dt)
