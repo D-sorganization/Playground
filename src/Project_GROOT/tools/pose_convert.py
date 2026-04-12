@@ -40,9 +40,6 @@ except ImportError:
         return x  # Fallback
 
 
-logger = logging.getLogger(__name__)
-
-
 class PoseExtractor:
     """Base class for pose extraction."""
 

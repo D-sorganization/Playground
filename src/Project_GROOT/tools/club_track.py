@@ -37,9 +37,6 @@ except ImportError:
         return x
 
 
-logger = logging.getLogger(__name__)
-
-
 class ClubTracker:
     """Track golf club trajectory from pose data."""
 
