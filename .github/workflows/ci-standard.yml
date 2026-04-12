@@ -12,7 +12,7 @@ jobs:
 
   # ── Dispatcher: route to self-hosted if available ──────────────────────────
   pick-runner:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     timeout-minutes: 2
     outputs:
       runner: ${{ steps.check.outputs.runner }}
@@ -34,7 +34,7 @@ jobs:
           fi
   quality-gate:
     needs: pick-runner
-    runs-on: ${{ needs.pick-runner.outputs.runner }}
+    runs-on: self-hosted
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-python@v6
@@ -99,7 +99,7 @@ jobs:
 
   tests:
     needs: [pick-runner, quality-gate]
-    runs-on: ${{ needs.pick-runner.outputs.runner }}
+    runs-on: self-hosted
     strategy:
       matrix:
         python: ["3.11"]
@@ -120,7 +120,7 @@ jobs:
 
   javascript-tests:
     needs: [pick-runner, quality-gate]
-    runs-on: ${{ needs.pick-runner.outputs.runner }}
+    runs-on: self-hosted
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v4
@@ -138,7 +138,7 @@ jobs:
 
   matlab-tests:
     needs: [pick-runner, quality-gate]
-    runs-on: ${{ needs.pick-runner.outputs.runner }}
+    runs-on: self-hosted
     if: false
     continue-on-error: true
     steps:
@@ -152,7 +152,7 @@ jobs:
 
   arduino-build:
     needs: [pick-runner, quality-gate]
-    runs-on: ${{ needs.pick-runner.outputs.runner }}
+    runs-on: self-hosted
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-python@v6
