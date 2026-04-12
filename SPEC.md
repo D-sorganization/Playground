@@ -27,8 +27,8 @@
 | **Primary Language(s)** | Python 3.11+ |
 | **License** | MIT |
 | **Current Version** | 1.0.1 |
-| **Spec Version** | 1.0.8 |
-| **Last Spec Update** | 2026-04-06 |
+| **Spec Version** | 1.0.9 |
+| **Last Spec Update** | 2026-04-11 |
 
 ## 2. Purpose & Mission
 
@@ -282,6 +282,7 @@ Active development with focus on Project GROOT implementation. Demos (Asteroid F
 
 | Date | Version | Changes |
 |------|---------|---------|
+| 2026-04-11 | 1.0.9 | Issue #250: replaced sham tests in `tests/test_architecture_dbc.py` and `tests/test_asteroid_jumper_physics.py` with real Design-by-Contract precondition tests and physics assertions (kinematics, impulse, momentum conservation, analytical moment-of-inertia formulas, and half-sine spring launch total impulse). |
 | 2026-04-11 | 1.0.8 | Removed duplicate `logger = logging.getLogger(__name__)` declarations in `club_track.py`, `pose_convert.py`, and `imitation_train.py` (issue #251) to enforce DRY. |
 | 2026-04-06 | 1.0.7 | Updated `run_assessment.py` and `make_comprehensive.py` scripts to auto-fix logging issues, output correct file structures, and ignore print false positives. |
 | 2026-04-06 | 1.0.6 | Declared `PyYAML` as a runtime dependency because maintained Project GROOT tooling imports `yaml` during normal module loading in CI. |
