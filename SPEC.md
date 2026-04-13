@@ -27,7 +27,7 @@
 | **Primary Language(s)** | Python 3.11+ |
 | **License** | MIT |
 | **Current Version** | 1.0.1 |
-| **Spec Version** | 1.0.10 |
+| **Spec Version** | 1.0.11 |
 | **Last Spec Update** | 2026-04-11 |
 
 ## 2. Purpose & Mission
@@ -282,6 +282,7 @@ Active development with focus on Project GROOT implementation. Demos (Asteroid F
 
 | Date | Version | Changes |
 |------|---------|---------|
+| 2026-04-13 | 1.0.11 | Added Jules code quality review scripts, reports, workflows and fixed CI environment for Pytest tests. |
 | 2026-04-11 | 1.0.10 | Improved Design-by-Contract error messages in `asteroid_jumper/physics.py` (issue #255) — replaced generic `"DbC Blocked: Precondition failed."` strings in `moment_of_inertia_ellipse`, `moment_of_inertia_disk`, `moment_of_inertia_rod`, `SpringLaunch.__post_init__`, `SpringLaunch.step`, and `step_simulation` with descriptive messages identifying the offending argument, its value, and the valid constraint. |
 | 2026-04-11 | 1.0.9 | Issue #250: replaced sham tests in `tests/test_architecture_dbc.py` and `tests/test_asteroid_jumper_physics.py` with real Design-by-Contract precondition tests and physics assertions (kinematics, impulse, momentum conservation, analytical moment-of-inertia formulas, and half-sine spring launch total impulse). |
 | 2026-04-11 | 1.0.8 | Removed duplicate `logger = logging.getLogger(__name__)` declarations in `club_track.py`, `pose_convert.py`, and `imitation_train.py` (issue #251) to enforce DRY. |
