@@ -5,10 +5,9 @@ on:
     types: [closed]
 
 jobs:
-
   # ── Dispatcher: route to self-hosted if available ──────────────────────────
   pick-runner:
-    runs-on: ubuntu-latest
+    runs-on: d-sorg-fleet
     timeout-minutes: 2
     outputs:
       runner: ${{ steps.check.outputs.runner }}
@@ -44,12 +43,12 @@ jobs:
         run: |
           # Extract PR numbers. Expecting "Consolidated PRs: #123 #124" or similar
           # We use regex to find #\d+ patterns in the body
-          
+
           echo "Analyzing Consolidated PR #$CONSOLIDATED_PR_NUM..."
-          
+
           # Extract all numbers prefixed with # from the body
           prs=$(echo "$PR_BODY" | grep -o '#[0-9]\+' | tr -d '#')
-          
+
           for pr_num in $prs; do
             # Skip self-reference if present
             if [ "$pr_num" == "$CONSOLIDATED_PR_NUM" ]; then

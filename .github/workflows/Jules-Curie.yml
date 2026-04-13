@@ -6,10 +6,9 @@ on:
     - cron: "0 8 * * 2" # 1st of month at 2 AM PST (10 UTC)
 
 jobs:
-
   # ── Dispatcher: route to self-hosted if available ──────────────────────────
   pick-runner:
-    runs-on: ubuntu-latest
+    runs-on: d-sorg-fleet
     timeout-minutes: 2
     outputs:
       runner: ${{ steps.check.outputs.runner }}
