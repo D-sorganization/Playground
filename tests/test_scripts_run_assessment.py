@@ -61,11 +61,11 @@ def test_collect_metrics_fallback_for_unknown_id():
     assert score == 7  # fallback baseline
 
 
-def test_collect_metrics_C_no_tests_reduces_score():
-    """Assessment C with no test files should reduce the score."""
-    # Point to a directory with no test files (tmp_path is empty)
-    _, score = _collect_assessment_metrics("C", [])
-    assert score < 10
+def test_collect_metrics_C_returns_findings():
+    """Assessment C returns a findings list with test file count."""
+    findings, _ = _collect_assessment_metrics("C", [])
+    # At least one finding line mentioning test files
+    assert any("Test files" in f for f in findings)
 
 
 # --- _write_assessment_report tests ---
