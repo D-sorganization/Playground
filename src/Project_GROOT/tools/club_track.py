@@ -248,17 +248,14 @@ class ClubTracker:
         return cumulative
 
 
-def main() -> None:
+def _build_club_track_parser() -> argparse.ArgumentParser:
+    """Build and return the CLI argument parser for club_track."""
     parser = argparse.ArgumentParser(
         description="Track golf club trajectory from pose data",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
-
     parser.add_argument(
-        "--manifest",
-        type=str,
-        required=True,
-        help="Video manifest JSON",
+        "--manifest", type=str, required=True, help="Video manifest JSON"
     )
     parser.add_argument(
         "--pose-dir",
@@ -290,78 +287,88 @@ def main() -> None:
         action="store_true",
         help="Visualize club tracking (requires matplotlib)",
     )
+    return parser
 
-    args = parser.parse_args()
 
-    # Load manifest
-    with open(args.manifest) as f:
-        manifest = json.load(f)
+def _track_videos(
+    tracker: ClubTracker,
+    videos: list[dict],
+    pose_dir: Path,
+    output_dir: Path,
+    use_video_path: bool,
+) -> list[dict]:
+    """Process each video entry and collect club tracking stats.
 
-    videos = manifest["videos"]
-    pose_dir = Path(args.pose_dir)
-    output_dir = Path(args.output_dir)
-    output_dir.mkdir(parents=True, exist_ok=True)
+    Args:
+        tracker: Initialized ClubTracker.
+        videos: List of video entry dicts from manifest.
+        pose_dir: Directory containing pose .npz files.
+        output_dir: Directory for output .npz files.
+        use_video_path: Whether to pass video_path for optical flow.
 
-    # Initialize tracker
-    tracker = ClubTracker(method=args.method, club_length=args.club_length)
-
-    # Process each video
+    Returns:
+        List of per-video statistics dicts.
+    """
     all_stats = []
     for video_entry in tqdm(videos, desc="Tracking clubs"):
         video_id = video_entry["id"]
         pose_file = pose_dir / f"{video_id}.npz"
-
         if not pose_file.exists():
             logger.info(f"Warning: Pose file not found: {pose_file}")
             continue
-
         output_file = output_dir / f"{video_id}.npz"
-
         try:
+            video_path = video_entry.get("video_path") if use_video_path else None
             stats = tracker.add_club_to_pose_file(
                 pose_file=str(pose_file),
                 output_file=str(output_file),
-                video_path=(
-                    video_entry.get("video_path")
-                    if args.method == "optical_flow"
-                    else None
-                ),
+                video_path=video_path,
             )
-
             all_stats.append(
-                {
-                    "video_id": video_id,
-                    "golfer": video_entry["golfer"],
-                    **stats,
-                }
+                {"video_id": video_id, "golfer": video_entry["golfer"], **stats}
             )
-
             logger.info(
                 f"{video_id}: max speed = {stats['max_clubhead_speed']:.1f} m/s"
             )
-
         except (OSError, ValueError, KeyError, RuntimeError) as e:
             logger.info(f"Error processing {video_id}: {e}")
-            continue
+    return all_stats
 
-    # Save statistics
+
+def _save_and_summarize(all_stats: list[dict], output_dir: Path) -> None:
+    """Save tracking stats JSON and log a summary."""
     stats_file = output_dir / "club_tracking_stats.json"
     with open(stats_file, "w") as f:
         json.dump({"videos": all_stats}, f, indent=2)
-
-    # Summary
     if all_stats:
         max_speeds = [s["max_clubhead_speed"] for s in all_stats]
         logger.info(f"\n✓ Processed {len(all_stats)} videos")
         logger.info(
-            "  Clubhead speed range: %.1f - %.1f m/s",
-            min(max_speeds),
-            max(max_speeds),
+            "  Clubhead speed range: %.1f - %.1f m/s", min(max_speeds), max(max_speeds)
         )
         logger.info(f"  Mean max speed: {np.mean(max_speeds):.1f} m/s")
         logger.info(f"  Stats saved to {stats_file}")
 
-    # Visualize if requested
+
+def main() -> None:
+    args = _build_club_track_parser().parse_args()
+
+    with open(args.manifest) as f:
+        manifest = json.load(f)
+
+    output_dir = Path(args.output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    tracker = ClubTracker(method=args.method, club_length=args.club_length)
+    all_stats = _track_videos(
+        tracker=tracker,
+        videos=manifest["videos"],
+        pose_dir=Path(args.pose_dir),
+        output_dir=output_dir,
+        use_video_path=(args.method == "optical_flow"),
+    )
+    _save_and_summarize(all_stats, output_dir)
+
     if args.visualize and all_stats:
         visualize_club_stats(all_stats)
 

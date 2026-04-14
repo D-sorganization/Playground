@@ -199,8 +199,10 @@ class PoseConverter:
         end_frame: int,
         output_path: str,
     ) -> dict:
-        """
-        Process a single video and extract poses.
+        """Process a single video and extract poses.
+
+        Orchestrates frame extraction, pose estimation, phase computation,
+        and saving to .npz.
 
         Args:
             video_path: Path to video file
@@ -214,6 +216,31 @@ class PoseConverter:
         if cv2 is None:
             raise ImportError("OpenCV required for video processing")
 
+        skeletons, confidences, timestamps, fps = self._extract_frames(
+            video_path, start_frame, end_frame
+        )
+        phase_labels = self._compute_swing_phases(skeletons, confidences)
+        self._save_pose_data(
+            output_path, skeletons, confidences, timestamps, phase_labels, fps
+        )
+        return self._compute_frame_stats(confidences, output_path)
+
+    def _extract_frames(
+        self,
+        video_path: str,
+        start_frame: int,
+        end_frame: int,
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray, float]:
+        """Open video and extract per-frame pose data.
+
+        Args:
+            video_path: Path to video file.
+            start_frame: Start frame index.
+            end_frame: End frame index.
+
+        Returns:
+            Tuple of (skeletons, confidences, timestamps, fps).
+        """
         cap = cv2.VideoCapture(video_path)
         if not cap.isOpened():
             raise ValueError(f"Cannot open video: {video_path}")
@@ -221,48 +248,45 @@ class PoseConverter:
         fps = cap.get(cv2.CAP_PROP_FPS)
         total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
-        # Clamp frame range
         start_frame = max(0, min(start_frame, total_frames - 1))
         end_frame = max(start_frame + 1, min(end_frame, total_frames))
         num_frames = end_frame - start_frame
 
-        # Seek to start frame
         cap.set(cv2.CAP_PROP_POS_FRAMES, start_frame)
 
-        # Storage
         num_joints = 33  # MediaPipe standard
         skeletons = np.zeros((num_frames, num_joints, 3))
         confidences = np.zeros((num_frames, num_joints))
         timestamps = np.zeros(num_frames)
 
-        # Process frames
         for i in tqdm(range(num_frames), desc=f"Processing {Path(video_path).name}"):
             ret, frame = cap.read()
             if not ret:
                 break
-
-            # Convert BGR to RGB
             frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-
-            # Extract pose
             keypoints, confidence = self.extractor.extract(frame_rgb)
-
             skeletons[i] = keypoints
             confidences[i] = confidence
             timestamps[i] = (start_frame + i) / fps
-
-            # Visualize if requested
-            if self.visualize and i % 10 == 0:  # Show every 10th frame
+            if self.visualize and i % 10 == 0:
                 self._visualize_pose(frame, keypoints, confidence)
 
         cap.release()
         if self.visualize:
             cv2.destroyAllWindows()
 
-        # Compute swing phases (simple heuristic based on wrist height)
-        phase_labels = self._compute_swing_phases(skeletons, confidences)
+        return skeletons, confidences, timestamps, fps
 
-        # Save to .npz
+    def _save_pose_data(
+        self,
+        output_path: str,
+        skeletons: np.ndarray,
+        confidences: np.ndarray,
+        timestamps: np.ndarray,
+        phase_labels: np.ndarray,
+        fps: float,
+    ) -> None:
+        """Save extracted pose data to a .npz archive."""
         np.savez(
             output_path,
             skeleton=skeletons,
@@ -273,18 +297,18 @@ class PoseConverter:
             fps=fps,
         )
 
-        # Compute statistics
+    def _compute_frame_stats(self, confidences: np.ndarray, output_path: str) -> dict:
+        """Compute and return frame-level statistics dict."""
+        num_frames = len(confidences)
         valid_frames = (
             confidences.mean(axis=1) > self.extractor.confidence_threshold
         ).sum()
-        stats = {
+        return {
             "total_frames": num_frames,
             "valid_frames": int(valid_frames),
             "avg_confidence": float(confidences.mean()),
             "output_path": output_path,
         }
-
-        return stats
 
     def _compute_swing_phases(
         self, skeletons: np.ndarray, confidences: np.ndarray
