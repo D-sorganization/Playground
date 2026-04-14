@@ -325,12 +325,12 @@ def validate_trajectory(
     return report
 
 
-def main() -> None:
+def _build_retarget_parser() -> argparse.ArgumentParser:
+    """Build and return the CLI argument parser for retarget_to_sim."""
     parser = argparse.ArgumentParser(
         description="Retarget human poses to robot joint space",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
-
     parser.add_argument(
         "--input-dir",
         type=str,
@@ -367,100 +367,108 @@ def main() -> None:
         action="store_true",
         help="Visualize retargeted trajectories",
     )
+    return parser
 
-    args = parser.parse_args()
 
-    # Load robot config
+def _retarget_one_file(
+    pose_file: Path,
+    retargeter: "PoseRetargeter",
+    robot_config: "RobotConfig",
+    output_dir: Path,
+) -> dict[str, Any]:
+    """Retarget, validate, and save a single pose .npz file.
+
+    Args:
+        pose_file: Path to input .npz file containing skeleton/club_head/timestamps.
+        retargeter: Initialised PoseRetargeter instance.
+        robot_config: Robot configuration for validation.
+        output_dir: Directory to write the retargeted .npz output.
+
+    Returns:
+        Report dict with keys: file, valid, warnings, errors.
+    """
+    data = np.load(pose_file)
+    skeleton = data["skeleton"]
+    club_head = data["club_head"]
+    timestamps = data["timestamps"]
+
+    result = retargeter.retarget(skeleton, club_head, timestamps)
+    validation = validate_trajectory(result["q"], result["qdot"], robot_config)
+
+    output_file = output_dir / pose_file.name
+    np.savez(output_file, **result)
+
+    report = {
+        "file": pose_file.name,
+        "valid": validation["valid"],
+        "warnings": validation["warnings"],
+        "errors": validation["errors"],
+    }
+
+    status = "+" if validation["valid"] else "x"
+    logger.info("  %s %s", status, pose_file.name)
+    for error in validation["errors"]:
+        logger.info("      ERROR: %s", error)
+    for warning in validation["warnings"][:2]:
+        logger.info("      WARNING: %s", warning)
+
+    return report
+
+
+def _save_retarget_report(all_reports: list[dict], output_dir: Path) -> None:
+    """Persist the retargeting summary report to JSON and log totals.
+
+    Args:
+        all_reports: List of per-file report dicts.
+        output_dir: Directory to write retargeting_report.json.
+    """
+    report_file = output_dir / "retargeting_report.json"
+    with open(report_file, "w") as f:
+        json.dump({"demos": all_reports}, f, indent=2)
+
+    num_valid = sum(1 for r in all_reports if r["valid"])
+    logger.info("\n+ Retargeting complete")
+    logger.info("  Valid demos: %d/%d", num_valid, len(all_reports))
+    logger.info("  Output: %s", output_dir)
+    logger.info("  Report: %s", report_file)
+
+
+def main() -> None:
+    args = _build_retarget_parser().parse_args()
+
     robot_config = RobotConfig(args.robot_config)
-    logger.info(f"Loaded robot config: {robot_config.name}")
-    logger.info(f"  DOFs: {robot_config.num_dofs}")
-    logger.info(f"  DOF names: {robot_config.dof_names}")
+    logger.info("Loaded robot config: %s", robot_config.name)
+    logger.info("  DOFs: %d", robot_config.num_dofs)
+    logger.info("  DOF names: %s", robot_config.dof_names)
 
-    # Create output directory
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    # Find all pose files
     input_dir = Path(args.input_dir)
     pose_files = sorted(input_dir.glob("*.npz"))
 
     if not pose_files:
-        logger.info(f"No .npz files found in {input_dir}")
+        logger.info("No .npz files found in %s", input_dir)
         return
 
-    logger.info(f"Found {len(pose_files)} pose files")
+    logger.info("Found %d pose files", len(pose_files))
 
-    # Initialize retargeter
     retargeter = PoseRetargeter(
         robot_config=robot_config,
         ik_solver=args.ik_solver,
         smooth_window=args.smooth_window,
     )
 
-    # Process each file
     all_reports = []
     for pose_file in tqdm(pose_files, desc="Retargeting"):
         try:
-            # Load pose data
-            data = np.load(pose_file)
-            skeleton = data["skeleton"]
-            club_head = data["club_head"]
-            timestamps = data["timestamps"]
-
-            # Retarget
-            result = retargeter.retarget(skeleton, club_head, timestamps)
-
-            # Validate
-            validation = validate_trajectory(
-                result["q"],
-                result["qdot"],
-                robot_config,
-            )
-
-            # Save
-            output_file = output_dir / pose_file.name
-            np.savez(output_file, **result)
-
-            # Report
-            report = {
-                "file": pose_file.name,
-                "valid": validation["valid"],
-                "warnings": validation["warnings"],
-                "errors": validation["errors"],
-            }
-            all_reports.append(report)
-
-            # Print status
-            status = "✓" if validation["valid"] else "✗"
-            logger.info(f"  {status} {pose_file.name}")
-            if validation["errors"]:
-                for error in validation["errors"]:
-                    logger.info(f"      ERROR: {error}")
-            if validation["warnings"]:
-                for warning in validation["warnings"][:2]:  # Show first 2
-                    logger.info(f"      WARNING: {warning}")
-
+            report = _retarget_one_file(pose_file, retargeter, robot_config, output_dir)
         except (OSError, ValueError, KeyError, RuntimeError) as e:
-            logger.info(f"  ✗ {pose_file.name}: {e}")
-            all_reports.append(
-                {
-                    "file": pose_file.name,
-                    "valid": False,
-                    "errors": [str(e)],
-                }
-            )
+            logger.info("  x %s: %s", pose_file.name, e)
+            report = {"file": pose_file.name, "valid": False, "errors": [str(e)]}
+        all_reports.append(report)
 
-    # Save validation report
-    report_file = output_dir / "retargeting_report.json"
-    with open(report_file, "w") as f:
-        json.dump({"demos": all_reports}, f, indent=2)
-
-    # Summary
-    num_valid = sum(1 for r in all_reports if r["valid"])
-    logger.info("\n✓ Retargeting complete")
-    logger.info(f"  Valid demos: {num_valid}/{len(all_reports)}")
-    logger.info(f"  Output: {output_dir}")
-    logger.info(f"  Report: {report_file}")
+    _save_retarget_report(all_reports, output_dir)
 
 
 if __name__ == "__main__":

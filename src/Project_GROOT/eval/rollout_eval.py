@@ -37,6 +37,82 @@ except ImportError:
     plt = None
     logger.info("Warning: matplotlib not installed. Plots will not be generated.")
 
+_HTML_CSS = """
+    body { font-family: Arial, sans-serif; margin: 40px; }
+    h1 { color: #333; }
+    h2 { color: #666; margin-top: 30px; }
+    table { border-collapse: collapse; margin: 20px 0; }
+    th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+    th { background-color: #4CAF50; color: white; }
+    .metric { font-size: 24px; font-weight: bold; color: #4CAF50; }
+    .plot { margin: 20px 0; }
+    .plot img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+"""
+
+
+def _build_report_html(policy_name: str, summary: dict) -> str:
+    """Build HTML evaluation report string from summary metrics.
+
+    Args:
+        policy_name: Name of the evaluated policy checkpoint.
+        summary: Summary dict produced by compute_summary_metrics().
+
+    Returns:
+        Complete HTML report as a string.
+    """
+    cs = summary["clubhead_speed"]
+    sd = summary["swing_duration"]
+    ts = summary["trajectory_smoothness"]
+    jv = summary["joint_limit_violations"]
+
+    speed_range = f"{cs['max_min']:.2f} - {cs['max_max']:.2f} m/s"
+    duration_cell = f"{sd['mean']:.3f} &plusmn; {sd['std']:.3f} s"
+    smoothness_cell = f"{ts['mean']:.3f} &plusmn; {ts['std']:.3f}"
+
+    return f"""<!DOCTYPE html>
+<html>
+<head>
+    <title>Project GROOT Evaluation Report</title>
+    <style>{_HTML_CSS}    </style>
+</head>
+<body>
+    <h1>Project GROOT Evaluation Report</h1>
+    <p><strong>Policy:</strong> {policy_name}</p>
+    <p><strong>Number of Rollouts:</strong> {summary["num_rollouts"]}</p>
+    <h2>Summary Metrics</h2>
+    <h3>Clubhead Speed</h3>
+    <table>
+        <tr><th>Metric</th><th>Value</th></tr>
+        <tr><td>Mean Max Speed</td>
+            <td class="metric">{cs["max_mean"]:.2f} m/s</td></tr>
+        <tr><td>Std Dev</td><td>{cs["max_std"]:.2f} m/s</td></tr>
+        <tr><td>Range</td><td>{speed_range}</td></tr>
+    </table>
+    <h3>Swing Timing</h3>
+    <table>
+        <tr><th>Metric</th><th>Value</th></tr>
+        <tr><td>Mean Duration</td><td>{duration_cell}</td></tr>
+    </table>
+    <h3>Quality Metrics</h3>
+    <table>
+        <tr><th>Metric</th><th>Value</th></tr>
+        <tr><td>Trajectory Smoothness</td><td>{smoothness_cell}</td></tr>
+        <tr><td>Joint Limit Violations</td>
+            <td>{jv["percentage"]:.1f}% of rollouts</td></tr>
+    </table>
+    <h2>Visualizations</h2>
+    <div class="plot"><h3>Clubhead Speed Distribution</h3>
+        <img src="plots/clubhead_speed_dist.png" alt="Clubhead Speed"></div>
+    <div class="plot"><h3>Swing Duration Distribution</h3>
+        <img src="plots/swing_duration_dist.png" alt="Swing Duration"></div>
+    <div class="plot"><h3>Trajectory Smoothness</h3>
+        <img src="plots/smoothness.png" alt="Smoothness"></div>
+    <div class="plot"><h3>Speed vs Duration</h3>
+        <img src="plots/speed_vs_duration.png" alt="Speed vs Duration"></div>
+</body>
+</html>
+"""
+
 
 class PolicyEvaluator:
     """Evaluate trained policy through rollouts."""
@@ -179,187 +255,131 @@ class PolicyEvaluator:
         plots_dir = self.output_dir / "plots"
         plots_dir.mkdir(exist_ok=True)
 
-        # Extract data
         max_speeds = [s["max_clubhead_speed"] for s in rollout_stats]
         durations = [s["swing_duration"] for s in rollout_stats]
         smoothness = [s["trajectory_smoothness"] for s in rollout_stats]
 
-        # Plot 1: Clubhead speed distribution
-        fig, ax = plt.subplots(figsize=(10, 6))
-        ax.hist(max_speeds, bins=20, edgecolor="black", alpha=0.7)
-        ax.axvline(
-            np.mean(max_speeds),
-            color="red",
-            linestyle="--",
-            label=f"Mean: {np.mean(max_speeds):.1f} m/s",
+        self._plot_hist_with_mean(
+            max_speeds,
+            xlabel="Max Clubhead Speed (m/s)",
+            ylabel="Frequency",
+            title="Clubhead Speed Distribution",
+            mean_fmt=".1f",
+            mean_unit=" m/s",
+            color="steelblue",
+            path=plots_dir / "clubhead_speed_dist.png",
         )
-        ax.set_xlabel("Max Clubhead Speed (m/s)")
-        ax.set_ylabel("Frequency")
-        ax.set_title("Clubhead Speed Distribution")
-        ax.legend()
-        ax.grid(alpha=0.3)
-        plt.tight_layout()
-        plt.savefig(plots_dir / "clubhead_speed_dist.png", dpi=150)
-        plt.close()
-
-        # Plot 2: Swing duration distribution
-        fig, ax = plt.subplots(figsize=(10, 6))
-        ax.hist(durations, bins=20, edgecolor="black", alpha=0.7, color="green")
-        ax.axvline(
-            np.mean(durations),
-            color="red",
-            linestyle="--",
-            label=f"Mean: {np.mean(durations):.2f} s",
+        self._plot_hist_with_mean(
+            durations,
+            xlabel="Swing Duration (s)",
+            ylabel="Frequency",
+            title="Swing Duration Distribution",
+            mean_fmt=".2f",
+            mean_unit=" s",
+            color="green",
+            path=plots_dir / "swing_duration_dist.png",
         )
-        ax.set_xlabel("Swing Duration (s)")
-        ax.set_ylabel("Frequency")
-        ax.set_title("Swing Duration Distribution")
-        ax.legend()
-        ax.grid(alpha=0.3)
-        plt.tight_layout()
-        plt.savefig(plots_dir / "swing_duration_dist.png", dpi=150)
-        plt.close()
-
-        # Plot 3: Smoothness over rollouts
-        fig, ax = plt.subplots(figsize=(10, 6))
-        ax.plot(smoothness, marker="o", markersize=4, alpha=0.6)
-        ax.axhline(
-            np.mean(smoothness),
-            color="red",
-            linestyle="--",
-            label=f"Mean: {np.mean(smoothness):.3f}",
+        self._plot_line_with_mean(
+            smoothness,
+            xlabel="Rollout Index",
+            ylabel="Trajectory Smoothness (0-1)",
+            title="Trajectory Smoothness Across Rollouts",
+            path=plots_dir / "smoothness.png",
         )
-        ax.set_xlabel("Rollout Index")
-        ax.set_ylabel("Trajectory Smoothness (0-1)")
-        ax.set_title("Trajectory Smoothness Across Rollouts")
-        ax.legend()
-        ax.grid(alpha=0.3)
-        plt.tight_layout()
-        plt.savefig(plots_dir / "smoothness.png", dpi=150)
-        plt.close()
-
-        # Plot 4: Speed vs Duration scatter
-        fig, ax = plt.subplots(figsize=(10, 6))
-        ax.scatter(durations, max_speeds, alpha=0.6)
-        ax.set_xlabel("Swing Duration (s)")
-        ax.set_ylabel("Max Clubhead Speed (m/s)")
-        ax.set_title("Clubhead Speed vs Swing Duration")
-        ax.grid(alpha=0.3)
-        plt.tight_layout()
-        plt.savefig(plots_dir / "speed_vs_duration.png", dpi=150)
-        plt.close()
+        self._plot_scatter(
+            x=durations,
+            y=max_speeds,
+            xlabel="Swing Duration (s)",
+            ylabel="Max Clubhead Speed (m/s)",
+            title="Clubhead Speed vs Swing Duration",
+            path=plots_dir / "speed_vs_duration.png",
+        )
 
         logger.info(f"✓ Plots saved to {plots_dir}")
+
+    def _plot_hist_with_mean(
+        self,
+        data: list[float],
+        xlabel: str,
+        ylabel: str,
+        title: str,
+        mean_fmt: str,
+        mean_unit: str,
+        color: str,
+        path: object,
+    ) -> None:
+        """Save a histogram with a mean reference line."""
+        mean_val = np.mean(data)
+        fig, ax = plt.subplots(figsize=(10, 6))
+        ax.hist(data, bins=20, edgecolor="black", alpha=0.7, color=color)
+        ax.axvline(
+            mean_val,
+            color="red",
+            linestyle="--",
+            label=f"Mean: {mean_val:{mean_fmt}}{mean_unit}",
+        )
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel(ylabel)
+        ax.set_title(title)
+        ax.legend()
+        ax.grid(alpha=0.3)
+        plt.tight_layout()
+        plt.savefig(path, dpi=150)
+        plt.close()
+
+    def _plot_line_with_mean(
+        self,
+        data: list[float],
+        xlabel: str,
+        ylabel: str,
+        title: str,
+        path: object,
+    ) -> None:
+        """Save a line plot with a mean reference line."""
+        mean_val = np.mean(data)
+        fig, ax = plt.subplots(figsize=(10, 6))
+        ax.plot(data, marker="o", markersize=4, alpha=0.6)
+        ax.axhline(
+            mean_val,
+            color="red",
+            linestyle="--",
+            label=f"Mean: {mean_val:.3f}",
+        )
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel(ylabel)
+        ax.set_title(title)
+        ax.legend()
+        ax.grid(alpha=0.3)
+        plt.tight_layout()
+        plt.savefig(path, dpi=150)
+        plt.close()
+
+    def _plot_scatter(
+        self,
+        x: list[float],
+        y: list[float],
+        xlabel: str,
+        ylabel: str,
+        title: str,
+        path: object,
+    ) -> None:
+        """Save a scatter plot."""
+        fig, ax = plt.subplots(figsize=(10, 6))
+        ax.scatter(x, y, alpha=0.6)
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel(ylabel)
+        ax.set_title(title)
+        ax.grid(alpha=0.3)
+        plt.tight_layout()
+        plt.savefig(path, dpi=150)
+        plt.close()
 
     def generate_report(self, summary: dict) -> None:
         """Generate HTML evaluation report."""
         report_path = self.output_dir / "report.html"
-
-        html = f"""
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Project GROOT Evaluation Report</title>
-    <style>
-        body {{ font-family: Arial, sans-serif; margin: 40px; }}
-        h1 {{ color: #333; }}
-        h2 {{ color: #666; margin-top: 30px; }}
-        table {{ border-collapse: collapse; margin: 20px 0; }}
-        th, td {{ border: 1px solid #ddd; padding: 12px; text-align: left; }}
-        th {{ background-color: #4CAF50; color: white; }}
-        .metric {{ font-size: 24px; font-weight: bold; color: #4CAF50; }}
-        .plot {{ margin: 20px 0; }}
-        .plot img {{ max-width: 100%; height: auto; border: 1px solid #ddd; }}
-    </style>
-</head>
-<body>
-    <h1>Project GROOT Evaluation Report</h1>
-    <p><strong>Policy:</strong> {self.policy_path.name}</p>
-    <p><strong>Number of Rollouts:</strong> {summary["num_rollouts"]}</p>
-
-    <h2>Summary Metrics</h2>
-
-    <h3>Clubhead Speed</h3>
-    <table>
-        <tr>
-            <th>Metric</th>
-            <th>Value</th>
-        </tr>
-        <tr>
-            <td>Mean Max Speed</td>
-            <td class="metric">{summary["clubhead_speed"]["max_mean"]:.2f} m/s</td>
-        </tr>
-        <tr>
-            <td>Std Dev</td>
-            <td>{summary["clubhead_speed"]["max_std"]:.2f} m/s</td>
-        </tr>
-        <tr>
-            <td>Range</td>
-            <td>
-                {summary["clubhead_speed"]["max_min"]:.2f} -
-                {summary["clubhead_speed"]["max_max"]:.2f} m/s
-            </td>
-        </tr>
-    </table>
-
-    <h3>Swing Timing</h3>
-    <table>
-        <tr>
-            <th>Metric</th>
-            <th>Value</th>
-        </tr>
-        <tr>
-            <td>Mean Duration</td>
-            <td>
-                {summary["swing_duration"]["mean"]:.3f} ±
-                {summary["swing_duration"]["std"]:.3f} s
-            </td>
-        </tr>
-    </table>
-
-    <h3>Quality Metrics</h3>
-    <table>
-        <tr>
-            <th>Metric</th>
-            <th>Value</th>
-        </tr>
-        <tr>
-            <td>Trajectory Smoothness</td>
-            <td>
-                {summary["trajectory_smoothness"]["mean"]:.3f} ±
-                {summary["trajectory_smoothness"]["std"]:.3f}
-            </td>
-        </tr>
-        <tr>
-            <td>Joint Limit Violations</td>
-            <td>{summary["joint_limit_violations"]["percentage"]:.1f}% of rollouts</td>
-        </tr>
-    </table>
-
-    <h2>Visualizations</h2>
-    <div class="plot">
-        <h3>Clubhead Speed Distribution</h3>
-        <img src="plots/clubhead_speed_dist.png" alt="Clubhead Speed">
-    </div>
-    <div class="plot">
-        <h3>Swing Duration Distribution</h3>
-        <img src="plots/swing_duration_dist.png" alt="Swing Duration">
-    </div>
-    <div class="plot">
-        <h3>Trajectory Smoothness</h3>
-        <img src="plots/smoothness.png" alt="Smoothness">
-    </div>
-    <div class="plot">
-        <h3>Speed vs Duration</h3>
-        <img src="plots/speed_vs_duration.png" alt="Speed vs Duration">
-    </div>
-</body>
-</html>
-"""
-
+        html = _build_report_html(self.policy_path.name, summary)
         with open(report_path, "w") as f:
             f.write(html)
-
         logger.info(f"✓ Report generated: {report_path}")
 
     def print_summary(self, summary: dict) -> None:
@@ -388,20 +408,14 @@ class PolicyEvaluator:
         logger.info("\n" + "=" * 60)
 
 
-def main() -> None:
+def _build_arg_parser() -> argparse.ArgumentParser:
+    """Build and return the CLI argument parser."""
     parser = argparse.ArgumentParser(description="Evaluate trained golf swing policy")
-
     parser.add_argument(
-        "--policy",
-        type=str,
-        required=True,
-        help="Path to policy checkpoint",
+        "--policy", type=str, required=True, help="Path to policy checkpoint"
     )
     parser.add_argument(
-        "--config",
-        type=str,
-        required=True,
-        help="Robot/environment configuration YAML",
+        "--config", type=str, required=True, help="Robot/environment configuration YAML"
     )
     parser.add_argument(
         "--output-dir",
@@ -416,15 +430,10 @@ def main() -> None:
         help="Number of evaluation rollouts (default: 50)",
     )
     parser.add_argument(
-        "--record-video",
-        action="store_true",
-        help="Record videos of rollouts",
+        "--record-video", action="store_true", help="Record videos of rollouts"
     )
     parser.add_argument(
-        "--seed",
-        type=int,
-        default=42,
-        help="Random seed (default: 42)",
+        "--seed", type=int, default=42, help="Random seed (default: 42)"
     )
     parser.add_argument(
         "--device",
@@ -432,41 +441,35 @@ def main() -> None:
         default="cuda" if torch.cuda.is_available() else "cpu",
         help="Device (cuda/cpu)",
     )
+    return parser
 
-    args = parser.parse_args()
 
-    # Set seed
+def _run_evaluation(evaluator: "PolicyEvaluator", args: argparse.Namespace) -> None:
+    """Execute evaluation pipeline: rollouts → summary → save → plots → report."""
+    rollout_stats = evaluator.run_rollouts(
+        num_rollouts=args.num_rollouts,
+        record_video=args.record_video,
+    )
+    summary = evaluator.compute_summary_metrics(rollout_stats)
+    evaluator.save_results(rollout_stats, summary)
+    evaluator.generate_plots(rollout_stats)
+    evaluator.generate_report(summary)
+    evaluator.print_summary(summary)
+
+
+def main() -> None:
+    args = _build_arg_parser().parse_args()
+
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
 
-    # Create evaluator
     evaluator = PolicyEvaluator(
         policy_path=args.policy,
         config_path=args.config,
         output_dir=args.output_dir,
         device=args.device,
     )
-
-    # Run rollouts
-    rollout_stats = evaluator.run_rollouts(
-        num_rollouts=args.num_rollouts,
-        record_video=args.record_video,
-    )
-
-    # Compute summary
-    summary = evaluator.compute_summary_metrics(rollout_stats)
-
-    # Save results
-    evaluator.save_results(rollout_stats, summary)
-
-    # Generate plots
-    evaluator.generate_plots(rollout_stats)
-
-    # Generate report
-    evaluator.generate_report(summary)
-
-    # Print summary
-    evaluator.print_summary(summary)
+    _run_evaluation(evaluator, args)
 
 
 if __name__ == "__main__":
