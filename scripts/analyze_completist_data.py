@@ -93,20 +93,15 @@ def _scan_completist_file(
     return results
 
 
-def analyze_todos() -> tuple[list[Finding], list[Finding]]:
-    """Analyze TO-DO and FIX-ME markers."""
-    todos: list[Finding] = []
-    fixmes: list[Finding] = []
-
-    # Obfuscate strings to avoid finding this script itself in greedy scans
-    todo_str = "TO" + "DO"
+def _make_todo_parser() -> Callable[[str], Finding | None]:
+    """Return a grep-line parser that classifies TODO/FIXME findings."""
+    todo_str = "TO" + "DO"  # obfuscated to avoid self-match in greedy scans
     fixme_markers = ["FIX" + "ME", "XXX", "HACK", "TEMP"]
 
     def _parser(line: str) -> Finding | None:
         filepath, lineno, content = _parse_grep_line(line)
         if not filepath or not lineno or content is None:
             return None
-
         if re.search(r"\b" + todo_str + r"\b", content):
             return {
                 "file": filepath,
@@ -114,7 +109,6 @@ def analyze_todos() -> tuple[list[Finding], list[Finding]]:
                 "text": content,
                 "type": "TRACKED_TASK",
             }
-
         for m_marker in fixme_markers:
             if re.search(r"\b" + m_marker + r"\b", content):
                 return {
@@ -125,13 +119,19 @@ def analyze_todos() -> tuple[list[Finding], list[Finding]]:
                 }
         return None
 
-    all_markers = _scan_completist_file("MARKERS", _parser)
+    return _parser
+
+
+def analyze_todos() -> tuple[list[Finding], list[Finding]]:
+    """Analyze TO-DO and FIX-ME markers."""
+    todos: list[Finding] = []
+    fixmes: list[Finding] = []
+    all_markers = _scan_completist_file("MARKERS", _make_todo_parser())
     for marker_item in all_markers:
         if marker_item["type"] == "TRACKED_TASK":
             todos.append(marker_item)
         else:
             fixmes.append(marker_item)
-
     return todos, fixmes
 
 
@@ -212,53 +212,121 @@ def calculate_metrics(item: Mapping[str, Any]) -> tuple[int, int, int]:
     return impact, coverage, complexity
 
 
+def _issue_file_path(fname_title: str, issue_id: int) -> str:
+    """Return the canonical file path for an issue markdown file."""
+    return os.path.join(ISSUES_DIR, f"Issue_{issue_id:03d}_{fname_title}.md")
+
+
+def _issue_header_section(
+    title: str, itype: str, f_path: str, l_no: str, labels: list[str]
+) -> str:
+    """Return front-matter, description, and context sections."""
+    front = (
+        f'---\ntitle: "{title}"\nlabels: {labels}\n'
+        'assignee: "unassigned"\nstatus: "open"\n---\n'
+    )
+    desc = (
+        "\n# Issue Description\n"
+        + f"Found critical incomplete implementation in `{f_path}` at line {l_no}.\n\n"
+    )
+    ctx = f"## Context\n**Type**: {itype} | **Location**: `{f_path}:{l_no}`\n\n"
+    return front + desc + ctx
+
+
+def _issue_body_section(
+    context: str, impact: int, coverage: int, complexity: int
+) -> str:
+    """Return code snippet, metrics, and recommendation sections."""
+    code = f"```python\n{context}\n```\n\n"
+    metrics = (
+        f"## Audit Metrics\n- **Impact**: {impact}/5"
+        f" | **Coverage**: {coverage}/5 | **Complexity**: {complexity}/5\n\n"
+    )
+    rec = (
+        "## Recommendation\n"
+        "Implement missing logic or document the rationale for the gap.\n"
+    )
+    return code + metrics + rec
+
+
+def _build_issue_content(
+    title: str,
+    itype: str,
+    f_path: str,
+    l_no: str,
+    context: str,
+    impact: int,
+    coverage: int,
+    complexity: int,
+    labels: list[str],
+) -> str:
+    """Return the complete markdown content string for an issue file."""
+    return _issue_header_section(
+        title, itype, f_path, l_no, labels
+    ) + _issue_body_section(context, impact, coverage, complexity)
+
+
 def create_issue_file(item: Mapping[str, Any], issue_id: int) -> str:
     """Idempotent creation of markdown issue files."""
     os.makedirs(ISSUES_DIR, exist_ok=True)
-
     itype = str(item.get("type", "Incomplete Implementation"))
     f_path, l_no = str(item["file"]), str(item["line"])
     context = str(item.get("name", item.get("text", "")))
     title = f"Incomplete {itype} in {os.path.basename(f_path)}:{l_no}"
     fname_title = re.sub(r"[^\w]", "_", title).strip("_")
-
-    # Idempotency check
     existing = glob.glob(os.path.join(ISSUES_DIR, f"Issue_*_{fname_title}.md"))
     if existing:
         return existing[0]
-
-    filepath = os.path.join(ISSUES_DIR, f"Issue_{issue_id:03d}_{fname_title}.md")
     impact, coverage, complexity = calculate_metrics(item)
     labels = ["incomplete-implementation", "critical"]
     if impact >= 5:
         labels.append("high-impact")
-
-    content = f"""---
-title: "{title}"
-labels: {labels}
-assignee: "unassigned"
-status: "open"
----
-
-# Issue Description
-Found critical incomplete implementation in `{f_path}` at line {l_no}.
-
-## Context
-**Type**: {itype} | **Location**: `{f_path}:{l_no}`
-
-```python
-{context}
-```
-
-## Audit Metrics
-- **Impact**: {impact}/5 | **Coverage**: {coverage}/5 | **Complexity**: {complexity}/5
-
-## Recommendation
-Implement missing logic or document the rationale for the gap.
-"""
+    filepath = _issue_file_path(fname_title, issue_id)
+    content = _build_issue_content(
+        title, itype, f_path, l_no, context, impact, coverage, complexity, labels
+    )
     with open(filepath, "w", encoding="utf-8") as f:
         f.write(content)
     return filepath
+
+
+def _status_overview_chart(
+    criticals: list[Finding],
+    todos: list[Finding],
+    fixmes: list[Finding],
+    docs: list[Finding],
+) -> list[str]:
+    """Build Mermaid pie-chart lines for completion status overview."""
+    return [
+        "### Status Overview",
+        "```mermaid",
+        "pie title Completion Status",
+        f'    "Impl Gaps (Critical)" : {len(criticals)}',
+        f'    "Feature Requests (TRACKED_TASK)" : {len(todos)}',
+        f'    "Technical Debt (TRACKED_DEFECT)" : {len(fixmes)}',
+        f'    "Doc Gaps" : {len(docs)}',
+        "```",
+    ]
+
+
+def _module_breakdown_chart(
+    criticals: list[Finding], todos: list[Finding], fixmes: list[Finding]
+) -> list[str]:
+    """Build Mermaid pie-chart lines for top impacted modules."""
+    counts: dict[str, int] = {}
+    for item in criticals + todos + fixmes:
+        path_parts = item["file"].split("/")
+        root = path_parts[0] if path_parts else "unknown"
+        if root in [".", "src"]:
+            root = path_parts[1] if len(path_parts) > 1 else root
+        counts[root] = counts.get(root, 0) + 1
+    sorted_mods = sorted(counts.items(), key=lambda x: x[1], reverse=True)[:5]
+    if not sorted_mods:
+        return []
+    lines = ["\n### Top Impacted Modules", "```mermaid", "pie title Issues by Module"]
+    lines.extend(f'    "{mod}" : {count}' for mod, count in sorted_mods)
+    lines.append("```")
+    return lines
 
 
 def generate_mermaid_charts(
@@ -268,39 +336,9 @@ def generate_mermaid_charts(
     docs: list[Finding],
 ) -> str:
     """Generate Mermaid charts for the report."""
-    chart = []
-    chart.append("## Visualization")
-
-    # Pie Chart
-    chart.append("### Status Overview")
-    chart.append("```mermaid")
-    chart.append("pie title Completion Status")
-    chart.append(f'    "Impl Gaps (Critical)" : {len(criticals)}')
-    chart.append(f'    "Feature Requests (TRACKED_TASK)" : {len(todos)}')
-    chart.append(f'    "Technical Debt (TRACKED_DEFECT)" : {len(fixmes)}')
-    chart.append(f'    "Doc Gaps" : {len(docs)}')
-    chart.append("```")
-
-    # Breakdown by Top Modules (Bar Chart equivalent using pie or text)
-    # Let's do a simple count by top-level dir
-    counts = {}
-    for item in criticals + todos + fixmes:
-        path_parts = item["file"].split("/")
-        root = path_parts[0] if path_parts else "unknown"
-        if root in [".", "src"]:
-            root = path_parts[1] if len(path_parts) > 1 else root
-        counts[root] = counts.get(root, 0) + 1
-
-    sorted_mods = sorted(counts.items(), key=lambda x: x[1], reverse=True)[:5]
-
-    if sorted_mods:
-        chart.append("\n### Top Impacted Modules")
-        chart.append("```mermaid")
-        chart.append("pie title Issues by Module")
-        for mod, count in sorted_mods:
-            chart.append(f'    "{mod}" : {count}')
-        chart.append("```")
-
+    chart = ["## Visualization"]
+    chart.extend(_status_overview_chart(criticals, todos, fixmes, docs))
+    chart.extend(_module_breakdown_chart(criticals, todos, fixmes))
     return "\n".join(chart)
 
 
@@ -323,26 +361,15 @@ def _collect_report_data() -> tuple[
     return criticals, todos, fixmes, missing_docs
 
 
-def _build_report_lines(
+def _build_summary_lines(
     date_s: str,
     criticals: list[Finding],
     todos: list[Finding],
     fixmes: list[Finding],
     missing_docs: list[Finding],
 ) -> list[str]:
-    """Assemble all markdown report lines from pre-collected findings.
-
-    Args:
-        date_s: Date string for the report header (YYYY-MM-DD).
-        criticals: High-priority stub/NIE findings.
-        todos: TRACKED_TASK findings.
-        fixmes: Technical-debt markers.
-        missing_docs: Documentation gap findings.
-
-    Returns:
-        List of markdown lines (join with newline to produce the report body).
-    """
-    report = [
+    """Build header and executive-summary section lines."""
+    return [
         f"# Completist Report: {date_s}\n",
         "## Executive Summary",
         f"- **Critical Gaps**: {len(criticals)}",
@@ -351,37 +378,65 @@ def _build_report_lines(
         f"- **Documentation Gaps**: {len(missing_docs)}\n",
     ]
 
-    report.append(generate_mermaid_charts(criticals, todos, fixmes, missing_docs))
 
-    # Critical table
-    report.append("\n## Critical Incomplete (Top 50)")
-    report.append("| File | Line | Type | Impact | Coverage | Complexity |")
-    report.append("|---|---|---|---|---|---|")
+def _critical_table_lines(criticals: list[Finding]) -> list[str]:
+    """Return markdown lines for the Critical Incomplete table."""
+    lines = [
+        "\n## Critical Incomplete (Top 50)",
+        "| File | Line | Type | Impact | Coverage | Complexity |",
+        "|---|---|---|---|---|---|",
+    ]
     for item in criticals[:50]:
         imp, cov, comp = calculate_metrics(item)
-        report.append(
+        row = (
             f"| `{item['file']}` | {item['line']} | {item['type']}"
             f" | {imp} | {cov} | {comp} |"
         )
+        lines.append(row)
+    return lines
 
-    # Feature gap matrix
-    report.append("\n## Feature Gap Matrix")
-    report.append("| Module | Feature Gap | Type |")
-    report.append("|---|---|---|")
+
+def _feature_gap_lines(todos: list[Finding]) -> list[str]:
+    """Return markdown lines for the Feature Gap Matrix table."""
+    lines = [
+        "\n## Feature Gap Matrix",
+        "| Module | Feature Gap | Type |",
+        "|---|---|---|",
+    ]
     for item in todos[:50]:
         text = item.get("text", "").replace("|", "\\|")
-        report.append(f"| `{item['file']}` | {text[:100]} | {item['type']} |")
+        lines.append(f"| `{item['file']}` | {text[:100]} | {item['type']} |")
+    return lines
 
-    # Technical debt register
-    report.append("\n## Technical Debt Register")
-    report.append("| File | Line | Issue | Type |")
-    report.append("|---|---|---|---|")
+
+def _debt_register_lines(fixmes: list[Finding]) -> list[str]:
+    """Return markdown lines for the Technical Debt Register table."""
+    lines = [
+        "\n## Technical Debt Register",
+        "| File | Line | Issue | Type |",
+        "|---|---|---|---|",
+    ]
     for item in fixmes:
         text = item.get("text", "").replace("|", "\\|")
-        report.append(
+        lines.append(
             f"| `{item['file']}` | {item['line']} | {text[:100]} | {item['type']} |"
         )
+    return lines
 
+
+def _build_report_lines(
+    date_s: str,
+    criticals: list[Finding],
+    todos: list[Finding],
+    fixmes: list[Finding],
+    missing_docs: list[Finding],
+) -> list[str]:
+    """Assemble all markdown report lines from pre-collected findings."""
+    report = _build_summary_lines(date_s, criticals, todos, fixmes, missing_docs)
+    report.append(generate_mermaid_charts(criticals, todos, fixmes, missing_docs))
+    report.extend(_critical_table_lines(criticals))
+    report.extend(_feature_gap_lines(todos))
+    report.extend(_debt_register_lines(fixmes))
     report.extend(_build_priority_table(criticals, todos))
     return report
 
