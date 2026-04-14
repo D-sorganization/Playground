@@ -2,6 +2,8 @@
 
 import pytest
 
+pytest.importorskip("PyQt6")
+
 from src.asteroid_jumper.camera import Camera
 
 

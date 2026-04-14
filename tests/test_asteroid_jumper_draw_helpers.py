@@ -2,6 +2,10 @@
 
 from unittest.mock import MagicMock
 
+import pytest
+
+pytest.importorskip("PyQt6")
+
 from src.asteroid_jumper.draw_helpers import (
     STAR_POSITIONS,
     build_hud_lines,
