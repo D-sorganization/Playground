@@ -131,7 +131,36 @@ class PoseRetargeter:
                 - qddot: (T, num_dofs) joint accelerations
                 - ee_pos: (T, 3) end-effector (club head) position
                 - dof_names: List of DOF names
+
+        Raises:
+            ValueError: if inputs violate shape, size, or timestamp invariants.
         """
+        # --- Preconditions (Design by Contract) ---
+        if skeleton.ndim != 3 or skeleton.shape[2] != 3:
+            msg = f"skeleton must be (T, num_joints, 3), got shape {skeleton.shape}"
+            raise ValueError(msg)
+        if skeleton.shape[1] < 17:
+            msg = (
+                f"skeleton needs at least 17 joints (MediaPipe indices 0-16), "
+                f"got {skeleton.shape[1]}"
+            )
+            raise ValueError(msg)
+        T = len(skeleton)
+        if T < 3:
+            msg = f"Need at least 3 frames for central-difference velocity, got {T}"
+            raise ValueError(msg)
+        if len(club_head) != T:
+            msg = f"club_head length {len(club_head)} must match skeleton length {T}"
+            raise ValueError(msg)
+        if len(timestamps) != T:
+            msg = f"timestamps length {len(timestamps)} must match skeleton length {T}"
+            raise ValueError(msg)
+        if not np.all(np.isfinite(timestamps)):
+            raise ValueError("timestamps must be finite (no NaN or inf)")
+        if not np.all(np.diff(timestamps) > 0):
+            raise ValueError("timestamps must be strictly monotonically increasing")
+        # --- End preconditions ---
+
         T = len(skeleton)
 
         # Initialize joint trajectory
