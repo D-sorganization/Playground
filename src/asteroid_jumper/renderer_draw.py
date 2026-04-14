@@ -190,16 +190,16 @@ def draw_hud_lines(ctrl: object) -> list[tuple[str, object]]:
     """Return HUD text lines as (text, colour) tuples using the controller state."""
     from asteroid_jumper.renderer_draw import C_BLUE, C_GREEN, C_SUBTEXT
 
-    phase = ctrl.state.phase  # type: ignore[union-attr]
-    sim_time = ctrl.state.time  # type: ignore[union-attr]
+    phase = ctrl.state.phase  # type: ignore[attr-defined]
+    sim_time = ctrl.state.time  # type: ignore[attr-defined]
     raw = [
         f"Phase: {phase.upper()}",
         f"Time:  {sim_time:.2f} s",
-        f"Jumper speed:   {ctrl.jumper_speed():.3f} m/s",  # type: ignore[union-attr]
-        f"Jumper ω:       {ctrl.jumper_angular_speed():.3f} rad/s",  # type: ignore[union-attr]
-        f"Asteroid speed: {ctrl.asteroid_speed():.3f} m/s",  # type: ignore[union-attr]
-        f"Asteroid ω:     {ctrl.asteroid_angular_speed():.3f} rad/s",  # type: ignore[union-attr]
-        f"Off-centre:     {ctrl.off_centre_fraction():.2%}",  # type: ignore[union-attr]
+        f"Jumper speed:   {ctrl.jumper_speed():.3f} m/s",  # type: ignore[attr-defined]
+        f"Jumper ω:       {ctrl.jumper_angular_speed():.3f} rad/s",  # type: ignore[attr-defined]
+        f"Asteroid speed: {ctrl.asteroid_speed():.3f} m/s",  # type: ignore[attr-defined]
+        f"Asteroid ω:     {ctrl.asteroid_angular_speed():.3f} rad/s",  # type: ignore[attr-defined]
+        f"Off-centre:     {ctrl.off_centre_fraction():.2%}",  # type: ignore[attr-defined]
     ]
     if phase == "ready":
         raw.append("← Drag on asteroid to set jump angle")
