@@ -7,7 +7,8 @@ This keeps individual drawing concerns isolated and independently testable.
 from __future__ import annotations
 
 import math
-from typing import TYPE_CHECKING
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Protocol
 
 from PyQt6.QtCore import QPointF, QRectF, Qt
 from PyQt6.QtGui import (
@@ -24,6 +25,20 @@ from PyQt6.QtGui import (
 if TYPE_CHECKING:
     from asteroid_jumper.asteroid_shape import AsteroidShape
     from asteroid_jumper.physics import RigidBody
+
+# Type alias for world-to-screen coordinate transform callable
+WorldToScreenFn = Callable[[float, float], QPointF]
+
+
+class _ControllerLike(Protocol):
+    """Structural typing for the SimController speed/metric query methods."""
+
+    def jumper_speed(self) -> float: ...
+    def jumper_angular_speed(self) -> float: ...
+    def asteroid_speed(self) -> float: ...
+    def asteroid_angular_speed(self) -> float: ...
+    def off_centre_fraction(self) -> float: ...
+
 
 # Catppuccin Mocha colour palette — re-exported so renderer.py can import from here.
 C_BASE = QColor("#1e1e2e")
@@ -88,7 +103,7 @@ def draw_single_trail(
     p: QPainter,
     trail: list[tuple[float, float]],
     color: QColor,
-    world_to_screen_fn: object,
+    world_to_screen_fn: WorldToScreenFn,
 ) -> None:
     """Draw a fading position trail.
 
@@ -158,7 +173,7 @@ def draw_asteroid(
     ast: RigidBody,
     shape: AsteroidShape,
     scale: float,
-    world_to_screen_fn: object,
+    world_to_screen_fn: WorldToScreenFn,
 ) -> None:
     """Draw the asteroid polygon with gradient fill, outline, and craters.
 
@@ -208,7 +223,7 @@ def draw_craters(
     ast: RigidBody,
     shape: AsteroidShape,
     scale: float,
-    world_to_screen_fn: object,
+    world_to_screen_fn: WorldToScreenFn,
 ) -> None:
     """Draw decorative craters on the asteroid surface.
 
@@ -336,7 +351,9 @@ def draw_jumper_body(p: QPainter, scale: float, phase: float) -> None:
     draw_legs(p, scale, phase)
 
 
-def build_hud_lines(phase: str, sim_time: float, controller: object) -> list[str]:
+def build_hud_lines(
+    phase: str, sim_time: float, controller: _ControllerLike
+) -> list[str]:
     """Build the text lines for the HUD overlay.
 
     Args:
