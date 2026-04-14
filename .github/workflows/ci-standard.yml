@@ -58,7 +58,6 @@ jobs:
         run: ruff format --check .
 
       - run: pip install mypy types-PyYAML types-requests
-      - run: pip install -r requirements.txt numpy
       - run: mypy src --ignore-missing-imports
 
       # Placeholder detection - scans Python source files for unresolved TODOs/FIXMEs
