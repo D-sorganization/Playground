@@ -71,6 +71,22 @@ class VideoIngester:
         if not video_path.exists():
             raise FileNotFoundError(f"Video not found: {video_path}")
 
+        # DbC: validate time range arguments
+        if start_time is not None:
+            msg = "Contract violation: start_time must be non-negative, got " + repr(
+                start_time
+            )
+            assert isinstance(start_time, (int, float)) and start_time >= 0.0, msg
+        if end_time is not None:
+            msg = "Contract violation: end_time must be positive, got " + repr(end_time)
+            assert isinstance(end_time, (int, float)) and end_time > 0.0, msg
+        if start_time is not None and end_time is not None:
+            msg = (
+                f"Contract violation: end_time ({end_time}) must be greater than"
+                f" start_time ({start_time})"
+            )
+            assert end_time > start_time, msg
+
         # Extract video properties
         props = self._get_video_properties(video_path)
 
@@ -201,6 +217,10 @@ class VideoIngester:
             fps = 30.0  # Default
         if frame_count <= 0:
             frame_count = 90  # Default ~3 seconds
+
+        assert fps > 0, f"Contract violation: fps must be positive, got {fps}"
+        msg = f"Contract violation: frame_count must be positive, got {frame_count}"
+        assert frame_count > 0, msg
 
         duration = frame_count / fps
 
