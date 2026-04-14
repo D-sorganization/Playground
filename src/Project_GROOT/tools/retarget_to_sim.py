@@ -45,6 +45,14 @@ except ImportError:
     gaussian_filter1d = None
     interp1d = None
 
+# MediaPipe landmark indices for key joints
+_MP_LEFT_SHOULDER = 11
+_MP_RIGHT_SHOULDER = 12
+_MP_LEFT_ELBOW = 13
+_MP_RIGHT_ELBOW = 14
+_MP_LEFT_WRIST = 15
+_MP_RIGHT_WRIST = 16
+
 
 def _vector_angles_batch(v1: np.ndarray, v2: np.ndarray) -> np.ndarray:
     """Compute angles between paired row-vectors (T, 3) -> (T,)."""
@@ -52,6 +60,168 @@ def _vector_angles_batch(v1: np.ndarray, v2: np.ndarray) -> np.ndarray:
     v2_norm = v2 / (np.linalg.norm(v2, axis=1, keepdims=True) + 1e-8)
     cos_angles = np.clip(np.sum(v1_norm * v2_norm, axis=1), -1.0, 1.0)
     return np.arccos(cos_angles)
+
+
+def _extract_arm_joints(skeleton: np.ndarray) -> dict[str, np.ndarray]:
+    """Extract arm and shoulder joint arrays from the skeleton.
+
+    Args:
+        skeleton: (T, num_joints, 3) skeleton keypoints.
+
+    Returns:
+        Dict mapping joint name to (T, 3) array.
+    """
+    return {
+        "left_shoulder": skeleton[:, _MP_LEFT_SHOULDER, :],
+        "right_shoulder": skeleton[:, _MP_RIGHT_SHOULDER, :],
+        "left_elbow": skeleton[:, _MP_LEFT_ELBOW, :],
+        "right_elbow": skeleton[:, _MP_RIGHT_ELBOW, :],
+        "left_wrist": skeleton[:, _MP_LEFT_WRIST, :],
+        "right_wrist": skeleton[:, _MP_RIGHT_WRIST, :],
+    }
+
+
+def _fill_torso_dofs(
+    q: np.ndarray,
+    left_shoulder: np.ndarray,
+    right_shoulder: np.ndarray,
+) -> None:
+    """Fill torso DOF (yaw) in-place from the shoulder line.
+
+    Args:
+        q: (T, num_dofs) joint array to modify.
+        left_shoulder: (T, 3) left shoulder positions.
+        right_shoulder: (T, 3) right shoulder positions.
+    """
+    shoulder_vec = right_shoulder - left_shoulder  # (T, 3)
+    q[:, 1] = np.arctan2(shoulder_vec[:, 0], shoulder_vec[:, 2])
+
+
+def _fill_left_arm_dofs(
+    q: np.ndarray,
+    shoulder: np.ndarray,
+    elbow: np.ndarray,
+    wrist: np.ndarray,
+) -> None:
+    """Fill left arm DOFs (shoulder pitch, elbow flexion) in-place.
+
+    Args:
+        q: (T, num_dofs) joint array to modify.
+        shoulder: (T, 3) left shoulder positions.
+        elbow: (T, 3) left elbow positions.
+        wrist: (T, 3) left wrist positions.
+    """
+    upper = elbow - shoulder  # (T, 3)
+    forearm = wrist - elbow  # (T, 3)
+    horiz = np.linalg.norm(upper[:, [0, 2]], axis=1)
+    q[:, 3] = np.arctan2(-upper[:, 1], horiz)
+    q[:, 6] = np.pi - _vector_angles_batch(upper, forearm)
+
+
+def _fill_right_arm_dofs(
+    q: np.ndarray,
+    shoulder: np.ndarray,
+    elbow: np.ndarray,
+    wrist: np.ndarray,
+) -> None:
+    """Fill right arm DOFs (shoulder pitch, elbow flexion) in-place.
+
+    Args:
+        q: (T, num_dofs) joint array to modify.
+        shoulder: (T, 3) right shoulder positions.
+        elbow: (T, 3) right elbow positions.
+        wrist: (T, 3) right wrist positions.
+    """
+    upper = elbow - shoulder  # (T, 3)
+    forearm = wrist - elbow  # (T, 3)
+    horiz = np.linalg.norm(upper[:, [0, 2]], axis=1)
+    q[:, 7] = np.arctan2(-upper[:, 1], horiz)
+    q[:, 10] = np.pi - _vector_angles_batch(upper, forearm)
+
+
+def _fit_to_dofs(q: np.ndarray, num_dofs: int) -> np.ndarray:
+    """Pad or trim q to match the robot's DOF count.
+
+    Args:
+        q: (T, M) joint array.
+        num_dofs: Target number of DOFs.
+
+    Returns:
+        (T, num_dofs) array.
+    """
+    if q.shape[1] < num_dofs:
+        return np.pad(q, ((0, 0), (0, num_dofs - q.shape[1])))
+    return q[:, :num_dofs]
+
+
+def _check_joint_limits(
+    q: np.ndarray, robot_config: "RobotConfig"
+) -> tuple[list[str], bool]:
+    """Return joint-limit violation error messages and overall validity.
+
+    Args:
+        q: (T, num_dofs) joint positions.
+        robot_config: Robot configuration with joint limits.
+
+    Returns:
+        Tuple of (error_messages, is_valid).
+    """
+    errors: list[str] = []
+    below_lower = (q < robot_config.joint_lower).any(axis=0)
+    above_upper = (q > robot_config.joint_upper).any(axis=0)
+    for i, dof_name in enumerate(robot_config.dof_names):
+        if below_lower[i] or above_upper[i]:
+            errors.append(f"Joint limit violation: {dof_name}")
+    return errors, len(errors) == 0
+
+
+def _check_velocity_limits(qdot: np.ndarray, robot_config: "RobotConfig") -> list[str]:
+    """Return velocity-limit warning messages.
+
+    Args:
+        qdot: (T, num_dofs) joint velocities.
+        robot_config: Robot configuration with velocity limits.
+
+    Returns:
+        List of warning strings.
+    """
+    warnings: list[str] = []
+    max_velocities = np.abs(qdot).max(axis=0)
+    for i, (max_vel, limit) in enumerate(
+        zip(max_velocities, robot_config.velocity_limits, strict=False)
+    ):
+        if max_vel > limit:
+            warnings.append(
+                f"Velocity limit exceeded: {robot_config.dof_names[i]} "
+                f"({max_vel:.2f} > {limit:.2f} rad/s)"
+            )
+    return warnings
+
+
+def _check_discontinuities(
+    q: np.ndarray,
+    robot_config: "RobotConfig",
+    threshold: float = 0.5,
+) -> list[str]:
+    """Return discontinuity warning messages for large joint jumps.
+
+    Args:
+        q: (T, num_dofs) joint positions.
+        robot_config: Robot configuration with DOF names.
+        threshold: Jump size (rad) that triggers a warning.
+
+    Returns:
+        List of warning strings.
+    """
+    warnings: list[str] = []
+    q_diff = np.abs(np.diff(q, axis=0))
+    max_jump = q_diff.max(axis=0)
+    for i, jump in enumerate(max_jump):
+        if jump > threshold:
+            warnings.append(
+                f"Large discontinuity in {robot_config.dof_names[i]}: {jump:.3f} rad"
+            )
+    return warnings
 
 
 class RobotConfig:
@@ -125,149 +295,121 @@ class PoseRetargeter:
             timestamps: (T,) frame timestamps
 
         Returns:
-            Dictionary with:
-                - q: (T, num_dofs) joint positions
-                - qdot: (T, num_dofs) joint velocities
-                - qddot: (T, num_dofs) joint accelerations
-                - ee_pos: (T, 3) end-effector (club head) position
-                - dof_names: List of DOF names
+            Dictionary with q, qdot, qddot, ee_pos, dof_names, timestamps.
+
+        Raises:
+            ValueError: if inputs violate shape, size, or timestamp invariants.
         """
+        # --- Preconditions (Design by Contract) ---
+        if skeleton.ndim != 3 or skeleton.shape[2] != 3:
+            msg = f"skeleton must be (T, num_joints, 3), got shape {skeleton.shape}"
+            raise ValueError(msg)
+        if skeleton.shape[1] < 17:
+            msg = (
+                f"skeleton needs at least 17 joints (MediaPipe indices 0-16), "
+                f"got {skeleton.shape[1]}"
+            )
+            raise ValueError(msg)
         T = len(skeleton)
+        if T < 3:
+            msg = f"Need at least 3 frames for central-difference velocity, got {T}"
+            raise ValueError(msg)
+        if len(club_head) != T:
+            msg = f"club_head length {len(club_head)} must match skeleton length {T}"
+            raise ValueError(msg)
+        if len(timestamps) != T:
+            msg = f"timestamps length {len(timestamps)} must match skeleton length {T}"
+            raise ValueError(msg)
+        if not np.all(np.isfinite(timestamps)):
+            raise ValueError("timestamps must be finite (no NaN or inf)")
+        if not np.all(np.diff(timestamps) > 0):
+            raise ValueError("timestamps must be strictly monotonically increasing")
+        # --- End preconditions ---
 
-        # Initialize joint trajectory
-        q = np.zeros((T, self.robot_config.num_dofs))
-
-        # Simplified IK: map key human joints to robot DOFs
-        # This is a placeholder - real IK would use proper solver
         q = self._simple_ik_mapping(skeleton, club_head)
-
-        # Clip to joint limits
-        q = np.clip(q, self.robot_config.joint_lower, self.robot_config.joint_upper)
-
-        # Smooth trajectory
-        if self.smooth_window > 0 and gaussian_filter1d is not None:
-            for i in range(self.robot_config.num_dofs):
-                q[:, i] = gaussian_filter1d(q[:, i], sigma=self.smooth_window)
-
-        # Re-clip after smoothing
-        q = np.clip(q, self.robot_config.joint_lower, self.robot_config.joint_upper)
-
-        # Compute velocities and accelerations
-        dt = np.diff(timestamps)
-        dt = np.clip(dt, 1e-6, None)  # Avoid division by zero
-
-        # Velocity (central difference)
-        qdot = np.zeros_like(q)
-        qdot[1:-1] = (q[2:] - q[:-2]) / (dt[1:, None] + dt[:-1, None])
-        qdot[0] = (q[1] - q[0]) / dt[0]
-        qdot[-1] = (q[-1] - q[-2]) / dt[-1]
-
-        # Acceleration
-        qddot = np.zeros_like(q)
-        qddot[1:-1] = (qdot[2:] - qdot[:-2]) / (dt[1:, None] + dt[:-1, None])
-
-        # End-effector position (use club head as proxy)
-        ee_pos = club_head.copy()
-
+        q = self._ik_and_clip(q)
+        q = self._smooth_and_reclip(q)
+        qdot, qddot = self._compute_derivatives(q, timestamps)
         return {
             "q": q,
             "qdot": qdot,
             "qddot": qddot,
-            "ee_pos": ee_pos,
+            "ee_pos": club_head.copy(),
             "dof_names": self.robot_config.dof_names,
             "timestamps": timestamps,
         }
 
+    def _ik_and_clip(self, q: np.ndarray) -> np.ndarray:
+        """Clip joint positions to robot limits.
+
+        Args:
+            q: (T, num_dofs) raw joint positions.
+
+        Returns:
+            Clipped (T, num_dofs) joint positions.
+        """
+        return np.clip(q, self.robot_config.joint_lower, self.robot_config.joint_upper)
+
+    def _smooth_and_reclip(self, q: np.ndarray) -> np.ndarray:
+        """Apply Gaussian smoothing per DOF then re-clip to limits.
+
+        Args:
+            q: (T, num_dofs) joint positions.
+
+        Returns:
+            Smoothed and re-clipped (T, num_dofs) array.
+        """
+        if self.smooth_window > 0 and gaussian_filter1d is not None:
+            for i in range(self.robot_config.num_dofs):
+                q[:, i] = gaussian_filter1d(q[:, i], sigma=self.smooth_window)
+        return np.clip(q, self.robot_config.joint_lower, self.robot_config.joint_upper)
+
+    def _compute_derivatives(
+        self, q: np.ndarray, timestamps: np.ndarray
+    ) -> tuple[np.ndarray, np.ndarray]:
+        """Compute joint velocities and accelerations via finite differences.
+
+        Args:
+            q: (T, num_dofs) joint positions.
+            timestamps: (T,) frame timestamps.
+
+        Returns:
+            Tuple of (qdot, qddot) each shaped (T, num_dofs).
+        """
+        dt = np.clip(np.diff(timestamps), 1e-6, None)
+        qdot = np.zeros_like(q)
+        qdot[1:-1] = (q[2:] - q[:-2]) / (dt[1:, None] + dt[:-1, None])
+        qdot[0] = (q[1] - q[0]) / dt[0]
+        qdot[-1] = (q[-1] - q[-2]) / dt[-1]
+        qddot = np.zeros_like(q)
+        qddot[1:-1] = (qdot[2:] - qdot[:-2]) / (dt[1:, None] + dt[:-1, None])
+        return qdot, qddot
+
     def _simple_ik_mapping(
         self, skeleton: np.ndarray, club_head: np.ndarray
     ) -> np.ndarray:
-        """
-        Simplified IK: heuristic mapping from human joints to robot DOFs.
-
-        For a full implementation, this would use:
-        - TracIK, TRAC-IK, or similar solver
-        - Proper robot URDF/kinematic chain
-        - Optimization to match end-effector trajectory
-
-        This baseline uses geometric heuristics based on joint angles.
+        """Heuristic mapping from human joints to robot DOFs.
 
         Args:
-            skeleton: (T, 33, 3) MediaPipe skeleton
-            club_head: (T, 3) club head trajectory
+            skeleton: (T, 33, 3) MediaPipe skeleton.
+            club_head: (T, 3) club head trajectory (unused in heuristic).
 
         Returns:
-            q: (T, num_dofs) joint angles
+            q: (T, num_dofs) joint angles, clipped to [-pi, pi].
         """
         T = len(skeleton)
         num_dofs = self.robot_config.num_dofs
-
-        # Placeholder: map shoulder/elbow/wrist angles to robot DOFs
         q = np.zeros((T, num_dofs))
-
-        # MediaPipe joint indices
-        LEFT_SHOULDER = 11
-        RIGHT_SHOULDER = 12
-        LEFT_ELBOW = 13
-        RIGHT_ELBOW = 14
-        LEFT_WRIST = 15
-        RIGHT_WRIST = 16
-
-        # Extract key joints
-        left_shoulder = skeleton[:, LEFT_SHOULDER, :]
-        right_shoulder = skeleton[:, RIGHT_SHOULDER, :]
-        left_elbow = skeleton[:, LEFT_ELBOW, :]
-        right_elbow = skeleton[:, RIGHT_ELBOW, :]
-        left_wrist = skeleton[:, LEFT_WRIST, :]
-        right_wrist = skeleton[:, RIGHT_WRIST, :]
-
-        # Compute shoulder angles (simplified)
-        # DOF mapping (example for upper body humanoid):
-        # 0: torso_pitch
-        # 1: torso_yaw
-        # 2: torso_roll
-        # 3-5: left_shoulder (pitch, roll, yaw)
-        # 6: left_elbow
-        # 7-9: right_shoulder (pitch, roll, yaw)
-        # 10: right_elbow
-
-        # Vectorized: compute all frames at once using numpy broadcasting
-
-        # Torso orientation from shoulder line
-        shoulder_vec = right_shoulder - left_shoulder  # (T, 3)
-        q[:, 1] = np.arctan2(shoulder_vec[:, 0], shoulder_vec[:, 2])
-
-        # Left arm vectors (T, 3)
-        left_upper = left_elbow - left_shoulder
-        left_forearm = left_wrist - left_elbow
-
-        # Left shoulder pitch
-        left_horiz = np.linalg.norm(left_upper[:, [0, 2]], axis=1)
-        q[:, 3] = np.arctan2(-left_upper[:, 1], left_horiz)
-
-        # Left elbow flexion
-        q[:, 6] = np.pi - _vector_angles_batch(left_upper, left_forearm)
-
-        # Right arm vectors (T, 3)
-        right_upper = right_elbow - right_shoulder
-        right_forearm = right_wrist - right_elbow
-
-        # Right shoulder pitch
-        right_horiz = np.linalg.norm(right_upper[:, [0, 2]], axis=1)
-        q[:, 7] = np.arctan2(-right_upper[:, 1], right_horiz)
-
-        # Right elbow flexion
-        q[:, 10] = np.pi - _vector_angles_batch(right_upper, right_forearm)
-
-        # Scale to reasonable ranges (heuristic)
+        joints = _extract_arm_joints(skeleton)
+        _fill_torso_dofs(q, joints["left_shoulder"], joints["right_shoulder"])
+        _fill_left_arm_dofs(
+            q, joints["left_shoulder"], joints["left_elbow"], joints["left_wrist"]
+        )
+        _fill_right_arm_dofs(
+            q, joints["right_shoulder"], joints["right_elbow"], joints["right_wrist"]
+        )
         q = np.clip(q, -np.pi, np.pi)
-
-        # Pad or trim to match robot DOFs
-        if q.shape[1] < num_dofs:
-            q = np.pad(q, ((0, 0), (0, num_dofs - q.shape[1])))
-        else:
-            q = q[:, :num_dofs]
-
-        return q
+        return _fit_to_dofs(q, num_dofs)
 
 
 def validate_trajectory(
@@ -275,62 +417,28 @@ def validate_trajectory(
     qdot: np.ndarray,
     robot_config: RobotConfig,
 ) -> dict[str, Any]:
-    """
-    Validate retargeted trajectory for joint limits, velocity, etc.
+    """Validate retargeted trajectory for joint limits and velocity limits.
 
     Args:
-        q: (T, num_dofs) joint positions
-        qdot: (T, num_dofs) joint velocities
-        robot_config: Robot configuration
+        q: (T, num_dofs) joint positions.
+        qdot: (T, num_dofs) joint velocities.
+        robot_config: Robot configuration.
 
     Returns:
-        Validation report dict
+        Validation report dict with keys valid, warnings, errors.
     """
-    report = {
-        "valid": True,
-        "warnings": [],
-        "errors": [],
-    }
-
-    # Check joint limits
-    below_lower = (q < robot_config.joint_lower).any(axis=0)
-    above_upper = (q > robot_config.joint_upper).any(axis=0)
-
-    for i, dof_name in enumerate(robot_config.dof_names):
-        if below_lower[i] or above_upper[i]:
-            report["errors"].append(f"Joint limit violation: {dof_name}")
-            report["valid"] = False
-
-    # Check velocity limits
-    max_velocities = np.abs(qdot).max(axis=0)
-    for i, (max_vel, limit) in enumerate(
-        zip(max_velocities, robot_config.velocity_limits, strict=False)
-    ):
-        if max_vel > limit:
-            report["warnings"].append(
-                f"Velocity limit exceeded: {robot_config.dof_names[i]} "
-                f"({max_vel:.2f} > {limit:.2f} rad/s)"
-            )
-
-    # Check for discontinuities
-    q_diff = np.abs(np.diff(q, axis=0))
-    max_jump = q_diff.max(axis=0)
-
-    for i, jump in enumerate(max_jump):
-        if jump > 0.5:  # 0.5 rad jump threshold
-            report["warnings"].append(
-                f"Large discontinuity in {robot_config.dof_names[i]}: {jump:.3f} rad"
-            )
-
-    return report
+    errors, is_valid = _check_joint_limits(q, robot_config)
+    warnings = _check_velocity_limits(qdot, robot_config)
+    warnings += _check_discontinuities(q, robot_config)
+    return {"valid": is_valid, "warnings": warnings, "errors": errors}
 
 
-def _build_retarget_parser() -> argparse.ArgumentParser:
-    """Build and return the CLI argument parser for retarget_to_sim."""
-    parser = argparse.ArgumentParser(
-        description="Retarget human poses to robot joint space",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-    )
+def _add_io_args(parser: argparse.ArgumentParser) -> None:
+    """Add I/O positional arguments to the parser.
+
+    Args:
+        parser: ArgumentParser to extend.
+    """
     parser.add_argument(
         "--input-dir",
         type=str,
@@ -349,6 +457,14 @@ def _build_retarget_parser() -> argparse.ArgumentParser:
         required=True,
         help="Robot configuration YAML file",
     )
+
+
+def _add_algo_args(parser: argparse.ArgumentParser) -> None:
+    """Add algorithm/tuning arguments to the parser.
+
+    Args:
+        parser: ArgumentParser to extend.
+    """
     parser.add_argument(
         "--ik-solver",
         type=str,
@@ -367,7 +483,45 @@ def _build_retarget_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Visualize retargeted trajectories",
     )
+
+
+def _build_retarget_parser() -> argparse.ArgumentParser:
+    """Build and return the CLI argument parser for retarget_to_sim."""
+    parser = argparse.ArgumentParser(
+        description="Retarget human poses to robot joint space",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    _add_io_args(parser)
+    _add_algo_args(parser)
     return parser
+
+
+def _load_pose_file(pose_file: Path) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Load skeleton, club_head, and timestamps from a .npz pose file.
+
+    Args:
+        pose_file: Path to the .npz file.
+
+    Returns:
+        Tuple of (skeleton, club_head, timestamps).
+    """
+    data = np.load(pose_file)
+    return data["skeleton"], data["club_head"], data["timestamps"]
+
+
+def _log_file_validation(filename: str, validation: dict[str, Any]) -> None:
+    """Log validation status, errors, and warnings for a file.
+
+    Args:
+        filename: Name of the pose file.
+        validation: Validation report dict.
+    """
+    status = "+" if validation["valid"] else "x"
+    logger.info("  %s %s", status, filename)
+    for error in validation["errors"]:
+        logger.info("      ERROR: %s", error)
+    for warning in validation["warnings"][:2]:
+        logger.info("      WARNING: %s", warning)
 
 
 def _retarget_one_file(
@@ -379,7 +533,7 @@ def _retarget_one_file(
     """Retarget, validate, and save a single pose .npz file.
 
     Args:
-        pose_file: Path to input .npz file containing skeleton/club_head/timestamps.
+        pose_file: Path to input .npz file.
         retargeter: Initialised PoseRetargeter instance.
         robot_config: Robot configuration for validation.
         output_dir: Directory to write the retargeted .npz output.
@@ -387,32 +541,17 @@ def _retarget_one_file(
     Returns:
         Report dict with keys: file, valid, warnings, errors.
     """
-    data = np.load(pose_file)
-    skeleton = data["skeleton"]
-    club_head = data["club_head"]
-    timestamps = data["timestamps"]
-
+    skeleton, club_head, timestamps = _load_pose_file(pose_file)
     result = retargeter.retarget(skeleton, club_head, timestamps)
     validation = validate_trajectory(result["q"], result["qdot"], robot_config)
-
-    output_file = output_dir / pose_file.name
-    np.savez(output_file, **result)
-
-    report = {
+    np.savez(output_dir / pose_file.name, **result)
+    _log_file_validation(pose_file.name, validation)
+    return {
         "file": pose_file.name,
         "valid": validation["valid"],
         "warnings": validation["warnings"],
         "errors": validation["errors"],
     }
-
-    status = "+" if validation["valid"] else "x"
-    logger.info("  %s %s", status, pose_file.name)
-    for error in validation["errors"]:
-        logger.info("      ERROR: %s", error)
-    for warning in validation["warnings"][:2]:
-        logger.info("      WARNING: %s", warning)
-
-    return report
 
 
 def _save_retarget_report(all_reports: list[dict], output_dir: Path) -> None:
@@ -452,7 +591,6 @@ def main() -> None:
         return
 
     logger.info("Found %d pose files", len(pose_files))
-
     retargeter = PoseRetargeter(
         robot_config=robot_config,
         ik_solver=args.ik_solver,
