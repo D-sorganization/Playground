@@ -37,6 +37,87 @@ except ImportError:
         return x
 
 
+# MediaPipe wrist landmark indices
+_MP_LEFT_WRIST = 15
+_MP_RIGHT_WRIST = 16
+
+
+def _compute_grip_and_direction(skeleton: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """Return (club_grip, wrist_dir_unit) from skeleton wrist keypoints."""
+    left_wrist = skeleton[:, _MP_LEFT_WRIST, :]
+    right_wrist = skeleton[:, _MP_RIGHT_WRIST, :]
+    club_grip = (left_wrist + right_wrist) / 2
+    wrist_dir = right_wrist - left_wrist
+    norm = np.clip(np.linalg.norm(wrist_dir, axis=1, keepdims=True), 1e-6, None)
+    return club_grip, wrist_dir / norm
+
+
+def _compute_club_face(wrist_dir_unit: np.ndarray) -> np.ndarray:
+    """Return normalised club-face normals perpendicular to wrist direction."""
+    vertical = np.array([0, 1, 0])
+    club_face = np.cross(wrist_dir_unit, vertical)
+    face_norm = np.clip(np.linalg.norm(club_face, axis=1, keepdims=True), 1e-6, None)
+    return club_face / face_norm
+
+
+def _merge_club_arrays(original_data: Any, updates: dict) -> dict:
+    """Return a new data dict combining original_data keys with updates."""
+    merged = {key: original_data[key] for key in original_data.keys()}
+    merged.update(updates)
+    return merged
+
+
+def _save_pose_with_club(
+    original_data: Any,
+    club_grip: np.ndarray,
+    club_head: np.ndarray,
+    club_face: np.ndarray,
+    club_speed: np.ndarray,
+    club_path: np.ndarray,
+    output_file: str,
+) -> None:
+    """Save pose data merged with club-tracking arrays to output_file."""
+    new_data = _merge_club_arrays(
+        original_data,
+        {
+            "club_grip": club_grip,
+            "club_head": club_head,
+            "club_face": club_face,
+            "club_speed": club_speed,
+            "club_path": club_path,
+        },
+    )
+    np.savez(output_file, **new_data)
+
+
+def _process_one_video(
+    tracker: "ClubTracker",
+    video_entry: dict,
+    pose_dir: Path,
+    output_dir: Path,
+    use_video_path: bool,
+) -> dict | None:
+    """Track clubs for one video entry; return stats dict or None on error."""
+    video_id = video_entry["id"]
+    pose_file = pose_dir / f"{video_id}.npz"
+    if not pose_file.exists():
+        logger.info(f"Warning: Pose file not found: {pose_file}")
+        return None
+    output_file = output_dir / f"{video_id}.npz"
+    try:
+        video_path = video_entry.get("video_path") if use_video_path else None
+        stats = tracker.add_club_to_pose_file(
+            pose_file=str(pose_file),
+            output_file=str(output_file),
+            video_path=video_path,
+        )
+        logger.info(f"{video_id}: max speed = {stats['max_clubhead_speed']:.1f} m/s")
+        return {"video_id": video_id, "golfer": video_entry["golfer"], **stats}
+    except (OSError, ValueError, KeyError, RuntimeError) as e:
+        logger.info(f"Error processing {video_id}: {e}")
+        return None
+
+
 class ClubTracker:
     """Track golf club trajectory from pose data."""
 
@@ -55,19 +136,7 @@ class ClubTracker:
         confidence: np.ndarray,
         video_path: str | None = None,
     ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-        """
-        Track club trajectory.
-
-        Args:
-            skeleton: (T, num_joints, 3) skeleton keypoints
-            confidence: (T, num_joints) keypoint confidences
-            video_path: Optional video path for visual tracking
-
-        Returns:
-            club_grip: (T, 3) grip position
-            club_head: (T, 3) clubhead position
-            club_face: (T, 3) clubface normal vector
-        """
+        """Track club trajectory; returns (club_grip, club_head, club_face)."""
         if self.method == "line_fit":
             return self._track_line_fit(skeleton, confidence)
         elif self.method == "optical_flow":
@@ -82,57 +151,12 @@ class ClubTracker:
         skeleton: np.ndarray,
         confidence: np.ndarray,
     ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-        """
-        Baseline: fit line through hands, extend to estimate clubhead.
-
-        Uses both wrists and projects line assuming standard grip.
-
-        Args:
-            skeleton: (T, 33, 3) MediaPipe skeleton
-            confidence: (T, 33)
-
-        Returns:
-            club_grip, club_head, club_face
-        """
+        """Baseline: fit line through hands, extend to estimate clubhead."""
         if not (len(skeleton) > 0):
             raise ValueError("Skeleton must contain frames")
-
-        # MediaPipe wrist indices
-        left_wrist_idx = 15
-        right_wrist_idx = 16
-
-        # Extract wrist positions
-        left_wrist = skeleton[:, left_wrist_idx, :]  # (T, 3)
-        right_wrist = skeleton[:, right_wrist_idx, :]  # (T, 3)
-
-        # Use average of wrists as grip position
-        club_grip = (left_wrist + right_wrist) / 2
-
-        # Direction from one wrist to another
-        wrist_direction = right_wrist - left_wrist  # (T, 3)
-
-        # Normalize
-        wrist_direction_norm = np.linalg.norm(wrist_direction, axis=1, keepdims=True)
-        wrist_direction_norm = np.clip(
-            wrist_direction_norm, 1e-6, None
-        )  # Avoid div by zero
-        wrist_direction_unit = wrist_direction / wrist_direction_norm
-
-        # Extend line from grip through hands to estimate clubhead
-        # Assume club extends in direction of wrist line
-        club_head = club_grip + wrist_direction_unit * self.club_length
-
-        # Club face: perpendicular to shaft direction (simplified)
-        # For driver, face is roughly perpendicular to shaft in swing plane
-        # Use cross product with vertical axis as approximation
-        vertical = np.array([0, 1, 0])  # y-up
-        club_face = np.cross(wrist_direction_unit, vertical)
-
-        # Normalize face normals
-        face_norm = np.linalg.norm(club_face, axis=1, keepdims=True)
-        face_norm = np.clip(face_norm, 1e-6, None)
-        club_face = club_face / face_norm
-
+        club_grip, wrist_dir_unit = _compute_grip_and_direction(skeleton)
+        club_head = club_grip + wrist_dir_unit * self.club_length
+        club_face = _compute_club_face(wrist_dir_unit)
         return club_grip, club_head, club_face
 
     def _track_optical_flow(
@@ -141,11 +165,7 @@ class ClubTracker:
         confidence: np.ndarray,
         video_path: str,
     ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-        """
-        Track clubhead using optical flow (future implementation).
-
-        Would use Lucas-Kanade or similar to track high-contrast clubhead.
-        """
+        """Track clubhead using optical flow (future implementation)."""
         raise NotImplementedError("Optical flow tracking coming soon")
 
     def add_club_to_pose_file(
@@ -154,106 +174,40 @@ class ClubTracker:
         output_file: str,
         video_path: str | None = None,
     ) -> dict[str, float]:
-        """
-        Add club tracking data to existing pose .npz file.
-
-        Args:
-            pose_file: Input .npz file with skeleton data
-            output_file: Output .npz file (can be same as input)
-            video_path: Optional video path for visual tracking
-        """
-        # Load existing pose data
+        """Add club tracking data to existing pose .npz file."""
         data = np.load(pose_file)
-
-        skeleton = data["skeleton"]
-        confidence = data["skeleton_confidence"]
-
-        # Track club
-        club_grip, club_head, club_face = self.track(skeleton, confidence, video_path)
-
-        # Compute additional metrics
+        club_grip, club_head, club_face = self.track(
+            data["skeleton"], data["skeleton_confidence"], video_path
+        )
         club_speed = self._compute_clubhead_speed(club_head, data["timestamps"])
         club_path = self._compute_club_path(club_head)
-
-        # Create updated data dict
-        new_data = {key: data[key] for key in data.keys()}
-        new_data.update(
-            {
-                "club_grip": club_grip,
-                "club_head": club_head,
-                "club_face": club_face,
-                "club_speed": club_speed,
-                "club_path": club_path,
-            }
+        _save_pose_with_club(
+            data, club_grip, club_head, club_face, club_speed, club_path, output_file
         )
-
-        # Save
-        np.savez(output_file, **new_data)
-
-        # Return statistics
-        max_speed = club_speed.max()
-        avg_speed = club_speed.mean()
-
         return {
-            "max_clubhead_speed": float(max_speed),
-            "avg_clubhead_speed": float(avg_speed),
+            "max_clubhead_speed": float(club_speed.max()),
+            "avg_clubhead_speed": float(club_speed.mean()),
             "total_path_length": float(club_path[-1]),
         }
 
     def _compute_clubhead_speed(
         self, club_head: np.ndarray, timestamps: np.ndarray
     ) -> np.ndarray:
-        """
-        Compute clubhead speed from trajectory.
-
-        Args:
-            club_head: (T, 3) clubhead positions
-            timestamps: (T,) frame timestamps
-
-        Returns:
-            speed: (T,) instantaneous speed in m/s
-        """
+        """Return (T,) instantaneous speed in m/s from club_head positions."""
         if not (len(club_head) > 0):
             raise ValueError("Club head data must contain frames")
-
-        # Compute displacement
-        displacement = np.diff(club_head, axis=0)  # (T-1, 3)
-        distance = np.linalg.norm(displacement, axis=1)  # (T-1,)
-
-        # Compute time delta
-        dt = np.diff(timestamps)  # (T-1,)
-        dt = np.clip(dt, 1e-6, None)  # Avoid division by zero
-
-        # Speed
-        speed = distance / dt  # (T-1,)
-
-        # Pad to match original length
-        speed = np.concatenate([[0], speed])  # (T,)
-
-        return speed
+        dt = np.clip(np.diff(timestamps), 1e-6, None)
+        distance = np.linalg.norm(np.diff(club_head, axis=0), axis=1)
+        return np.concatenate([[0], distance / dt])
 
     def _compute_club_path(self, club_head: np.ndarray) -> np.ndarray:
-        """
-        Compute cumulative path length.
-
-        Args:
-            club_head: (T, 3)
-
-        Returns:
-            path_length: (T,) cumulative distance traveled
-        """
-        displacement = np.diff(club_head, axis=0)
-        distance = np.linalg.norm(displacement, axis=1)
-        cumulative = np.concatenate([[0], np.cumsum(distance)])
-        return cumulative
+        """Return (T,) cumulative distance traveled by club head."""
+        distance = np.linalg.norm(np.diff(club_head, axis=0), axis=1)
+        return np.concatenate([[0], np.cumsum(distance)])
 
 
-def _build_club_track_parser() -> argparse.ArgumentParser:
-    """Build and return the CLI argument parser for club_track."""
-    parser = argparse.ArgumentParser(
-        description="Track golf club trajectory from pose data",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-    )
+def _add_club_track_required_args(parser: argparse.ArgumentParser) -> None:
+    """Add required arguments to the club_track parser."""
     parser.add_argument(
         "--manifest", type=str, required=True, help="Video manifest JSON"
     )
@@ -269,6 +223,10 @@ def _build_club_track_parser() -> argparse.ArgumentParser:
         required=True,
         help="Output directory (can be same as pose-dir to update in place)",
     )
+
+
+def _add_club_track_optional_args(parser: argparse.ArgumentParser) -> None:
+    """Add optional arguments to the club_track parser."""
     parser.add_argument(
         "--method",
         type=str,
@@ -287,6 +245,16 @@ def _build_club_track_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Visualize club tracking (requires matplotlib)",
     )
+
+
+def _build_club_track_parser() -> argparse.ArgumentParser:
+    """Build and return the CLI argument parser for club_track."""
+    parser = argparse.ArgumentParser(
+        description="Track golf club trajectory from pose data",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    _add_club_track_required_args(parser)
+    _add_club_track_optional_args(parser)
     return parser
 
 
@@ -297,41 +265,14 @@ def _track_videos(
     output_dir: Path,
     use_video_path: bool,
 ) -> list[dict]:
-    """Process each video entry and collect club tracking stats.
-
-    Args:
-        tracker: Initialized ClubTracker.
-        videos: List of video entry dicts from manifest.
-        pose_dir: Directory containing pose .npz files.
-        output_dir: Directory for output .npz files.
-        use_video_path: Whether to pass video_path for optical flow.
-
-    Returns:
-        List of per-video statistics dicts.
-    """
+    """Process each video entry and return collected club tracking stats."""
     all_stats = []
     for video_entry in tqdm(videos, desc="Tracking clubs"):
-        video_id = video_entry["id"]
-        pose_file = pose_dir / f"{video_id}.npz"
-        if not pose_file.exists():
-            logger.info(f"Warning: Pose file not found: {pose_file}")
-            continue
-        output_file = output_dir / f"{video_id}.npz"
-        try:
-            video_path = video_entry.get("video_path") if use_video_path else None
-            stats = tracker.add_club_to_pose_file(
-                pose_file=str(pose_file),
-                output_file=str(output_file),
-                video_path=video_path,
-            )
-            all_stats.append(
-                {"video_id": video_id, "golfer": video_entry["golfer"], **stats}
-            )
-            logger.info(
-                f"{video_id}: max speed = {stats['max_clubhead_speed']:.1f} m/s"
-            )
-        except (OSError, ValueError, KeyError, RuntimeError) as e:
-            logger.info(f"Error processing {video_id}: {e}")
+        stats = _process_one_video(
+            tracker, video_entry, pose_dir, output_dir, use_video_path
+        )
+        if stats is not None:
+            all_stats.append(stats)
     return all_stats
 
 
