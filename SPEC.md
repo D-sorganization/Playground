@@ -27,7 +27,7 @@
 | **Primary Language(s)** | Python 3.11+                                    |
 | **License**             | MIT                                             |
 | **Current Version**     | 1.0.1                                           |
-| **Spec Version**        | 1.0.20                                          |
+| **Spec Version**        | 1.0.21                                          |
 | **Last Spec Update**    | 2026-04-14                                      |
 
 ## 2. Purpose & Mission
@@ -78,16 +78,19 @@ Playground/
 
 ### Key Components
 
-| Component                | Location                   | Purpose                                                                 |
-| ------------------------ | -------------------------- | ----------------------------------------------------------------------- |
-| Asteroid Field Navigator | `src/asteroid_jumper/`     | Demo project: navigate through asteroid fields with collision detection |
-| Project GROOT            | `src/Project_GROOT/`       | Integrated simulation, training, evaluation, and data framework         |
-| GROOT Simulation         | `src/Project_GROOT/sim/`   | Core simulation engine for environment and agent interactions           |
-| GROOT Training           | `src/Project_GROOT/train/` | Training pipelines and model optimization                               |
-| GROOT Evaluation         | `src/Project_GROOT/eval/`  | Evaluation and benchmarking framework                                   |
-| GROOT Data               | `src/Project_GROOT/data/`  | Dataset management and preprocessing                                    |
-| MATLAB Tools             | `tools/`                   | MATLAB utilities for analysis and visualization                         |
-| Archive Snapshots        | `archive/`                 | Historical references retained outside the maintained source surface    |
+| Component                | Location                           | Purpose                                                                 |
+| ------------------------ | ---------------------------------- | ----------------------------------------------------------------------- |
+| Asteroid Field Navigator | `src/asteroid_jumper/`             | Demo project: navigate through asteroid fields with collision detection |
+| AJ Camera                | `src/asteroid_jumper/camera.py`    | Viewport, pan, zoom, and world↔screen coordinate transforms            |
+| AJ Draw                  | `src/asteroid_jumper/draw.py`      | Sprite and primitive drawing helpers (background, asteroids, jumper)    |
+| AJ Particles             | `src/asteroid_jumper/particles.py` | TrailBuffer particle/trail system for position history management       |
+| Project GROOT            | `src/Project_GROOT/`               | Integrated simulation, training, evaluation, and data framework         |
+| GROOT Simulation         | `src/Project_GROOT/sim/`           | Core simulation engine for environment and agent interactions           |
+| GROOT Training           | `src/Project_GROOT/train/`         | Training pipelines and model optimization                               |
+| GROOT Evaluation         | `src/Project_GROOT/eval/`          | Evaluation and benchmarking framework                                   |
+| GROOT Data               | `src/Project_GROOT/data/`          | Dataset management and preprocessing                                    |
+| MATLAB Tools             | `tools/`                           | MATLAB utilities for analysis and visualization                         |
+| Archive Snapshots        | `archive/`                         | Historical references retained outside the maintained source surface    |
 
 ## 5. Desired Functionality
 
@@ -283,6 +286,7 @@ Active development with focus on Project GROOT implementation. Demos (Asteroid F
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | ---------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-04-14 | 1.0.21  | Refactor(#246): decompose `asteroid_jumper/renderer.py` into `camera.py` (Camera viewport class), `draw.py` (sprite/primitive drawing helpers), and `particles.py` (TrailBuffer particle system); `draw_helpers.py` retained as backward-compat re-export shim; 18 camera tests + 9 draw tests + 17 particle tests added.                                                                                                  |
 | 2026-04-14 | 1.0.20  | Refactor(#259): split 3 monolithic scripts; extracted `eval_plots.py`, `eval_report.py`, `renderer_draw.py`, `mypy_agent_types.py`, and `mypy_fix_strategies.py` into focused companion modules.                                                                                                                                                                                                                           |
 | 2026-04-14 | 1.0.18  | ci: retrigger CI for #261 — bump SPEC version above main (1.0.17)                                                                                                                                                                                                                                                                                                                                                          |
 | 2026-04-14 | 1.0.17  | Umbrella(#261): confirmed all P1 A-N refresh remediations complete — #258 (function decomposition ≤30 LOC) and #259 (monolithic script splitting ≤300 LOC) fully addressed; spec version timeline reconciled.                                                                                                                                                                                                              |
