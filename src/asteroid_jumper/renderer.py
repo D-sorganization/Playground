@@ -3,8 +3,9 @@
 Draws with Catppuccin Mocha colour palette to match Tools repo theme.
 Animation runs via QTimer.
 
-Drawing primitives live in :mod:`draw_helpers`.
-Camera/viewport maths live in :mod:`camera`.
+Drawing primitives live in :mod:`asteroid_jumper.draw`.
+Camera/viewport maths live in :mod:`asteroid_jumper.camera`.
+Particle trail management lives in :mod:`asteroid_jumper.particles`.
 """
 
 from __future__ import annotations
@@ -17,7 +18,9 @@ from PyQt6.QtGui import QFont, QMouseEvent, QPainter, QPen, QWheelEvent
 from PyQt6.QtWidgets import QSizePolicy, QWidget
 
 from asteroid_jumper.camera import Camera
-from asteroid_jumper.draw_helpers import (
+from asteroid_jumper.draw import (
+    C_PEACH,
+    C_TEAL,
     C_YELLOW,
     build_hud_lines,
     draw_arrowhead,
@@ -28,6 +31,7 @@ from asteroid_jumper.draw_helpers import (
     draw_single_trail,
     draw_stars,
 )
+from asteroid_jumper.particles import TrailBuffer
 
 if TYPE_CHECKING:
     from asteroid_jumper.controller import SimController
@@ -36,8 +40,8 @@ FPS = 60
 SIM_SPEED = 1.0  # simulation seconds per real second
 TRAIL_LENGTH = 120  # max trail points stored
 
-# Re-export colour palette for any code that imports from renderer.py
-from asteroid_jumper.draw_helpers import (  # noqa: E402, F401
+# Re-export colour palette for any code that previously imported from renderer.py
+from asteroid_jumper.draw import (  # noqa: E402, F401
     C_BASE,
     C_BLUE,
     C_CRUST,
@@ -46,13 +50,11 @@ from asteroid_jumper.draw_helpers import (  # noqa: E402, F401
     C_LAVENDER,
     C_MANTLE,
     C_MAUVE,
-    C_PEACH,
     C_RED,
     C_SKY,
     C_SUBTEXT,
     C_SURFACE0,
     C_SURFACE1,
-    C_TEAL,
     C_TEXT,
     STAR_POSITIONS,
 )
@@ -70,8 +72,8 @@ class AsteroidJumperRenderer(QWidget):
         self._ctrl = controller
         self._camera = Camera()
         self._running = False
-        self._asteroid_trail: list[tuple[float, float]] = []
-        self._jumper_trail: list[tuple[float, float]] = []
+        self._asteroid_trail = TrailBuffer(capacity=TRAIL_LENGTH)
+        self._jumper_trail = TrailBuffer(capacity=TRAIL_LENGTH)
         self._force_angle_drag = False
         self._force_angle_screen: QPointF | None = None
         self.force_angle_changed = _SimpleSignal()
@@ -99,7 +101,7 @@ class AsteroidJumperRenderer(QWidget):
         self._timer.stop()
 
     def reset_view(self) -> None:
-        """Centre the view and clear trails."""
+        """Centre the view and clear particle trails."""
         self._camera.reset()
         self._asteroid_trail.clear()
         self._jumper_trail.clear()
@@ -191,12 +193,8 @@ class AsteroidJumperRenderer(QWidget):
         if self._ctrl.state.phase in ("jumping", "flight"):
             ast = self._ctrl.state.asteroid
             jmp = self._ctrl.state.jumper
-            self._asteroid_trail.append((ast.pos.x, ast.pos.y))
-            self._jumper_trail.append((jmp.pos.x, jmp.pos.y))
-            if len(self._asteroid_trail) > TRAIL_LENGTH:
-                self._asteroid_trail.pop(0)
-            if len(self._jumper_trail) > TRAIL_LENGTH:
-                self._jumper_trail.pop(0)
+            self._asteroid_trail.append(ast.pos.x, ast.pos.y)
+            self._jumper_trail.append(jmp.pos.x, jmp.pos.y)
             self._ctrl.tick(dt)
         self.update()
 
@@ -206,8 +204,8 @@ class AsteroidJumperRenderer(QWidget):
 
     def _draw_trails(self, p: QPainter) -> None:
         """Draw position trails for asteroid and jumper."""
-        draw_single_trail(p, self._asteroid_trail, C_TEAL, self._world_to_screen)
-        draw_single_trail(p, self._jumper_trail, C_PEACH, self._world_to_screen)
+        draw_single_trail(p, self._asteroid_trail.points, C_TEAL, self._world_to_screen)
+        draw_single_trail(p, self._jumper_trail.points, C_PEACH, self._world_to_screen)
 
     def _draw_asteroid(self, p: QPainter) -> None:
         """Draw the asteroid polygon."""
