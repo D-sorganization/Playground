@@ -1,11 +1,19 @@
-"""Tests for Project_GROOT.train.imitation_train - DbC contracts and helpers."""
+"""Tests for Project_GROOT.train.imitation_train - behavioral and DbC tests.
 
+Issue #274: Replace import/hasattr smoke tests with real behavioral tests for
+training and retargeting modules.
+"""
+
+import argparse
+
+import numpy as np
 import pytest
 
-pytest.importorskip("torch")
+torch = pytest.importorskip("torch", reason="torch not available")
 
-import src.Project_GROOT.train.imitation_train as target_module
-from src.Project_GROOT.train.imitation_train import (
+from src.Project_GROOT.train.imitation_train import (  # noqa: E402
+    PolicyNetwork,
+    SwingDemonstrationDataset,
     _build_imitation_parser,
     _load_and_override_config,
     _validate_imitation_config,
@@ -26,29 +34,16 @@ def _valid_config() -> dict:
     }
 
 
-def test_module_syntax_and_import():
-    """Verify Project_GROOT.train.imitation_train can be imported."""
-    assert target_module is not None
-
-
-def test_has_symbol_SwingDemonstrationDataset():
-    """Verify SwingDemonstrationDataset exists in module."""
-    assert hasattr(target_module, "SwingDemonstrationDataset")
-
-
-def test_has_symbol_PolicyNetwork():
-    """Verify PolicyNetwork exists in module."""
-    assert hasattr(target_module, "PolicyNetwork")
-
-
-def test_has_symbol_ImitationTrainer():
-    """Verify ImitationTrainer exists in module."""
-    assert hasattr(target_module, "ImitationTrainer")
-
-
-def test_has_symbol_main():
-    """Verify main exists in module."""
-    assert hasattr(target_module, "main")
+def _write_demo_npz(path, T: int = 20, num_dofs: int = 5):
+    """Write a minimal demo .npz file for testing."""
+    rng = np.random.default_rng(0)
+    np.savez(
+        path,
+        q=rng.standard_normal((T, num_dofs)).astype(np.float32),
+        qdot=rng.standard_normal((T, num_dofs)).astype(np.float32),
+        ee_pos=rng.standard_normal((T, 3)).astype(np.float32),
+        timestamps=np.linspace(0.0, 1.0, T).astype(np.float32),
+    )
 
 
 # --- _validate_imitation_config tests ---
@@ -123,25 +118,23 @@ def test_validate_config_negative_hidden_dim():
         _validate_imitation_config(config)
 
 
-# --- _build_imitation_parser tests ---
+# --- _build_imitation_parser behavioral tests ---
 
 
 def test_build_imitation_parser_returns_parser():
     """_build_imitation_parser returns a working ArgumentParser."""
-    import argparse
-
     parser = _build_imitation_parser()
     assert isinstance(parser, argparse.ArgumentParser)
 
 
 def test_build_imitation_parser_required_args():
-    """Parsing without required args should fail."""
+    """Parsing without required args should fail with SystemExit."""
     with pytest.raises(SystemExit):
         _build_imitation_parser().parse_args([])
 
 
 def test_build_imitation_parser_defaults():
-    """Default seed and device are set."""
+    """Default seed is 42 and resume defaults to None."""
     args = _build_imitation_parser().parse_args(
         [
             "--config",
@@ -156,13 +149,11 @@ def test_build_imitation_parser_defaults():
     assert args.resume is None
 
 
-# --- _load_and_override_config tests ---
+# --- _load_and_override_config behavioral tests ---
 
 
 def test_load_and_override_config_applies_overrides(tmp_path):
     """CLI overrides replace config values."""
-    import argparse
-
     import yaml
 
     config_data = _valid_config()
@@ -181,8 +172,6 @@ def test_load_and_override_config_applies_overrides(tmp_path):
 
 def test_load_and_override_config_saves_yaml(tmp_path):
     """_load_and_override_config saves config.yaml to output_dir."""
-    import argparse
-
     import yaml
 
     config_data = _valid_config()
@@ -199,16 +188,86 @@ def test_load_and_override_config_saves_yaml(tmp_path):
     assert (tmp_path / "output" / "config.yaml").exists()
 
 
-# --- PolicyNetwork forward tests ---
+# --- PolicyNetwork behavioral tests (issue #274) ---
 
 
 def test_policy_network_forward():
     """PolicyNetwork forward pass produces correct output shape."""
-    import torch
-
-    from src.Project_GROOT.train.imitation_train import PolicyNetwork
-
     net = PolicyNetwork(state_dim=10, action_dim=5, hidden_dims=[32, 16])
     x = torch.randn(4, 10)
     out = net(x)
     assert out.shape == (4, 5)
+
+
+def test_policy_network_forward_batch_independence():
+    """PolicyNetwork output shape is consistent across batch sizes."""
+    net = PolicyNetwork(state_dim=8, action_dim=3, hidden_dims=[16])
+    for batch_size in (1, 4, 16):
+        out = net(torch.randn(batch_size, 8))
+        assert out.shape == (batch_size, 3)
+
+
+def test_policy_network_default_hidden_dims():
+    """PolicyNetwork uses default hidden_dims=[256,256,128] when not supplied."""
+    net = PolicyNetwork(state_dim=6, action_dim=4)
+    out = net(torch.randn(2, 6))
+    assert out.shape == (2, 4)
+
+
+def test_policy_network_output_finite():
+    """PolicyNetwork forward pass outputs finite values for normal input."""
+    net = PolicyNetwork(state_dim=5, action_dim=3, hidden_dims=[16])
+    out = net(torch.randn(8, 5))
+    assert torch.isfinite(out).all(), "PolicyNetwork output contains non-finite values"
+
+
+# --- SwingDemonstrationDataset behavioral tests (issue #274) ---
+
+
+def test_dataset_getitem_returns_tensors(tmp_path):
+    """SwingDemonstrationDataset.__getitem__ returns torch.Tensor values."""
+    _write_demo_npz(tmp_path / "demo_0.npz", T=30, num_dofs=5)
+    ds = SwingDemonstrationDataset(str(tmp_path), sequence_length=20)
+    sample = ds[0]
+    assert isinstance(sample["state"], torch.Tensor)
+    assert isinstance(sample["action"], torch.Tensor)
+    assert isinstance(sample["ee_pos"], torch.Tensor)
+
+
+def test_dataset_getitem_shape_truncate(tmp_path):
+    """Longer demo is truncated to sequence_length along the time axis."""
+    num_dofs = 4
+    seq_len = 10
+    _write_demo_npz(tmp_path / "demo_0.npz", T=30, num_dofs=num_dofs)
+    ds = SwingDemonstrationDataset(str(tmp_path), sequence_length=seq_len)
+    sample = ds[0]
+    # state = [q, qdot, time] concatenated along dim=1
+    assert sample["state"].shape == (seq_len, num_dofs * 2 + 1)
+    assert sample["action"].shape == (seq_len, num_dofs)
+    assert sample["ee_pos"].shape == (seq_len, 3)
+
+
+def test_dataset_getitem_shape_pad(tmp_path):
+    """Shorter demo is padded with edge values to sequence_length."""
+    num_dofs = 4
+    seq_len = 20
+    _write_demo_npz(tmp_path / "demo_0.npz", T=8, num_dofs=num_dofs)
+    ds = SwingDemonstrationDataset(str(tmp_path), sequence_length=seq_len)
+    sample = ds[0]
+    assert sample["state"].shape == (seq_len, num_dofs * 2 + 1)
+    assert sample["action"].shape == (seq_len, num_dofs)
+    assert sample["ee_pos"].shape == (seq_len, 3)
+
+
+def test_dataset_len(tmp_path):
+    """SwingDemonstrationDataset.__len__ returns number of demo files."""
+    for i in range(3):
+        _write_demo_npz(tmp_path / f"demo_{i}.npz")
+    ds = SwingDemonstrationDataset(str(tmp_path), sequence_length=10)
+    assert len(ds) == 3
+
+
+def test_dataset_empty_dir(tmp_path):
+    """SwingDemonstrationDataset handles empty directory gracefully."""
+    ds = SwingDemonstrationDataset(str(tmp_path), sequence_length=10)
+    assert len(ds) == 0
