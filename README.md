@@ -1,16 +1,27 @@
 # Playground
 
-A fleet-wide monorepo for testing, experimentation, and simulation projects. Built with Python 3.11+ and enforced to A-tier standards via automated CI/CD.
+A fleet-wide monorepo for independent experiments and simulation projects. Each project is self-contained with its own domain, dependencies, and maturity level. The monorepo provides shared CI infrastructure, tooling, and quality gates, but individual projects are **orthogonal** — they share no domain logic and are evaluated independently.
 
 ## Projects
 
-| Project | Description |
-|---------|-------------|
-| **Asteroid Jumper** | A PyQt6 desktop application for navigating and jumping between asteroids with real-time physics simulation. |
-| **Asteroid Field Navigator** | RRT-based path planning through procedurally generated asteroid fields. |
-| **Calculator** | A TI-89-style calculator with a Flask web interface and SymPy-powered symbolic math. |
-| **Solar System Model** | A solar system simulation and visualization tool. |
-| **Project GROOT** | Golf swing imitation-learning pipeline: video ingestion, pose conversion, MuJoCo simulation, RL fine-tuning, and evaluation. |
+| Project                      | Status           | Description                                                                                                                                                                  |
+| ---------------------------- | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Asteroid Jumper**          | Production-ready | A PyQt6 desktop application for navigating and jumping between asteroids with real-time physics simulation. Full DbC, TDD, and LoD compliance.                               |
+| **Asteroid Field Navigator** | Stable           | RRT-based path planning through procedurally generated asteroid fields.                                                                                                      |
+| **Calculator**               | Stable           | A TI-89-style calculator with a Flask web interface and SymPy-powered symbolic math.                                                                                         |
+| **Solar System Model**       | Stable           | A solar system simulation and visualization tool.                                                                                                                            |
+| **Project GROOT**            | Experimental     | Golf swing imitation-learning pipeline: video ingestion, pose conversion, MuJoCo simulation, RL fine-tuning, and evaluation. Active development; quality uplift in progress. |
+
+### Monorepo Convention
+
+This repository intentionally hosts **independent experiments** at different maturity levels:
+
+- Projects do not share domain code or business logic.
+- Each project has its own `src/<project>/` subtree.
+- Quality assessments should be interpreted per-project, not for the repository as a whole.
+- Experimental projects (e.g., Project GROOT) are explicitly marked and do not affect the stability of production-ready projects.
+
+Adding a new experiment: create `src/<experiment>/`, add tests under `tests/test_<experiment>_*.py`, and update this table.
 
 ## Prerequisites
 
