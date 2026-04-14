@@ -27,7 +27,7 @@
 | **Primary Language(s)** | Python 3.11+                                    |
 | **License**             | MIT                                             |
 | **Current Version**     | 1.0.1                                           |
-| **Spec Version**        | 1.0.13                                          |
+| **Spec Version**        | 1.0.14                                          |
 | **Last Spec Update**    | 2026-04-14                                      |
 
 ## 2. Purpose & Mission
@@ -283,6 +283,7 @@ Active development with focus on Project GROOT implementation. Demos (Asteroid F
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | ---------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-04-14 | 1.0.14  | Decomposed `scripts/mypy_autofix_agent.py` into `src/mypy_agent/` package (types, io, fix_strategies modules); fixed pre-push mypy hook to exclude `src/mypy_agent/` to prevent double-module errors; fixed CI mypy step to exclude `src/mypy_agent/`.                                                                                                                                                                  |
 | 2026-04-14 | 1.0.13  | Decomposed oversized functions in Project GROOT: `rollout_eval.py`, `club_track.py`, `imitation_train.py`, `pose_convert.py`, `retarget_to_sim.py`, and `run_assessment.py`; extracted focused helper functions and expanded behavioral test coverage across 8 files.                                                                                                                                                   |
 | 2026-04-13 | 1.0.12  | Added Jules code quality review scripts, reports, workflows and fixed CI environment for Pytest tests.                                                                                                                                                                                                                                                                                                                  |
 | 2026-04-13 | 1.0.11  | Added Jules code quality review scripts, reports, workflows and fixed CI environment for Pytest tests.                                                                                                                                                                                                                                                                                                                  |
