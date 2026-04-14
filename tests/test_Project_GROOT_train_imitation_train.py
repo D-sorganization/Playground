@@ -212,3 +212,104 @@ def test_policy_network_forward():
     x = torch.randn(4, 10)
     out = net(x)
     assert out.shape == (4, 5)
+
+
+def test_policy_network_forward_batch_independence():
+    """PolicyNetwork output shape is consistent across batch sizes."""
+    import torch
+
+    from src.Project_GROOT.train.imitation_train import PolicyNetwork
+
+    net = PolicyNetwork(state_dim=8, action_dim=3, hidden_dims=[16])
+    for batch_size in (1, 4, 16):
+        out = net(torch.randn(batch_size, 8))
+        assert out.shape == (batch_size, 3)
+
+
+def test_policy_network_default_hidden_dims():
+    """PolicyNetwork uses default hidden_dims when not supplied."""
+    import torch
+
+    from src.Project_GROOT.train.imitation_train import PolicyNetwork
+
+    net = PolicyNetwork(state_dim=6, action_dim=4)
+    out = net(torch.randn(2, 6))
+    assert out.shape == (2, 4)
+
+
+# --- SwingDemonstrationDataset.__getitem__ behavioral tests (issue #274) ---
+
+
+def _write_demo_npz(path, T: int = 20, num_dofs: int = 5):
+    """Write a minimal demo .npz file for testing."""
+    import numpy as np
+
+    rng = np.random.default_rng(0)
+    np.savez(
+        path,
+        q=rng.standard_normal((T, num_dofs)).astype(np.float32),
+        qdot=rng.standard_normal((T, num_dofs)).astype(np.float32),
+        ee_pos=rng.standard_normal((T, 3)).astype(np.float32),
+        timestamps=np.linspace(0.0, 1.0, T).astype(np.float32),
+    )
+
+
+def test_dataset_getitem_returns_tensors(tmp_path):
+    """SwingDemonstrationDataset.__getitem__ returns torch.Tensor values."""
+    import torch
+
+    from src.Project_GROOT.train.imitation_train import SwingDemonstrationDataset
+
+    _write_demo_npz(tmp_path / "demo_0.npz", T=30, num_dofs=5)
+    ds = SwingDemonstrationDataset(str(tmp_path), sequence_length=20)
+    sample = ds[0]
+    assert isinstance(sample["state"], torch.Tensor)
+    assert isinstance(sample["action"], torch.Tensor)
+    assert isinstance(sample["ee_pos"], torch.Tensor)
+
+
+def test_dataset_getitem_shape_truncate(tmp_path):
+    """Longer demo is truncated to sequence_length."""
+    from src.Project_GROOT.train.imitation_train import SwingDemonstrationDataset
+
+    num_dofs = 4
+    seq_len = 10
+    _write_demo_npz(tmp_path / "demo_0.npz", T=30, num_dofs=num_dofs)
+    ds = SwingDemonstrationDataset(str(tmp_path), sequence_length=seq_len)
+    sample = ds[0]
+    # state = [q, qdot, time] concatenated along dim=1
+    assert sample["state"].shape == (seq_len, num_dofs * 2 + 1)
+    assert sample["action"].shape == (seq_len, num_dofs)
+    assert sample["ee_pos"].shape == (seq_len, 3)
+
+
+def test_dataset_getitem_shape_pad(tmp_path):
+    """Shorter demo is padded to sequence_length."""
+    from src.Project_GROOT.train.imitation_train import SwingDemonstrationDataset
+
+    num_dofs = 4
+    seq_len = 20
+    _write_demo_npz(tmp_path / "demo_0.npz", T=8, num_dofs=num_dofs)
+    ds = SwingDemonstrationDataset(str(tmp_path), sequence_length=seq_len)
+    sample = ds[0]
+    assert sample["state"].shape == (seq_len, num_dofs * 2 + 1)
+    assert sample["action"].shape == (seq_len, num_dofs)
+    assert sample["ee_pos"].shape == (seq_len, 3)
+
+
+def test_dataset_len(tmp_path):
+    """SwingDemonstrationDataset.__len__ returns number of demo files."""
+    from src.Project_GROOT.train.imitation_train import SwingDemonstrationDataset
+
+    for i in range(3):
+        _write_demo_npz(tmp_path / f"demo_{i}.npz")
+    ds = SwingDemonstrationDataset(str(tmp_path), sequence_length=10)
+    assert len(ds) == 3
+
+
+def test_dataset_empty_dir(tmp_path):
+    """SwingDemonstrationDataset handles empty directory gracefully."""
+    from src.Project_GROOT.train.imitation_train import SwingDemonstrationDataset
+
+    ds = SwingDemonstrationDataset(str(tmp_path), sequence_length=10)
+    assert len(ds) == 0
