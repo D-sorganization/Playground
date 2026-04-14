@@ -58,7 +58,9 @@ jobs:
         run: ruff format --check .
 
       - run: pip install mypy types-PyYAML types-requests
-      - run: mypy src --ignore-missing-imports
+        # src/mypy_agent/ uses implicit namespace packages (same pattern as src/shared/python/)
+        # and causes "Source file found twice" errors when scanned with src/ as root.
+      - run: mypy src --ignore-missing-imports --exclude src/mypy_agent
 
       # Placeholder detection - scans Python source files for unresolved TODOs/FIXMEs
       - name: Verify No Placeholders
