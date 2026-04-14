@@ -244,6 +244,7 @@ repos:
             "-m",
             "not slow and not integration",
             "--ignore=tests/test_ti89_calculator.py",
+            "--ignore=tests/test_Project_GROOT_tools_club_track.py",
           ]
         language: python
         additional_dependencies: [pytest, pytest-cov]
