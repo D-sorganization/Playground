@@ -223,35 +223,24 @@ class VideoIngester:
         return video_id
 
 
-def main() -> None:
+def _build_ingest_parser() -> argparse.ArgumentParser:
+    """Build and return the CLI argument parser for video_ingest."""
     parser = argparse.ArgumentParser(
         description="Ingest golf swing videos and create manifest",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=__doc__,
     )
-
-    # Input options
     input_group = parser.add_mutually_exclusive_group(required=True)
+    input_group.add_argument("--input-file", type=str, help="Single video file path")
     input_group.add_argument(
-        "--input-file",
-        type=str,
-        help="Single video file path",
+        "--input-dir", type=str, help="Directory containing videos"
     )
-    input_group.add_argument(
-        "--input-dir",
-        type=str,
-        help="Directory containing videos",
-    )
-
-    # Output
     parser.add_argument(
         "--output",
         type=str,
         default="data/manifest.json",
         help="Output manifest JSON path (default: data/manifest.json)",
     )
-
-    # Metadata
     parser.add_argument(
         "--golfer-name",
         type=str,
@@ -271,46 +260,48 @@ def main() -> None:
         choices=["driver", "iron", "wedge", "putter", "hybrid", "wood"],
         help="Type of swing (default: driver)",
     )
-
-    # Clipping
     parser.add_argument(
         "--start-time",
         type=float,
         help="Start time in seconds (default: start of video)",
     )
     parser.add_argument(
-        "--end-time",
-        type=float,
-        help="End time in seconds (default: end of video)",
+        "--end-time", type=float, help="End time in seconds (default: end of video)"
     )
-
-    # Directory options
     parser.add_argument(
         "--recursive",
         action="store_true",
         help="Search subdirectories when using --input-dir",
     )
-
-    # Processing
     parser.add_argument(
         "--append",
         action="store_true",
         help="Append to existing manifest instead of overwriting",
     )
+    return parser
 
-    args = parser.parse_args()
 
-    # Create ingester
-    ingester = VideoIngester(args.output)
+def _load_existing_manifest(ingester: VideoIngester, output_path: str) -> None:
+    """Load existing manifest videos into the ingester if the file exists.
 
-    # Load existing manifest if appending
-    if args.append and Path(args.output).exists():
-        with open(args.output) as f:
+    Args:
+        ingester: VideoIngester to populate.
+        output_path: Path to the manifest JSON file.
+    """
+    if Path(output_path).exists():
+        with open(output_path) as f:
             existing = json.load(f)
-            ingester.videos = existing.get("videos", [])
-            logger.info(f"Loaded existing manifest with {len(ingester.videos)} videos")
+        ingester.videos = existing.get("videos", [])
+        logger.info(f"Loaded existing manifest with {len(ingester.videos)} videos")
 
-    # Ingest videos
+
+def _ingest_from_args(ingester: VideoIngester, args: argparse.Namespace) -> None:
+    """Add video(s) to the ingester based on parsed CLI args.
+
+    Args:
+        ingester: VideoIngester to add videos to.
+        args: Parsed CLI arguments.
+    """
     if args.input_file:
         ingester.add_video(
             video_path=args.input_file,
@@ -328,7 +319,13 @@ def main() -> None:
             recursive=args.recursive,
         )
 
-    # Save manifest
+
+def main() -> None:
+    args = _build_ingest_parser().parse_args()
+    ingester = VideoIngester(args.output)
+    if args.append:
+        _load_existing_manifest(ingester, args.output)
+    _ingest_from_args(ingester, args)
     ingester.save()
 
 
