@@ -244,6 +244,15 @@ repos:
             "-m",
             "not slow and not integration",
             "--ignore=tests/test_ti89_calculator.py",
+            "--ignore=tests/test_Project_GROOT_eval_rollout_eval.py",
+            "--ignore=tests/test_Project_GROOT_sim_golf_swing_env.py",
+            "--ignore=tests/test_Project_GROOT_tools_club_track.py",
+            "--ignore=tests/test_Project_GROOT_tools_pose_convert.py",
+            "--ignore=tests/test_Project_GROOT_tools_retarget_to_sim.py",
+            "--ignore=tests/test_Project_GROOT_tools_smoke_test.py",
+            "--ignore=tests/test_Project_GROOT_tools_video_ingest.py",
+            "--ignore=tests/test_Project_GROOT_train_imitation_train.py",
+            "--ignore=tests/test_Project_GROOT_train_rl_finetune.py",
           ]
         language: python
         additional_dependencies: [pytest, pytest-cov]

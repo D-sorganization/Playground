@@ -19,16 +19,16 @@
 
 ## 1. Identity
 
-| Field | Value |
-|-------|-------|
-| **Repository Name** | `Playground` |
-| **GitHub URL** | `https://github.com/D-sorganization/Playground` |
-| **Owner** | D-sorganization |
-| **Primary Language(s)** | Python 3.11+ |
-| **License** | MIT |
-| **Current Version** | 1.0.1 |
-| **Spec Version** | 1.0.11 |
-| **Last Spec Update** | 2026-04-11 |
+| Field                   | Value                                           |
+| ----------------------- | ----------------------------------------------- |
+| **Repository Name**     | `Playground`                                    |
+| **GitHub URL**          | `https://github.com/D-sorganization/Playground` |
+| **Owner**               | D-sorganization                                 |
+| **Primary Language(s)** | Python 3.11+                                    |
+| **License**             | MIT                                             |
+| **Current Version**     | 1.0.1                                           |
+| **Spec Version**        | 1.0.12                                          |
+| **Last Spec Update**    | 2026-04-13                                      |
 
 ## 2. Purpose & Mission
 
@@ -78,28 +78,28 @@ Playground/
 
 ### Key Components
 
-| Component | Location | Purpose |
-|-----------|----------|---------|
-| Asteroid Field Navigator | `src/asteroid_jumper/` | Demo project: navigate through asteroid fields with collision detection |
-| Project GROOT | `src/Project_GROOT/` | Integrated simulation, training, evaluation, and data framework |
-| GROOT Simulation | `src/Project_GROOT/sim/` | Core simulation engine for environment and agent interactions |
-| GROOT Training | `src/Project_GROOT/train/` | Training pipelines and model optimization |
-| GROOT Evaluation | `src/Project_GROOT/eval/` | Evaluation and benchmarking framework |
-| GROOT Data | `src/Project_GROOT/data/` | Dataset management and preprocessing |
-| MATLAB Tools | `tools/` | MATLAB utilities for analysis and visualization |
-| Archive Snapshots | `archive/` | Historical references retained outside the maintained source surface |
+| Component                | Location                   | Purpose                                                                 |
+| ------------------------ | -------------------------- | ----------------------------------------------------------------------- |
+| Asteroid Field Navigator | `src/asteroid_jumper/`     | Demo project: navigate through asteroid fields with collision detection |
+| Project GROOT            | `src/Project_GROOT/`       | Integrated simulation, training, evaluation, and data framework         |
+| GROOT Simulation         | `src/Project_GROOT/sim/`   | Core simulation engine for environment and agent interactions           |
+| GROOT Training           | `src/Project_GROOT/train/` | Training pipelines and model optimization                               |
+| GROOT Evaluation         | `src/Project_GROOT/eval/`  | Evaluation and benchmarking framework                                   |
+| GROOT Data               | `src/Project_GROOT/data/`  | Dataset management and preprocessing                                    |
+| MATLAB Tools             | `tools/`                   | MATLAB utilities for analysis and visualization                         |
+| Archive Snapshots        | `archive/`                 | Historical references retained outside the maintained source surface    |
 
 ## 5. Desired Functionality
 
 ### Core Features
 
-| # | Feature | Status | Description |
-|---|---------|--------|-------------|
-| F1 | Asteroid Field Navigator | ✅ | Demo project with collision detection and navigation mechanics |
-| F2 | Archived experiment quarantine | ✅ | Keeps historical snapshots available for reference without treating them as maintained code |
-| F3 | Project GROOT Simulation | 🔄 | Core simulation engine with environment and agent interactions |
-| F4 | Fleet CI Compliance Template | ✅ | Reference CI/CD configuration enforcing fleet standards |
-| F5 | Assessment aggregation tooling | ✅ | Builds per-category assessments and compiles `docs/assessments/Comprehensive_Assessment.md` |
+| #   | Feature                        | Status | Description                                                                                 |
+| --- | ------------------------------ | ------ | ------------------------------------------------------------------------------------------- |
+| F1  | Asteroid Field Navigator       | ✅     | Demo project with collision detection and navigation mechanics                              |
+| F2  | Archived experiment quarantine | ✅     | Keeps historical snapshots available for reference without treating them as maintained code |
+| F3  | Project GROOT Simulation       | 🔄     | Core simulation engine with environment and agent interactions                              |
+| F4  | Fleet CI Compliance Template   | ✅     | Reference CI/CD configuration enforcing fleet standards                                     |
+| F5  | Assessment aggregation tooling | ✅     | Builds per-category assessments and compiles `docs/assessments/Comprehensive_Assessment.md` |
 
 ### API / Interface Contract
 
@@ -109,25 +109,26 @@ The Playground does not expose a public API or library interface. Maintained pro
 
 ### Input Data
 
-| Input | Format | Source | Schema |
-|-------|--------|--------|--------|
-| Asteroid field parameters | JSON | Demo configuration | Defined in asteroid_jumper config files |
-| Solar system initial conditions | JSON | Demo configuration | Defined in solar system model config |
-| GROOT simulation parameters | YAML | Experiment specs | Schema defined in GROOT docs |
-| Training datasets | CSV/NPZ | GROOT data pipeline | Varies by experiment |
+| Input                           | Format  | Source              | Schema                                  |
+| ------------------------------- | ------- | ------------------- | --------------------------------------- |
+| Asteroid field parameters       | JSON    | Demo configuration  | Defined in asteroid_jumper config files |
+| Solar system initial conditions | JSON    | Demo configuration  | Defined in solar system model config    |
+| GROOT simulation parameters     | YAML    | Experiment specs    | Schema defined in GROOT docs            |
+| Training datasets               | CSV/NPZ | GROOT data pipeline | Varies by experiment                    |
 
 ### Output Data
 
-| Output | Format | Destination | Description |
-|--------|--------|-------------|-------------|
-| Simulation trajectories | JSON | Memory/file | Asteroid navigator and solar system paths |
-| Model checkpoints | PKL/PT | `data/checkpoints/` | GROOT training model states |
-| Evaluation metrics | CSV/JSON | `eval/results/` | Performance reports and benchmarks |
-| Training logs | TXT/CSV | `logs/` | Training progress and diagnostics |
+| Output                  | Format   | Destination         | Description                               |
+| ----------------------- | -------- | ------------------- | ----------------------------------------- |
+| Simulation trajectories | JSON     | Memory/file         | Asteroid navigator and solar system paths |
+| Model checkpoints       | PKL/PT   | `data/checkpoints/` | GROOT training model states               |
+| Evaluation metrics      | CSV/JSON | `eval/results/`     | Performance reports and benchmarks        |
+| Training logs           | TXT/CSV  | `logs/`             | Training progress and diagnostics         |
 
 ### Configuration
 
 Configuration is managed via:
+
 - **Environment variables**: `GROOT_SEED`, `GROOT_DEBUG`, `GROOT_DATA_PATH`
 - **Config files**: YAML specifications in `src/Project_GROOT/conf/`
 - **CLI arguments**: Scripts in `src/Project_GROOT/tools/` accept configuration overrides
@@ -142,18 +143,18 @@ Test pyramid approach with emphasis on unit tests covering individual components
 
 ### Test Organization
 
-| Category | Location | Framework | Markers |
-|----------|----------|-----------|---------|
-| Unit | `tests/unit/` | pytest | `@pytest.mark.unit` |
-| Integration | `tests/integration/` | pytest | `@pytest.mark.integration` |
-| Live Simulation | `tests/live_sim/` | pytest | `@pytest.mark.live_simulation` |
+| Category        | Location             | Framework | Markers                        |
+| --------------- | -------------------- | --------- | ------------------------------ |
+| Unit            | `tests/unit/`        | pytest    | `@pytest.mark.unit`            |
+| Integration     | `tests/integration/` | pytest    | `@pytest.mark.integration`     |
+| Live Simulation | `tests/live_sim/`    | pytest    | `@pytest.mark.live_simulation` |
 
 ### Coverage Requirements
 
-| Scope | Minimum | Current | Enforced By |
-|-------|---------|---------|-------------|
-| Overall | 60% | 70%+ | CI (`--cov-fail-under=60`) |
-| Critical modules (asteroid_jumper, GROOT sim) | 75% | 80%+ | CI linting checks |
+| Scope                                         | Minimum | Current | Enforced By                |
+| --------------------------------------------- | ------- | ------- | -------------------------- |
+| Overall                                       | 60%     | 70%+    | CI (`--cov-fail-under=60`) |
+| Critical modules (asteroid_jumper, GROOT sim) | 75%     | 80%+    | CI linting checks          |
 
 ### Required Test Scenarios
 
@@ -167,13 +168,13 @@ Test pyramid approach with emphasis on unit tests covering individual components
 
 ### Code Quality Tools
 
-| Tool | Version | Purpose | Blocking? |
-|------|---------|---------|-----------|
-| ruff | Latest | Linting + formatting | Yes |
-| black | Latest | Code formatting | Yes |
-| mypy | Latest | Type checking | Yes |
-| bandit | Latest | Security scanning | Yes |
-| pip-audit | Latest | Dependency auditing | Yes |
+| Tool      | Version | Purpose              | Blocking? |
+| --------- | ------- | -------------------- | --------- |
+| ruff      | Latest  | Linting + formatting | Yes       |
+| black     | Latest  | Code formatting      | Yes       |
+| mypy      | Latest  | Type checking        | Yes       |
+| bandit    | Latest  | Security scanning    | Yes       |
+| pip-audit | Latest  | Dependency auditing  | Yes       |
 
 ### Design Principles
 
@@ -184,37 +185,37 @@ Test pyramid approach with emphasis on unit tests covering individual components
 
 ### CI/CD Pipeline
 
-| Workflow | Trigger | Purpose | Blocking? |
-|----------|---------|---------|-----------|
-| `ci-standard.yml` | Push/PR | Quality gates, linting, type checking, tests | Yes |
-| `jules-agent-*.yml` | Schedule/Manual | Jules agent integration and automation | No |
-| Fleet compliance checks | Push/PR | Enforce .fleetrc protocol standards | Yes |
+| Workflow                | Trigger         | Purpose                                                                                       | Blocking? |
+| ----------------------- | --------------- | --------------------------------------------------------------------------------------------- | --------- |
+| `ci-standard.yml`       | Push/PR         | Quality gates, linting, type checking, tests (with venv bootstrap for pytest PATH resolution) | Yes       |
+| `jules-agent-*.yml`     | Schedule/Manual | Jules agent integration and automation                                                        | No        |
+| Fleet compliance checks | Push/PR         | Enforce .fleetrc protocol standards                                                           | Yes       |
 
 ## 9. Dependencies
 
 ### Runtime Dependencies
 
-| Package | Version | Purpose |
-|---------|---------|---------|
-| PyYAML | >=6.0 | YAML configuration parsing for maintained Project GROOT tools |
+| Package | Version | Purpose                                                       |
+| ------- | ------- | ------------------------------------------------------------- |
+| PyYAML  | >=6.0   | YAML configuration parsing for maintained Project GROOT tools |
 
 ### Development Dependencies
 
-| Package | Version | Purpose |
-|---------|---------|---------|
-| pytest | >=7.0 | Testing framework |
-| pytest-cov | >=4.0 | Coverage reporting |
-| ruff | Latest | Linting and formatting |
-| black | Latest | Code formatting |
-| mypy | >=1.0 | Static type checking |
-| bandit | >=1.7 | Security scanning |
-| pip-audit | >=2.4 | Dependency auditing |
+| Package    | Version | Purpose                |
+| ---------- | ------- | ---------------------- |
+| pytest     | >=7.0   | Testing framework      |
+| pytest-cov | >=4.0   | Coverage reporting     |
+| ruff       | Latest  | Linting and formatting |
+| black      | Latest  | Code formatting        |
+| mypy       | >=1.0   | Static type checking   |
+| bandit     | >=1.7   | Security scanning      |
+| pip-audit  | >=2.4   | Dependency auditing    |
 
 ### Fleet Dependencies
 
-| Repo | Relationship | Description |
-|------|-------------|-------------|
-| None | — | Playground has no dependencies on other fleet repositories |
+| Repo | Relationship | Description                                                |
+| ---- | ------------ | ---------------------------------------------------------- |
+| None | —            | Playground has no dependencies on other fleet repositories |
 
 ## 10. Deployment & Operations
 
@@ -249,12 +250,12 @@ pytest --cov=src --cov-fail-under=60
 
 ### Build Artifacts
 
-| Artifact | Format | Destination |
-|----------|--------|-------------|
-| Coverage reports | HTML/XML | `.coverage/` and Codecov |
-| Test results | XML | `.pytest_cache/` |
-| Model checkpoints | PKL/PT | `data/checkpoints/` |
-| Evaluation reports | CSV/JSON | `eval/results/` |
+| Artifact           | Format   | Destination              |
+| ------------------ | -------- | ------------------------ |
+| Coverage reports   | HTML/XML | `.coverage/` and Codecov |
+| Test results       | XML      | `.pytest_cache/`         |
+| Model checkpoints  | PKL/PT   | `data/checkpoints/`      |
+| Evaluation reports | CSV/JSON | `eval/results/`          |
 
 ## 11. Roadmap & Open Issues
 
@@ -264,12 +265,12 @@ Active development with focus on Project GROOT implementation. Demos (Asteroid F
 
 ### Planned Work
 
-| Priority | Item | Issue/PR | Target Date |
-|----------|------|----------|-------------|
-| P0 | Complete GROOT simulation engine | TBD | 2026-04-30 |
-| P1 | Implement GROOT training pipelines | TBD | 2026-05-15 |
-| P2 | Add GROOT evaluation framework | TBD | 2026-05-30 |
-| P3 | Document GROOT data pipeline | TBD | 2026-06-15 |
+| Priority | Item                               | Issue/PR | Target Date |
+| -------- | ---------------------------------- | -------- | ----------- |
+| P0       | Complete GROOT simulation engine   | TBD      | 2026-04-30  |
+| P1       | Implement GROOT training pipelines | TBD      | 2026-05-15  |
+| P2       | Add GROOT evaluation framework     | TBD      | 2026-05-30  |
+| P3       | Document GROOT data pipeline       | TBD      | 2026-06-15  |
 
 ### Known Limitations
 
@@ -280,20 +281,20 @@ Active development with focus on Project GROOT implementation. Demos (Asteroid F
 
 ## 12. Change Log
 
-| Date | Version | Changes |
-|------|---------|---------|
-| 2026-04-13 | 1.0.11 | Added Jules code quality review scripts, reports, workflows and fixed CI environment for Pytest tests. |
-| 2026-04-11 | 1.0.10 | Improved Design-by-Contract error messages in `asteroid_jumper/physics.py` (issue #255) — replaced generic `"DbC Blocked: Precondition failed."` strings in `moment_of_inertia_ellipse`, `moment_of_inertia_disk`, `moment_of_inertia_rod`, `SpringLaunch.__post_init__`, `SpringLaunch.step`, and `step_simulation` with descriptive messages identifying the offending argument, its value, and the valid constraint. |
-| 2026-04-11 | 1.0.9 | Issue #250: replaced sham tests in `tests/test_architecture_dbc.py` and `tests/test_asteroid_jumper_physics.py` with real Design-by-Contract precondition tests and physics assertions (kinematics, impulse, momentum conservation, analytical moment-of-inertia formulas, and half-sine spring launch total impulse). |
-| 2026-04-11 | 1.0.8 | Removed duplicate `logger = logging.getLogger(__name__)` declarations in `club_track.py`, `pose_convert.py`, and `imitation_train.py` (issue #251) to enforce DRY. |
-| 2026-04-06 | 1.0.7 | Updated `run_assessment.py` and `make_comprehensive.py` scripts to auto-fix logging issues, output correct file structures, and ignore print false positives. |
-| 2026-04-06 | 1.0.6 | Declared `PyYAML` as a runtime dependency because maintained Project GROOT tooling imports `yaml` during normal module loading in CI. |
-| 2026-04-06 | 1.0.5 | Quarantined historical archive content from the maintained source surface by documenting `archive/` as reference-only material and excluding it from standard lint/test traversal. |
-| 2026-03-30 | 1.0.1 | A-N Assessment remediation (issue #200): auto-formatted 30 files to comply with black 100-char line limit; ruff checks pass with zero violations |
-| 2026-03-31 | 1.0.2 | CI maintenance: hardened the review-comment archiver against empty tracking JSON, narrowed the blocking mypy invocation to `src/` so self-hosted quality-gate runs no longer fail on duplicate `src.*` module discovery, and added explicit typing to the contract decorators used by the checked source tree. |
-| 2026-03-31 | 1.0.3 | Self-hosted CI follow-up: updated the generated Project GROOT and Asteroid Jumper import-smoke tests to skip cleanly when optional runtime dependencies like `torch`, `gymnasium`, or `PyQt6` are intentionally absent from the blocking CI runner image. |
-| 2026-03-31 | 1.0.4 | Self-hosted CI stabilization: aligned the Asteroid Jumper test suite with the current contract-enforced `ValueError` behavior so the blocking Linux test job validates the actual runtime invariants rather than outdated `AssertionError` expectations. |
-| 2026-03-28 | 1.0.0 | Initial specification |
+| Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| ---------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-04-13 | 1.0.11  | Added Jules code quality review scripts, reports, workflows and fixed CI environment for Pytest tests.                                                                                                                                                                                                                                                                                                                  |
+| 2026-04-11 | 1.0.10  | Improved Design-by-Contract error messages in `asteroid_jumper/physics.py` (issue #255) — replaced generic `"DbC Blocked: Precondition failed."` strings in `moment_of_inertia_ellipse`, `moment_of_inertia_disk`, `moment_of_inertia_rod`, `SpringLaunch.__post_init__`, `SpringLaunch.step`, and `step_simulation` with descriptive messages identifying the offending argument, its value, and the valid constraint. |
+| 2026-04-11 | 1.0.9   | Issue #250: replaced sham tests in `tests/test_architecture_dbc.py` and `tests/test_asteroid_jumper_physics.py` with real Design-by-Contract precondition tests and physics assertions (kinematics, impulse, momentum conservation, analytical moment-of-inertia formulas, and half-sine spring launch total impulse).                                                                                                  |
+| 2026-04-11 | 1.0.8   | Removed duplicate `logger = logging.getLogger(__name__)` declarations in `club_track.py`, `pose_convert.py`, and `imitation_train.py` (issue #251) to enforce DRY.                                                                                                                                                                                                                                                      |
+| 2026-04-06 | 1.0.7   | Updated `run_assessment.py` and `make_comprehensive.py` scripts to auto-fix logging issues, output correct file structures, and ignore print false positives.                                                                                                                                                                                                                                                           |
+| 2026-04-06 | 1.0.6   | Declared `PyYAML` as a runtime dependency because maintained Project GROOT tooling imports `yaml` during normal module loading in CI.                                                                                                                                                                                                                                                                                   |
+| 2026-04-06 | 1.0.5   | Quarantined historical archive content from the maintained source surface by documenting `archive/` as reference-only material and excluding it from standard lint/test traversal.                                                                                                                                                                                                                                      |
+| 2026-03-30 | 1.0.1   | A-N Assessment remediation (issue #200): auto-formatted 30 files to comply with black 100-char line limit; ruff checks pass with zero violations                                                                                                                                                                                                                                                                        |
+| 2026-03-31 | 1.0.2   | CI maintenance: hardened the review-comment archiver against empty tracking JSON, narrowed the blocking mypy invocation to `src/` so self-hosted quality-gate runs no longer fail on duplicate `src.*` module discovery, and added explicit typing to the contract decorators used by the checked source tree.                                                                                                          |
+| 2026-03-31 | 1.0.3   | Self-hosted CI follow-up: updated the generated Project GROOT and Asteroid Jumper import-smoke tests to skip cleanly when optional runtime dependencies like `torch`, `gymnasium`, or `PyQt6` are intentionally absent from the blocking CI runner image.                                                                                                                                                               |
+| 2026-03-31 | 1.0.4   | Self-hosted CI stabilization: aligned the Asteroid Jumper test suite with the current contract-enforced `ValueError` behavior so the blocking Linux test job validates the actual runtime invariants rather than outdated `AssertionError` expectations.                                                                                                                                                                |
+| 2026-03-28 | 1.0.0   | Initial specification                                                                                                                                                                                                                                                                                                                                                                                                   |
 
 ---
 

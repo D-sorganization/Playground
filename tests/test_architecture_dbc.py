@@ -69,7 +69,7 @@ def test_orthogonality():
         RigidBody(mass=0.0, moment_of_inertia=1.0)
 
     # physics.moment_of_inertia_disk rejects non-positive radius.
-    with pytest.raises(ValueError, match="DbC Blocked"):
+    with pytest.raises(ValueError, match="radius must be positive"):
         moment_of_inertia_disk(mass=1.0, radius=0.0)
 
     # asteroid_shape.make_circle rejects non-positive radius.
@@ -99,13 +99,15 @@ def test_rigid_body_rejects_non_positive_moment_of_inertia() -> None:
 
 
 def test_moment_of_inertia_helpers_reject_invalid_inputs() -> None:
-    with pytest.raises(ValueError, match="DbC Blocked"):
+    with pytest.raises(ValueError, match="mass must be positive"):
         moment_of_inertia_ellipse(mass=-1.0, a=1.0, b=1.0)
-    with pytest.raises(ValueError, match="DbC Blocked"):
+    with pytest.raises(
+        ValueError, match="ellipse semi-axes a and b must both be positive"
+    ):
         moment_of_inertia_ellipse(mass=1.0, a=0.0, b=1.0)
-    with pytest.raises(ValueError, match="DbC Blocked"):
+    with pytest.raises(ValueError, match="length must be positive"):
         moment_of_inertia_rod(mass=1.0, length=0.0)
-    with pytest.raises(ValueError, match="DbC Blocked"):
+    with pytest.raises(ValueError, match="radius must be positive"):
         moment_of_inertia_disk(mass=1.0, radius=-3.0)
 
 
@@ -130,12 +132,12 @@ def test_integrate_body_and_step_simulation_reject_non_positive_dt() -> None:
     asteroid = RigidBody(mass=160.0, moment_of_inertia=1.0)
     jumper = RigidBody(mass=80.0, moment_of_inertia=1.0)
     state = SimState(asteroid=asteroid, jumper=jumper)
-    with pytest.raises(ValueError, match="DbC Blocked"):
+    with pytest.raises(ValueError, match="dt must be positive"):
         step_simulation(state, dt=0.0)
 
 
 def test_spring_launch_rejects_invalid_parameters() -> None:
-    with pytest.raises(ValueError, match="DbC Blocked"):
+    with pytest.raises(ValueError, match="total_impulse must be non-negative"):
         SpringLaunch(
             total_impulse=-1.0,
             force_direction_rad=0.0,
@@ -144,7 +146,7 @@ def test_spring_launch_rejects_invalid_parameters() -> None:
             jumper_com=Vec2(1.0, 0.0),
             duration=0.1,
         )
-    with pytest.raises(ValueError, match="DbC Blocked"):
+    with pytest.raises(ValueError, match="duration must be positive"):
         SpringLaunch(
             total_impulse=1.0,
             force_direction_rad=0.0,
