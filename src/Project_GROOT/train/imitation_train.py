@@ -21,7 +21,11 @@ import torch.nn as nn
 import torch.optim as optim
 import yaml
 from torch.utils.data import DataLoader, Dataset
-from torch.utils.tensorboard import SummaryWriter
+
+try:
+    from torch.utils.tensorboard import SummaryWriter
+except ImportError:  # pragma: no cover - tensorboard is an optional dep
+    SummaryWriter = None  # type: ignore[assignment,misc]
 
 logger = logging.getLogger(__name__)
 
@@ -199,7 +203,10 @@ class ImitationTrainer:
         self.criterion = nn.MSELoss()
 
         # Tensorboard
-        self.writer = SummaryWriter(self.output_dir / "logs")
+        if SummaryWriter is not None:
+            self.writer = SummaryWriter(self.output_dir / "logs")
+        else:
+            self.writer = None
 
         # Tracking
         self.epoch = 0
@@ -290,8 +297,9 @@ class ImitationTrainer:
             metrics = self.train_epoch()
 
             # Log metrics
-            self.writer.add_scalar("train/loss", metrics["loss"], epoch)
-            self.writer.add_scalar("train/lr", metrics["lr"], epoch)
+            if self.writer is not None:
+                self.writer.add_scalar("train/loss", metrics["loss"], epoch)
+                self.writer.add_scalar("train/lr", metrics["lr"], epoch)
 
             logger.info(
                 "Epoch %d/%d: loss=%.6f, lr=%.6f",
@@ -313,7 +321,44 @@ class ImitationTrainer:
         logger.info(f"  Best loss: {self.best_loss:.6f}")
         logger.info(f"  Checkpoints saved to: {self.output_dir / 'checkpoints'}")
 
-        self.writer.close()
+        if self.writer is not None:
+            self.writer.close()
+
+
+def _validate_imitation_config(config: dict) -> None:
+    """Validate imitation learning config dict.
+
+    Preconditions:
+        - config must contain 'data', 'train', and 'model' sections.
+        - data.sequence_length must be a positive integer.
+        - train.batch_size must be a positive integer.
+        - train.learning_rate must be a positive float.
+        - model.hidden_dims must be a non-empty list of positive integers.
+
+    Args:
+        config: Configuration dictionary to validate.
+
+    Raises:
+        AssertionError: if any precondition is violated.
+    """
+    assert "data" in config, "'data' section missing from config"
+    assert "train" in config, "'train' section missing from config"
+    assert "model" in config, "'model' section missing from config"
+
+    seq_len = config["data"].get("sequence_length", 0)
+    assert seq_len > 0, f"sequence_length must be positive, got {seq_len}"
+
+    batch_size = config["train"].get("batch_size", 0)
+    assert batch_size > 0, f"batch_size must be positive, got {batch_size}"
+
+    lr = config["train"].get("learning_rate", 0.0)
+    assert lr > 0, f"learning_rate must be positive, got {lr}"
+
+    hidden_dims = config["model"].get("hidden_dims", [])
+    assert len(hidden_dims) > 0, "hidden_dims must be a non-empty list"
+    assert all(d > 0 for d in hidden_dims), (
+        f"hidden_dims must all be positive, got {hidden_dims}"
+    )
 
 
 def _build_imitation_parser() -> argparse.ArgumentParser:

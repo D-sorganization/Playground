@@ -29,6 +29,45 @@ logger = logging.getLogger(__name__)
 # For this baseline, we'll use a simplified PPO wrapper
 
 
+def _validate_rl_config(config: dict) -> None:
+    """Validate RL training config dict.
+
+    Args:
+        config: Configuration dict loaded from YAML.
+
+    Raises:
+        AssertionError: If any contract is violated.
+    """
+    assert isinstance(config, dict), "Contract violation: config must be a dict"
+    assert "env" in config, "Contract violation: config must have 'env' section"
+    assert "train" in config, "Contract violation: config must have 'train' section"
+
+    num_envs = config["env"]["num_envs"]
+    assert isinstance(num_envs, int) and num_envs > 0, (
+        f"Contract violation: env.num_envs must be a positive int, got {num_envs!r}"
+    )
+
+    num_steps = config["train"]["num_steps"]
+    assert isinstance(num_steps, int) and num_steps > 0, (
+        f"Contract violation: train.num_steps must be a positive int, got {num_steps!r}"
+    )
+
+    lr = config["train"]["learning_rate"]
+    assert isinstance(lr, (int, float)) and lr > 0, (
+        f"Contract violation: train.learning_rate must be positive, got {lr!r}"
+    )
+
+    gamma = config["train"]["gamma"]
+    assert isinstance(gamma, (int, float)) and 0.0 < gamma <= 1.0, (
+        f"Contract violation: train.gamma must be in (0, 1], got {gamma!r}"
+    )
+
+    clip_param = config["train"]["clip_param"]
+    assert isinstance(clip_param, (int, float)) and 0.0 < clip_param < 1.0, (
+        f"Contract violation: train.clip_param must be in (0, 1), got {clip_param!r}"
+    )
+
+
 class SimplePPOTrainer:
     """
     Simplified PPO trainer for golf swing fine-tuning.
@@ -48,6 +87,7 @@ class SimplePPOTrainer:
         output_dir: str,
         device: str = "cuda",
     ):
+        _validate_rl_config(config)
         self.config = config
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
@@ -68,40 +108,23 @@ class SimplePPOTrainer:
         # self.ppo = PPO(policy=self.policy, ...)
 
     def train(self) -> None:
-        """Run RL training loop."""
-        num_steps = self.config["train"]["num_steps"]
+        """Run RL training loop.
 
-        logger.info(f"\nStarting RL fine-tuning for {num_steps} steps")
-        logger.info(f"Output directory: {self.output_dir}")
+        NOT IMPLEMENTED: This is a scaffold pending Isaac Lab integration.
+        Full implementation requires:
+          1. Isaac Lab environment integration
+          2. PPO algorithm (RL Games, SB3, or RSL-RL)
+          3. Proper reward tuning for golf swing
+          4. Domain randomization setup
 
-        # Placeholder training loop
-        # In real implementation, this would:
-        # 1. Collect rollouts in parallel environments
-        # 2. Compute advantages using GAE
-        # 3. Update policy with PPO objective
-        # 4. Log metrics to tensorboard/wandb
-        # 5. Evaluate periodically
-        # 6. Save checkpoints
-
-        logger.info("\n" + "=" * 60)
-        logger.info("NOTE: This is a template RL trainer.")
-        logger.info("Full implementation requires:")
-        logger.info("  1. Isaac Lab environment integration")
-        logger.info("  2. PPO algorithm (RL Games, SB3, or RSL-RL)")
-        logger.info("  3. Proper reward tuning for golf swing")
-        logger.info("  4. Domain randomization setup")
-        logger.info("=" * 60)
-
-        # Create placeholder checkpoint
-        checkpoint_dir = self.output_dir / "checkpoints"
-        checkpoint_dir.mkdir(exist_ok=True)
-
-        # Save configuration
-        with open(self.output_dir / "rl_config.yaml", "w") as f:
-            yaml.dump(self.config, f)
-
-        logger.info(f"\n✓ RL training template ready at {self.output_dir}")
-        logger.info("  Integrate with Isaac Lab to enable full training")
+        Raises:
+            NotImplementedError: Always raised until Isaac Lab is integrated.
+        """
+        raise NotImplementedError(
+            "SimplePPOTrainer.train() is not yet implemented. "
+            "This class is a scaffold pending Isaac Lab environment integration. "
+            "See Issue #249 for implementation requirements."
+        )
 
 
 def create_rl_config_template() -> dict:

@@ -153,14 +153,17 @@ class PolicyEvaluator:
 
         Returns:
             List of rollout statistics
+
+        Raises:
+            NotImplementedError: Until Isaac Lab integration is complete.
         """
+        msg = f"Contract violation: num_rollouts must be positive, got {num_rollouts}"
+        assert num_rollouts > 0, msg
         logger.info(f"\nRunning {num_rollouts} rollouts...")
 
         rollout_stats = []
 
         for i in range(num_rollouts):
-            # DEFERRED: Run actual rollout in Isaac Lab environment
-            # For now, generate synthetic statistics
             stats = self._generate_synthetic_rollout(i)
             rollout_stats.append(stats)
 
@@ -170,32 +173,19 @@ class PolicyEvaluator:
         return rollout_stats
 
     def _generate_synthetic_rollout(self, rollout_id: int) -> dict:
+        """Generate rollout statistics by running the policy in the environment.
+
+        NOT IMPLEMENTED: This method is a scaffold pending Isaac Lab integration.
+        It must run actual policy rollouts, not generate synthetic data.
+
+        Raises:
+            NotImplementedError: Always raised until Isaac Lab is integrated.
         """
-        Generate synthetic rollout statistics (placeholder).
-
-        In real implementation, this would:
-        1. Reset environment
-        2. Run policy for episode
-        3. Collect trajectory data
-        4. Compute metrics
-        """
-        np.random.seed(rollout_id + 42)
-
-        # Synthetic metrics (realistic ranges for golf swing)
-        stats = {
-            "rollout_id": rollout_id,
-            "max_clubhead_speed": np.random.normal(39.2, 2.8),  # m/s
-            "mean_clubhead_speed": np.random.normal(22.5, 1.5),
-            "swing_duration": np.random.normal(1.42, 0.08),  # seconds
-            "backswing_duration": np.random.normal(0.65, 0.05),
-            "downswing_duration": np.random.normal(0.28, 0.03),
-            "follow_through_duration": np.random.normal(0.49, 0.04),
-            "trajectory_smoothness": np.random.uniform(0.80, 0.95),  # 0-1
-            "joint_limit_violations": np.random.poisson(0.5),  # count
-            "trajectory_error": np.random.exponential(0.05),  # meters
-        }
-
-        return stats
+        raise NotImplementedError(
+            f"_generate_synthetic_rollout(rollout_id={rollout_id}) is not implemented. "
+            "Real rollouts require an Isaac Lab environment. "
+            "See Issue #249 for implementation requirements."
+        )
 
     def compute_summary_metrics(self, rollout_stats: list[dict]) -> dict:
         """Compute summary statistics across all rollouts."""
