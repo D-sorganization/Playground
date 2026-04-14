@@ -304,20 +304,44 @@ def generate_mermaid_charts(
     return "\n".join(chart)
 
 
-def generate_report() -> None:
-    """Generate the structured completist status report."""
+def _collect_report_data() -> tuple[
+    list[Finding], list[Finding], list[Finding], list[Finding]
+]:
+    """Run all analyzers and return (criticals, todos, fixmes, missing_docs).
+
+    criticals are stub/NotImplementedError findings outside test files,
+    sorted descending by impact score.
+    """
     stubs = analyze_stubs()
     ni_errors = analyze_not_implemented()
     todos, fixmes = analyze_todos()
     missing_docs = analyze_docs()
     _ = analyze_abstract_methods()
 
-    # Identify and prioritize critical candidates
     criticals = [s for s in (stubs + ni_errors) if "test" not in s["file"].lower()]
     criticals.sort(key=lambda x: calculate_metrics(x)[0], reverse=True)
+    return criticals, todos, fixmes, missing_docs
 
-    # Report Generation
-    date_s = datetime.now().strftime("%Y-%m-%d")
+
+def _build_report_lines(
+    date_s: str,
+    criticals: list[Finding],
+    todos: list[Finding],
+    fixmes: list[Finding],
+    missing_docs: list[Finding],
+) -> list[str]:
+    """Assemble all markdown report lines from pre-collected findings.
+
+    Args:
+        date_s: Date string for the report header (YYYY-MM-DD).
+        criticals: High-priority stub/NIE findings.
+        todos: TRACKED_TASK findings.
+        fixmes: Technical-debt markers.
+        missing_docs: Documentation gap findings.
+
+    Returns:
+        List of markdown lines (join with newline to produce the report body).
+    """
     report = [
         f"# Completist Report: {date_s}\n",
         "## Executive Summary",
@@ -327,22 +351,20 @@ def generate_report() -> None:
         f"- **Documentation Gaps**: {len(missing_docs)}\n",
     ]
 
-    # Insert Mermaid Visualization
     report.append(generate_mermaid_charts(criticals, todos, fixmes, missing_docs))
 
-    # Critical Table
+    # Critical table
     report.append("\n## Critical Incomplete (Top 50)")
     report.append("| File | Line | Type | Impact | Coverage | Complexity |")
     report.append("|---|---|---|---|---|---|")
-
     for item in criticals[:50]:
         imp, cov, comp = calculate_metrics(item)
-        f_name = item["file"]
-        ln = item["line"]
-        ty = item["type"]
-        report.append(f"| `{f_name}` | {ln} | {ty} | {imp} | {cov} | {comp} |")
+        report.append(
+            f"| `{item['file']}` | {item['line']} | {item['type']}"
+            f" | {imp} | {cov} | {comp} |"
+        )
 
-    # Feature Gap Matrix
+    # Feature gap matrix
     report.append("\n## Feature Gap Matrix")
     report.append("| Module | Feature Gap | Type |")
     report.append("|---|---|---|")
@@ -350,7 +372,7 @@ def generate_report() -> None:
         text = item.get("text", "").replace("|", "\\|")
         report.append(f"| `{item['file']}` | {text[:100]} | {item['type']} |")
 
-    # Technical Debt Register
+    # Technical debt register
     report.append("\n## Technical Debt Register")
     report.append("| File | Line | Issue | Type |")
     report.append("|---|---|---|---|")
@@ -360,29 +382,49 @@ def generate_report() -> None:
             f"| `{item['file']}` | {item['line']} | {text[:100]} | {item['type']} |"
         )
 
-    # Recommended Implementation Order
-    report.append("\n## Recommended Implementation Order")
-    report.append("Prioritized by Impact (High) and Complexity (Low).")
-    report.append("| Priority | File | Issue | Metrics (I/C/C) |")
-    report.append("|---|---|---|---|")
+    report.extend(_build_priority_table(criticals, todos))
+    return report
 
-    # Combined list for prioritization
-    all_items = criticals + todos
+
+def _build_priority_table(criticals: list[Finding], todos: list[Finding]) -> list[str]:
+    """Build the Recommended Implementation Order section lines.
+
+    Args:
+        criticals: Critical gap findings.
+        todos: Feature-gap findings.
+
+    Returns:
+        List of markdown lines for the priority table section.
+    """
 
     def priority_score(item: Mapping[str, Any]) -> int:
         """Compute a scalar priority score: high impact minus complexity."""
         imp, _, comp = calculate_metrics(item)
         return (imp * 10) - comp
 
-    all_items.sort(key=priority_score, reverse=True)
-
+    all_items = sorted(criticals + todos, key=priority_score, reverse=True)
+    lines = [
+        "\n## Recommended Implementation Order",
+        "Prioritized by Impact (High) and Complexity (Low).",
+        "| Priority | File | Issue | Metrics (I/C/C) |",
+        "|---|---|---|---|",
+    ]
     for i, item in enumerate(all_items[:20], 1):
         imp, cov, comp = calculate_metrics(item)
         desc = item.get("name", item.get("text", ""))[:80].replace("|", "\\|")
-        report.append(f"| {i} | `{item['file']}` | {desc} | {imp}/{cov}/{comp} |")
+        lines.append(f"| {i} | `{item['file']}` | {desc} | {imp}/{cov}/{comp} |")
+    return lines
 
-    # Issue creation for High Impact items
-    report.append("\n## Issues Created")
+
+def _create_high_impact_issues(criticals: list[Finding]) -> list[str]:
+    """Create issue files for high-impact critical findings and return report lines.
+
+    Args:
+        criticals: Sorted list of critical findings.
+
+    Returns:
+        List of markdown lines for the "Issues Created" section.
+    """
     max_id = 0
     issues_glob = glob.glob(os.path.join(ISSUES_DIR, "Issue_*.md")) + glob.glob(
         os.path.join(ISSUES_DIR, "ISSUE_*.md")
@@ -393,20 +435,37 @@ def generate_report() -> None:
             max_id = max(max_id, int(match_id.group(1)))
 
     next_id = max_id + 1
+    lines = ["\n## Issues Created"]
     for item in [c for c in criticals if calculate_metrics(c)[0] >= 4][:10]:
-        report.append(f"- Created `{create_issue_file(item, next_id)}`")
+        lines.append(f"- Created `{create_issue_file(item, next_id)}`")
         next_id += 1
+    return lines
 
+
+def _save_report_files(date_s: str, report_body: str) -> None:
+    """Write the report to a dated file and update COMPLETIST_LATEST.md.
+
+    Args:
+        date_s: Date string used in the dated filename (YYYY-MM-DD).
+        report_body: Full markdown report content.
+    """
     os.makedirs(REPORT_DIR, exist_ok=True)
     report_path = os.path.join(REPORT_DIR, f"Completist_Report_{date_s}.md")
     with open(report_path, "w", encoding="utf-8") as f_out:
-        f_out.write("\n".join(report))
-
+        f_out.write(report_body)
     latest_path = os.path.join(REPORT_DIR, "COMPLETIST_LATEST.md")
     with open(latest_path, "w", encoding="utf-8") as f_out:
-        f_out.write("\n".join(report))
-
+        f_out.write(report_body)
     logger.info("Report generated: %s", report_path)
+
+
+def generate_report() -> None:
+    """Generate the structured completist status report."""
+    date_s = datetime.now().strftime("%Y-%m-%d")
+    criticals, todos, fixmes, missing_docs = _collect_report_data()
+    report_lines = _build_report_lines(date_s, criticals, todos, fixmes, missing_docs)
+    report_lines.extend(_create_high_impact_issues(criticals))
+    _save_report_files(date_s, "\n".join(report_lines))
 
 
 if __name__ == "__main__":
