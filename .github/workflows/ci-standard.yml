@@ -49,7 +49,7 @@ jobs:
         run: ruff format --check .
 
       - run: pip install mypy types-PyYAML types-requests
-      - run: pip install -r requirements.txt numpy pytest-xvfb
+      - run: pip install -r requirements.txt numpy
       - run: mypy src --ignore-missing-imports
 
       # Placeholder detection - scans Python source files for unresolved TODOs/FIXMEs
@@ -104,11 +104,20 @@ jobs:
         python: ["3.11"]
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/setup-python@v6
-        with:
-          python-version: ${{ matrix.python }}
-      - run: pip install -r requirements.txt numpy pytest-xvfb
-      - run: sudo apt-get update && sudo apt-get install -y xvfb && PYTHONPATH=. pytest tests/ --cov=. --cov-report=xml
+      - name: Bootstrap Python venv
+        run: |
+          for py in python3.11 python3.12 python3.10 python3; do
+            if command -v $py &>/dev/null; then
+              $py -m venv "$RUNNER_TEMP/ci-venv"
+              break
+            fi
+          done
+          source "$RUNNER_TEMP/ci-venv/bin/activate"
+          pip install --upgrade pip setuptools wheel
+          pip install -r requirements.txt numpy
+          echo "$RUNNER_TEMP/ci-venv/bin" >> $GITHUB_PATH
+      - name: Run tests
+        run: PYTHONPATH=. pytest tests/ --cov=. --cov-report=xml
       - uses: codecov/codecov-action@v5
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
