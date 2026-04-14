@@ -27,7 +27,7 @@
 | **Primary Language(s)** | Python 3.11+                                    |
 | **License**             | MIT                                             |
 | **Current Version**     | 1.0.1                                           |
-| **Spec Version**        | 1.0.19                                          |
+| **Spec Version**        | 1.0.20                                          |
 | **Last Spec Update**    | 2026-04-14                                      |
 
 ## 2. Purpose & Mission
@@ -283,6 +283,7 @@ Active development with focus on Project GROOT implementation. Demos (Asteroid F
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | ---------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-04-14 | 1.0.20  | Refactor(#259): split 3 monolithic scripts; extracted `eval_plots.py`, `eval_report.py`, `renderer_draw.py`, `mypy_agent_types.py`, and `mypy_fix_strategies.py` into focused companion modules.                                                                                                                                                                                                                           |
 | 2026-04-14 | 1.0.18  | ci: retrigger CI for #261 — bump SPEC version above main (1.0.17)                                                                                                                                                                                                                                                                                                                                                          |
 | 2026-04-14 | 1.0.17  | Umbrella(#261): confirmed all P1 A-N refresh remediations complete — #258 (function decomposition ≤30 LOC) and #259 (monolithic script splitting ≤300 LOC) fully addressed; spec version timeline reconciled.                                                                                                                                                                                                              |
 | 2026-04-14 | 1.0.18  | Refactor(#258): decomposed top-5 oversized functions to ≤30 LOC each in `retarget_to_sim.py`, `club_track.py`, `video_ingest.py`, `run_assessment.py`, and `analyze_completist_data.py`; extracted landmark constants, arm-joint helpers, frame-clamping, clip/smooth/derivative methods, and markdown-template builders.                                                                                                  |
