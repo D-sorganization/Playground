@@ -34,6 +34,28 @@ def test_has_symbol_main():
     assert hasattr(target_module, "main")
 
 
+def test_wrapper_skips_when_shared_command_missing(monkeypatch, capsys):
+    """The legacy script path must be a no-op when ``mypy-autofix`` is absent."""
+    monkeypatch.setattr(target_module.shutil, "which", lambda _name: None)
+    assert target_module.main(["--help"]) == 0
+    assert "mypy-autofix is not installed" in capsys.readouterr().out
+
+
+def test_wrapper_forwards_arguments_to_shared_command(monkeypatch):
+    """The wrapper should delegate all arguments to the shared command when present."""
+    calls: list[list[str]] = []
+    monkeypatch.setattr(
+        target_module.shutil, "which", lambda _name: "/usr/bin/mypy-autofix"
+    )
+    monkeypatch.setattr(
+        target_module.subprocess,
+        "call",
+        lambda command: calls.append(command) or 7,
+    )
+    assert target_module.main(["--max-fixes", "3", "src"]) == 7
+    assert calls == [["/usr/bin/mypy-autofix", "--max-fixes", "3", "src"]]
+
+
 # --- parse_mypy_output tests ---
 
 
