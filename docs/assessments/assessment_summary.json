@@ -1,0 +1,275 @@
+{
+  "repository": "Playground",
+  "assessment_date": "2026-04-17",
+  "run_at_utc": "2026-04-17T08:01:19.6221680Z",
+  "sync_status": "pull-blocked",
+  "sync_notes": "ff-only pull failed: fatal: couldn't find remote ref codex/an-assessment-2026-04-14",
+  "overall_grade": "C",
+  "overall_score": 77,
+  "category_grades": [
+    {
+      "id": "A",
+      "name": "Architecture and Boundaries",
+      "grade": "B",
+      "score": 82,
+      "evidence": [
+        "269 tracked first-party files",
+        "48 files under source-like directories"
+      ],
+      "notes": "Assesses source organization and boundary clarity from tracked first-party layout."
+    },
+    {
+      "id": "B",
+      "name": "Build and Dependency Management",
+      "grade": "B",
+      "score": 84,
+      "evidence": [
+        "Dockerfile.heavy_test",
+        "pyproject.toml",
+        "requirements-lock.txt",
+        "requirements.txt",
+        "ruff.toml",
+        "src/Project_GROOT/.devcontainer/Dockerfile",
+        "src/Project_GROOT/docker-compose.yml",
+        "src/Project_GROOT/requirements.txt",
+        "src/Project_GROOT/setup.py"
+      ],
+      "notes": "Assesses committed build, dependency, and tool configuration."
+    },
+    {
+      "id": "C",
+      "name": "Configuration and Environment Hygiene",
+      "grade": "C",
+      "score": 78,
+      "evidence": [
+        "Dockerfile.heavy_test",
+        "pyproject.toml",
+        "requirements-lock.txt",
+        "requirements.txt",
+        "ruff.toml",
+        "src/Project_GROOT/.devcontainer/Dockerfile",
+        "src/Project_GROOT/docker-compose.yml",
+        "src/Project_GROOT/requirements.txt",
+        "src/Project_GROOT/setup.py"
+      ],
+      "notes": "Checks whether runtime and developer configuration is explicit."
+    },
+    {
+      "id": "D",
+      "name": "Contracts, Types, and Domain Modeling",
+      "grade": "B",
+      "score": 82,
+      "evidence": [
+        "archive/Calculator/calculator.py",
+        "archive/Calculator/tests/test_exception_handling.py",
+        "archive/Calculator/tests/test_ti89_calculator.py",
+        "archive/Calculator/webapp.py",
+        "scripts/analyze_completist_data.py",
+        "scripts/mypy_autofix_agent.py",
+        "scripts/setup_hooks.py",
+        "src/Project_GROOT/tools/club_track.py",
+        "src/Project_GROOT/tools/pose_convert.py",
+        "src/Project_GROOT/tools/retarget_to_sim.py"
+      ],
+      "notes": "Design by Contract evidence includes validation, assertions, typed models, explicit raised errors, and invariants."
+    },
+    {
+      "id": "E",
+      "name": "Reliability and Error Handling",
+      "grade": "C",
+      "score": 76,
+      "evidence": [
+        ".agent/skills/tests/SKILL.md",
+        ".claude/skills/tests/SKILL.md",
+        "archive/Calculator/tests/test_calculator.py",
+        "archive/Calculator/tests/test_exception_handling.py",
+        "archive/Calculator/tests/test_limiter.py",
+        "archive/Calculator/calculator.py",
+        "archive/Calculator/tests/test_exception_handling.py",
+        "archive/Calculator/tests/test_ti89_calculator.py",
+        "archive/Calculator/webapp.py",
+        "scripts/analyze_completist_data.py"
+      ],
+      "notes": "Reliability is graded from test presence plus explicit validation/error-handling signals."
+    },
+    {
+      "id": "F",
+      "name": "Function, Module Size, and SRP",
+      "grade": "C",
+      "score": 70,
+      "evidence": [
+        "scripts/mypy_autofix_agent.py (709 lines)",
+        "src/asteroid_jumper/renderer.py (554 lines)",
+        "scripts/generate_assessment_summary.py (coarse avg 80 lines/definition)"
+      ],
+      "notes": "Evaluates function size, script/module size, and single responsibility using static size signals."
+    },
+    {
+      "id": "G",
+      "name": "Testing and TDD Posture",
+      "grade": "B",
+      "score": 82,
+      "evidence": [
+        ".agent/skills/tests/SKILL.md",
+        ".claude/skills/tests/SKILL.md",
+        "archive/Calculator/tests/test_calculator.py",
+        "archive/Calculator/tests/test_exception_handling.py",
+        "archive/Calculator/tests/test_limiter.py",
+        "archive/Calculator/tests/test_rate_limit_enforcement.py",
+        "archive/Calculator/tests/test_security.py",
+        "archive/Calculator/tests/test_ti89_calculator.py",
+        "archive/Calculator/tests/test_webapp.py",
+        "archive/tools/tests/test_tools.py",
+        "docs/assessments/Assessment_C_Test_Coverage.md",
+        "pytest_errors.txt"
+      ],
+      "notes": "TDD history cannot be confirmed statically; grade reflects committed automated test posture."
+    },
+    {
+      "id": "H",
+      "name": "CI/CD and Automation",
+      "grade": "C",
+      "score": 78,
+      "evidence": [
+        ".github/workflows/Comment-to-Issue-Converter.yml",
+        ".github/workflows/Jules-Archivist.yml",
+        ".github/workflows/Jules-Assessment-AutoFix.yml",
+        ".github/workflows/Jules-Assessment-Generator.yml",
+        ".github/workflows/Jules-Auto-Assign-Issues.yml",
+        ".github/workflows/Jules-Auto-Rebase.yml",
+        ".github/workflows/Jules-Auto-Refactor.yml",
+        ".github/workflows/Jules-Auto-Repair.yml",
+        ".github/workflows/Jules-Cleaner.yml",
+        ".github/workflows/Jules-Code-Quality-Fixer.yml"
+      ],
+      "notes": "Checks for tracked CI/CD workflow files."
+    },
+    {
+      "id": "I",
+      "name": "Security and Secret Hygiene",
+      "grade": "B",
+      "score": 82,
+      "evidence": [],
+      "notes": "Secret scan is regex-based; findings require manual confirmation."
+    },
+    {
+      "id": "J",
+      "name": "Documentation and Onboarding",
+      "grade": "B",
+      "score": 82,
+      "evidence": [
+        ".agent/skills/issues-10-sequential/SKILL.md",
+        ".agent/skills/issues-5-combined/SKILL.md",
+        ".agent/skills/lint/SKILL.md",
+        ".agent/skills/tests/SKILL.md",
+        ".agent/skills/update-issues/SKILL.md",
+        ".agent/workflows/issues-10-sequential.md",
+        ".agent/workflows/issues-5-combined.md",
+        ".agent/workflows/lint.md",
+        ".agent/workflows/tests.md",
+        ".agent/workflows/update-issues.md",
+        ".claude/skills/issues-10-sequential/SKILL.md",
+        ".claude/skills/issues-5-combined/SKILL.md"
+      ],
+      "notes": "Checks docs, README, onboarding, and release documents."
+    },
+    {
+      "id": "K",
+      "name": "Maintainability, DRY, and Duplication",
+      "grade": "B",
+      "score": 80,
+      "evidence": [
+        "scripts/analyze_completist_data.py",
+        "scripts/pragmatic_programmer_review.py",
+        "scripts/setup_hooks.py"
+      ],
+      "notes": "DRY is assessed through duplicate filename clusters and TODO/FIXME density as static heuristics."
+    },
+    {
+      "id": "L",
+      "name": "API Surface and Law of Demeter",
+      "grade": "F",
+      "score": 58,
+      "evidence": [
+        "archive/Calculator/tests/test_limiter.py",
+        "archive/Calculator/tests/test_rate_limit_enforcement.py",
+        "archive/Calculator/tests/test_security.py",
+        "archive/Calculator/tests/test_webapp.py",
+        "src/Project_GROOT/sim/golf_swing_env.py",
+        "src/Project_GROOT/tools/video_ingest.py",
+        "src/Project_GROOT/train/imitation_train.py",
+        "src/Project_GROOT/train/rl_finetune.py",
+        "src/asteroid_jumper/controller.py",
+        "src/asteroid_jumper/controls_panel.py"
+      ],
+      "notes": "Law of Demeter is approximated with deep member-chain hints; confirmed violations require semantic review."
+    },
+    {
+      "id": "M",
+      "name": "Observability and Operability",
+      "grade": "C",
+      "score": 74,
+      "evidence": [
+        ".github/workflows/agent-metrics-dashboard.yml",
+        "docs/assessments/Assessment_L_Logging.md",
+        "src/asteroid_jumper/metrics_panel.py",
+        "tests/test_asteroid_jumper_metrics_panel.py"
+      ],
+      "notes": "Checks for logging, metrics, monitoring, and operational artifacts."
+    },
+    {
+      "id": "N",
+      "name": "Governance, Licensing, and Release Hygiene",
+      "grade": "C",
+      "score": 74,
+      "evidence": [
+        ".github/CODEOWNERS",
+        "LICENSE",
+        "archive/Calculator/tests/test_security.py",
+        "docs/assessments/Assessment_F_Security.md",
+        "src/Project_GROOT/LICENSE"
+      ],
+      "notes": "Checks ownership, release, contribution, security, and license metadata."
+    }
+  ],
+  "key_risks": [
+    "Large modules/scripts reduce maintainability and SRP clarity.",
+    "Deep member-chain usage may indicate Law of Demeter pressure points."
+  ],
+  "recommendations": [
+    "Split the largest modules by responsibility and add characterization tests before refactoring.",
+    "Review deep member chains and introduce boundary methods where object graph traversal leaks across modules."
+  ],
+  "issue_candidates": [
+    {
+      "title": "Split oversized modules by responsibility",
+      "severity": "medium",
+      "problem": "Oversized files found: scripts/mypy_autofix_agent.py (709 lines); src/asteroid_jumper/renderer.py (554 lines)",
+      "evidence": "Category F lists files over 500 lines or coarse long-definition signals.",
+      "impact": "Large modules obscure ownership, complicate review, and weaken SRP.",
+      "fix": "Add characterization tests, then split cohesive responsibilities into smaller modules.",
+      "acceptance": "Largest files are reduced or justified; extracted modules have focused tests.",
+      "refs": "SRP, function size, module size, maintainability"
+    },
+    {
+      "title": "Review deep object traversal hotspots",
+      "severity": "medium",
+      "problem": "Deep member-chain hints found in: archive/Calculator/tests/test_limiter.py; archive/Calculator/tests/test_rate_limit_enforcement.py; archive/Calculator/tests/test_security.py; archive/Calculator/tests/test_webapp.py; src/Project_GROOT/sim/golf_swing_env.py; src/Project_GROOT/tools/video_ingest.py; src/Project_GROOT/train/imitation_train.py; src/Project_GROOT/train/rl_finetune.py",
+      "evidence": "Category L found repeated chains with three or more member hops.",
+      "impact": "Law of Demeter pressure can make APIs brittle and increase coupling.",
+      "fix": "Review hotspots and introduce boundary methods or DTOs where callers traverse object graphs.",
+      "acceptance": "Hotspots are documented, simplified, or justified; tests cover any API boundary changes.",
+      "refs": "Law of Demeter, SRP, maintainability"
+    }
+  ],
+  "coverage": {
+    "tracked_files": 269,
+    "code_files": 74,
+    "test_files": 37,
+    "ci_files": 42,
+    "config_files": 9,
+    "docs_files": 131,
+    "exclusions": "cache/build/vendor/virtualenv/temp/generated output directories excluded",
+    "static_limits": "TDD workflow history and confirmed Law of Demeter semantics require deeper review."
+  }
+}
