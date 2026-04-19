@@ -13,6 +13,9 @@ dependencies = ["PyYAML>=6.0"]
 where = ["src"]
 include = ["*"]
 
+[tool.setuptools.package-data]
+workout_tracker = ["schema.sql", "static/*", "templates/*"]
+
 [tool.ruff]
 target-version = "py311"
 exclude = ["archive", "__pycache__", ".git", ".pytest_cache"]
