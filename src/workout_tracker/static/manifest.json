@@ -1,0 +1,9 @@
+{
+  "name": "Workout Tracker",
+  "short_name": "Workout",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f1115",
+  "theme_color": "#0f1115",
+  "description": "Quick gym logger with autocomplete, planning, and stats."
+}
