@@ -157,11 +157,7 @@ def _try_parse_full_line(line: str) -> ParsedEntry | None:
         ]
     elif n_first > _WEIGHT_VS_SETS_THRESHOLD:
         # "Bench Press 135x5" - single set, weight x reps
-        sets = [
-            ParsedSet(
-                reps=n_second, weight=float(n_first), rpe=rpe, unit=unit
-            )
-        ]
+        sets = [ParsedSet(reps=n_second, weight=float(n_first), rpe=rpe, unit=unit)]
     else:
         # "Pull-ups 3x8" - N sets x M reps bodyweight
         sets = [

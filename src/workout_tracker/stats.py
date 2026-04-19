@@ -85,9 +85,7 @@ def per_exercise_summary(
         max_w = max((s.actual_weight or 0.0) for s in ex_sets)
         # max reps at the single heaviest weight
         reps_at_max = max(
-            (s.actual_reps or 0)
-            for s in ex_sets
-            if (s.actual_weight or 0.0) == max_w
+            (s.actual_reps or 0) for s in ex_sets if (s.actual_weight or 0.0) == max_w
         )
         best_e = max(
             best_1rm_estimate(s.actual_weight or 0.0, s.actual_reps or 0)
@@ -136,12 +134,9 @@ def exercise_timeseries(sets: Iterable[WorkoutSet]) -> list[TimePoint]:
         ds = by_day[day]
         vol = sum(set_volume(s) for s in ds)
         best = max(
-            best_1rm_estimate(s.actual_weight or 0.0, s.actual_reps or 0)
-            for s in ds
+            best_1rm_estimate(s.actual_weight or 0.0, s.actual_reps or 0) for s in ds
         )
-        pts.append(
-            TimePoint(date=day, volume=vol, best_e1rm=best, sets=len(ds))
-        )
+        pts.append(TimePoint(date=day, volume=vol, best_e1rm=best, sets=len(ds)))
     return pts
 
 
@@ -149,7 +144,7 @@ def exercise_timeseries(sets: Iterable[WorkoutSet]) -> list[TimePoint]:
 class PRRecord:
     exercise_id: int
     exercise_name: str
-    metric: str        # "max_weight" | "max_reps" | "best_e1rm"
+    metric: str  # "max_weight" | "max_reps" | "best_e1rm"
     value: float
     reps: int
     weight: float
@@ -200,9 +195,7 @@ def personal_records(sets: Iterable[WorkoutSet]) -> list[PRRecord]:
 
         top_e = max(
             items,
-            key=lambda s: best_1rm_estimate(
-                s.actual_weight or 0.0, s.actual_reps or 0
-            ),
+            key=lambda s: best_1rm_estimate(s.actual_weight or 0.0, s.actual_reps or 0),
         )
         prs.append(
             PRRecord(
@@ -233,9 +226,7 @@ def frequency(
 ) -> list[FrequencyStat]:
     """Per-exercise: distinct training days, days since last performed."""
     today_d = (
-        datetime.fromisoformat(today).date()
-        if today
-        else datetime.utcnow().date()
+        datetime.fromisoformat(today).date() if today else datetime.utcnow().date()
     )
     grouped: dict[int, list[WorkoutSet]] = defaultdict(list)
     for s in sets:

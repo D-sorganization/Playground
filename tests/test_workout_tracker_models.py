@@ -65,9 +65,7 @@ class TestWorkoutSet:
 
     def test_negative_reps_rejected(self) -> None:
         with pytest.raises(ValueError):
-            WorkoutSet(
-                workout_id=1, exercise_id=1, position=0, actual_reps=-3
-            )
+            WorkoutSet(workout_id=1, exercise_id=1, position=0, actual_reps=-3)
 
     def test_rpe_range(self) -> None:
         with pytest.raises(ValueError):
@@ -92,9 +90,7 @@ class TestWorkout:
 
     def test_to_dict_includes_sets(self) -> None:
         w = Workout(date="2024-05-01")
-        w.sets.append(
-            WorkoutSet(workout_id=1, exercise_id=1, position=0)
-        )
+        w.sets.append(WorkoutSet(workout_id=1, exercise_id=1, position=0))
         d = w.to_dict()
         assert isinstance(d["sets"], list)
         assert len(d["sets"]) == 1

@@ -21,9 +21,7 @@ class TestExerciseRepo:
         assert ex.id is not None
         assert ex.name == "Bench Press"
 
-    def test_idempotent_across_typo_variants(
-        self, repo: WorkoutRepository
-    ) -> None:
+    def test_idempotent_across_typo_variants(self, repo: WorkoutRepository) -> None:
         a = repo.get_or_create_exercise("Bench Press")
         b = repo.get_or_create_exercise("bench press")
         c = repo.get_or_create_exercise("Bench-Press")
@@ -57,9 +55,7 @@ class TestExerciseRepo:
         assert renamed.name == "Bench Press"
         assert renamed.normalized_name == "benchpress"
 
-    def test_merge_moves_sets_and_deletes_source(
-        self, repo: WorkoutRepository
-    ) -> None:
+    def test_merge_moves_sets_and_deletes_source(self, repo: WorkoutRepository) -> None:
         a = repo.get_or_create_exercise("Bench")
         b = repo.get_or_create_exercise("Bench Press")
         w = repo.create_workout(date="2024-05-01", status="in_progress")
@@ -122,14 +118,10 @@ class TestSetsRepo:
         ex = repo.get_or_create_exercise("Squat")
         w = repo.create_workout(date="2024-05-01", status="in_progress")
         first = repo.add_set(
-            WorkoutSet(
-                workout_id=w.id or 0, exercise_id=ex.id or 0, position=-1
-            )
+            WorkoutSet(workout_id=w.id or 0, exercise_id=ex.id or 0, position=-1)
         )
         second = repo.add_set(
-            WorkoutSet(
-                workout_id=w.id or 0, exercise_id=ex.id or 0, position=-1
-            )
+            WorkoutSet(workout_id=w.id or 0, exercise_id=ex.id or 0, position=-1)
         )
         assert first.position == 0
         assert second.position == 1
@@ -171,15 +163,11 @@ class TestSetsRepo:
         assert after.executed
         assert after.completed_at is not None
 
-    def test_update_rejects_unknown_fields(
-        self, repo: WorkoutRepository
-    ) -> None:
+    def test_update_rejects_unknown_fields(self, repo: WorkoutRepository) -> None:
         ex = repo.get_or_create_exercise("Squat")
         w = repo.create_workout(date="2024-05-01", status="in_progress")
         s = repo.add_set(
-            WorkoutSet(
-                workout_id=w.id or 0, exercise_id=ex.id or 0, position=0
-            )
+            WorkoutSet(workout_id=w.id or 0, exercise_id=ex.id or 0, position=0)
         )
         with pytest.raises(ValueError):
             repo.update_set(s.id or 0, bogus=1)

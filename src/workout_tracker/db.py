@@ -128,9 +128,7 @@ class WorkoutRepository:
 
     def delete_exercise(self, exercise_id: int) -> None:
         with self._tx() as cur:
-            cur.execute(
-                "DELETE FROM sets WHERE exercise_id = ?", (exercise_id,)
-            )
+            cur.execute("DELETE FROM sets WHERE exercise_id = ?", (exercise_id,))
             cur.execute("DELETE FROM exercises WHERE id = ?", (exercise_id,))
 
     def _bump_exercise(self, cur: sqlite3.Cursor, exercise_id: int) -> None:
@@ -151,8 +149,7 @@ class WorkoutRepository:
     ) -> Workout:
         with self._tx() as cur:
             cur.execute(
-                "INSERT INTO workouts (date, title, notes, status) "
-                "VALUES (?, ?, ?, ?)",
+                "INSERT INTO workouts (date, title, notes, status) VALUES (?, ?, ?, ?)",
                 (date, title, notes, status),
             )
             w_id = cur.lastrowid

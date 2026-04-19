@@ -51,7 +51,7 @@ class Exercise:
 class WorkoutSet:
     workout_id: int
     exercise_id: int
-    position: int | None = None       # None or negative => repo auto-assigns
+    position: int | None = None  # None or negative => repo auto-assigns
     id: int | None = None
     planned_reps: int | None = None
     planned_weight: float | None = None

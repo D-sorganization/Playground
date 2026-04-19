@@ -126,9 +126,7 @@ class TestPRs:
         metrics = {p.metric: p for p in prs}
         assert metrics["max_weight"].weight == 150
         assert metrics["max_reps"].reps == 8
-        assert metrics["best_e1rm"].value == pytest.approx(
-            best_1rm_estimate(150, 3)
-        )
+        assert metrics["best_e1rm"].value == pytest.approx(best_1rm_estimate(150, 3))
 
 
 class TestFrequency:
