@@ -130,7 +130,10 @@ def register_routes(app: Flask) -> None:
         title = data.get("title")
         notes = data.get("notes")
         status = data.get("status", "planned")
-        w = repo.create_workout(date=date, title=title, notes=notes, status=status)
+        try:
+            w = repo.create_workout(date=date, title=title, notes=notes, status=status)
+        except ValueError as e:
+            abort(400, str(e))
         return jsonify(w.to_dict()), 201
 
     @app.get("/api/workouts/<int:w_id>")
@@ -155,6 +158,8 @@ def register_routes(app: Flask) -> None:
             )
         except KeyError:
             abort(404)
+        except ValueError as e:
+            abort(400, str(e))
         return jsonify(w.to_dict())
 
     @app.delete("/api/workouts/<int:w_id>")
@@ -174,21 +179,27 @@ def register_routes(app: Flask) -> None:
         if not ex_id:
             if not ex_name:
                 abort(400, "exercise_id or exercise_name required")
-            ex_id = repo.get_or_create_exercise(ex_name).id
+            try:
+                ex_id = repo.get_or_create_exercise(ex_name).id
+            except ValueError as e:
+                abort(400, str(e))
         assert ex_id is not None
-        s = WorkoutSet(
-            workout_id=w_id,
-            exercise_id=int(ex_id),
-            position=int(data.get("position", -1)),
-            planned_reps=data.get("planned_reps"),
-            planned_weight=data.get("planned_weight"),
-            actual_reps=data.get("actual_reps"),
-            actual_weight=data.get("actual_weight"),
-            rpe=data.get("rpe"),
-            unit=data.get("unit", "lbs"),
-            executed=bool(data.get("executed", False)),
-            notes=data.get("notes"),
-        )
+        try:
+            s = WorkoutSet(
+                workout_id=w_id,
+                exercise_id=int(ex_id),
+                position=int(data.get("position", -1)),
+                planned_reps=data.get("planned_reps"),
+                planned_weight=data.get("planned_weight"),
+                actual_reps=data.get("actual_reps"),
+                actual_weight=data.get("actual_weight"),
+                rpe=data.get("rpe"),
+                unit=data.get("unit", "lbs"),
+                executed=bool(data.get("executed", False)),
+                notes=data.get("notes"),
+            )
+        except ValueError as e:
+            abort(400, str(e))
         return jsonify(repo.add_set(s).to_dict()), 201
 
     @app.put("/api/sets/<int:set_id>")
@@ -199,6 +210,8 @@ def register_routes(app: Flask) -> None:
             s = repo.update_set(set_id, **data)
         except KeyError:
             abort(404)
+        except ValueError as e:
+            abort(400, str(e))
         return jsonify(s.to_dict())
 
     @app.delete("/api/sets/<int:set_id>")

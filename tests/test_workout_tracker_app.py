@@ -117,6 +117,44 @@ class TestParseRoute:
         assert w["sets"][0]["planned_reps"] == 5
 
 
+class TestValidation:
+    def test_bad_workout_status_returns_400(self, client) -> None:
+        r = client.post(
+            "/api/workouts",
+            json={"date": "2024-05-01", "status": "bogus"},
+        )
+        assert r.status_code == 400
+
+    def test_bad_workout_date_returns_400(self, client) -> None:
+        r = client.post(
+            "/api/workouts",
+            json={"date": "not-a-date"},
+        )
+        assert r.status_code == 400
+
+    def test_update_workout_to_bad_status_returns_400(self, client) -> None:
+        r = client.post("/api/workouts", json={"date": "2024-05-01"})
+        wid = r.json["id"]
+        r = client.put(f"/api/workouts/{wid}", json={"status": "bogus"})
+        assert r.status_code == 400
+
+    def test_bad_set_rpe_returns_400(self, client) -> None:
+        r = client.post("/api/workouts", json={"date": "2024-05-01"})
+        wid = r.json["id"]
+        r = client.post(
+            f"/api/workouts/{wid}/sets",
+            json={"exercise_name": "Bench", "rpe": 99},
+        )
+        assert r.status_code == 400
+
+    def test_lazy_import_models_without_flask(self) -> None:
+        # Must be importable without constructing the Flask app.
+        import importlib
+
+        mod = importlib.import_module("workout_tracker.models")
+        assert mod.normalize_name("Bench Press") == "benchpress"
+
+
 class TestStatsRoutes:
     def test_overview_after_logging(self, client) -> None:
         # create workout + log sets

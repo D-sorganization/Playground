@@ -91,10 +91,18 @@
     );
   }
 
+  // Local YYYY-MM-DD (avoids UTC date drift near midnight).
+  function localDateISO(d = new Date()) {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${y}-${m}-${day}`;
+  }
+
   // ---------- Today / active workout ----------
 
   async function startWorkout() {
-    const today = new Date().toISOString().slice(0, 10);
+    const today = localDateISO();
     const w = await api.post("/api/workouts", {
       date: today,
       status: "in_progress",
@@ -392,7 +400,7 @@
     const text = $("#plan-text").value.trim();
     if (!text) return toast("Plan is empty", "danger");
     const date =
-      $("#plan-date").value || new Date().toISOString().slice(0, 10);
+      $("#plan-date").value || localDateISO();
     const title = $("#plan-title").value || null;
     const w = await api.post("/api/workouts", {
       date,
@@ -660,7 +668,7 @@
     $("#finish-workout").addEventListener("click", finishWorkout);
     $("#preview-plan").addEventListener("click", previewPlan);
     $("#save-plan").addEventListener("click", savePlan);
-    $("#plan-date").value = new Date().toISOString().slice(0, 10);
+    $("#plan-date").value = localDateISO();
   }
 
   function init() {
