@@ -27,8 +27,8 @@
 | **Primary Language(s)** | Python 3.11+                                    |
 | **License**             | MIT                                             |
 | **Current Version**     | 1.0.1                                           |
-| **Spec Version**        | 1.0.21                                          |
-| **Last Spec Update**    | 2026-04-14                                      |
+| **Spec Version**        | 1.1.0                                           |
+| **Last Spec Update**    | 2026-04-19                                      |
 
 ## 2. Purpose & Mission
 
@@ -62,6 +62,16 @@ The Playground is an independent repository with no fleet dependencies. It may s
 Playground/
 ├── src/
 │   ├── asteroid_jumper/        # Asteroid Field Navigator demo
+│   ├── workout_tracker/        # Notes-based gym tracker (Flask + SQLite PWA)
+│   │   ├── static/             # Frontend (vanilla JS, CSS, manifest)
+│   │   ├── templates/          # Jinja templates (SPA shell)
+│   │   ├── schema.sql          # SQLite schema
+│   │   ├── models.py           # Exercise / Workout / WorkoutSet dataclasses
+│   │   ├── db.py               # WorkoutRepository (repository pattern, LoD)
+│   │   ├── parser.py           # Free-text notes -> structured sets
+│   │   ├── autocomplete.py     # Fuzzy suggest (trigram + Damerau-Levenshtein)
+│   │   ├── stats.py            # Volume / 1RM / PRs / timeseries / frequency
+│   │   └── app.py              # Flask app factory + /api routes
 │   └── Project_GROOT/          # Simulation, evaluation, training framework
 │       ├── sim/                # Simulation engine
 │       ├── train/              # Training pipelines
@@ -70,7 +80,7 @@ Playground/
 │       ├── docs/               # Project documentation
 │       └── tools/              # Utility scripts and tools
 ├── archive/                    # Historical snapshots excluded from active lint/test collection
-├── tests/                       # Test suite (20 test files)
+├── tests/                       # Test suite (20+ test files, incl. workout_tracker)
 ├── tools/                       # MATLAB utilities and scripts
 ├── .github/workflows/           # CI/CD pipelines (41 workflows)
 └── .fleetrc                     # Fleet protocol compliance config
@@ -84,6 +94,13 @@ Playground/
 | AJ Camera                | `src/asteroid_jumper/camera.py`    | Viewport, pan, zoom, and world↔screen coordinate transforms            |
 | AJ Draw                  | `src/asteroid_jumper/draw.py`      | Sprite and primitive drawing helpers (background, asteroids, jumper)    |
 | AJ Particles             | `src/asteroid_jumper/particles.py` | TrailBuffer particle/trail system for position history management       |
+| Workout Tracker          | `src/workout_tracker/`             | Notes-based gym tracking PWA: plan, execute, and analyze workouts       |
+| WT Models                | `src/workout_tracker/models.py`    | Exercise/Workout/WorkoutSet dataclasses with DbC-style validators       |
+| WT Repository            | `src/workout_tracker/db.py`        | SQLite repository (LoD): CRUD, merge, rename, cascade deletes           |
+| WT Parser                | `src/workout_tracker/parser.py`    | Parse notes like `Bench 3x5 @ 135` into structured sets                 |
+| WT Autocomplete          | `src/workout_tracker/autocomplete.py` | Trigram + Damerau-Levenshtein fuzzy ranking for exercise names       |
+| WT Stats                 | `src/workout_tracker/stats.py`     | Epley/Brzycki 1RM, PRs, per-exercise summary, timeseries, frequency     |
+| WT App                   | `src/workout_tracker/app.py`       | Flask factory, `/api/*` JSON surface, PWA shell                         |
 | Project GROOT            | `src/Project_GROOT/`               | Integrated simulation, training, evaluation, and data framework         |
 | GROOT Simulation         | `src/Project_GROOT/sim/`           | Core simulation engine for environment and agent interactions           |
 | GROOT Training           | `src/Project_GROOT/train/`         | Training pipelines and model optimization                               |
@@ -103,10 +120,30 @@ Playground/
 | F3  | Project GROOT Simulation       | 🔄     | Core simulation engine with environment and agent interactions                              |
 | F4  | Fleet CI Compliance Template   | ✅     | Reference CI/CD configuration enforcing fleet standards                                     |
 | F5  | Assessment aggregation tooling | ✅     | Builds per-category assessments and compiles `docs/assessments/Comprehensive_Assessment.md` |
+| F6  | Workout Tracker (PWA)          | ✅     | Mobile-first Flask/SQLite app: fuzzy exercise autocomplete, notes-based plans, set-by-set execution, auto 1RM/PR/volume/frequency analytics, typo rename+merge |
 
 ### API / Interface Contract
 
 The Playground does not expose a public API or library interface. Maintained projects live under `src/` and `tests/`. Project GROOT provides internal interfaces for simulation, training, and evaluation workflows consumed within the repository only. Archived content under `archive/` is intentionally excluded from the normal maintained execution path.
+
+Workout Tracker exposes a local HTTP JSON API (in-process, not an external service) when run via `python -m workout_tracker`:
+
+| Method + Path                                             | Purpose                                   |
+| --------------------------------------------------------- | ----------------------------------------- |
+| `GET /`                                                   | SPA shell (HTML)                          |
+| `GET /api/exercises`                                      | List exercises (catalog)                  |
+| `GET /api/exercises/suggest?q=...`                        | Fuzzy autocomplete suggestions            |
+| `POST /api/exercises`                                     | Get-or-create an exercise by name         |
+| `PUT /api/exercises/{id}`                                 | Rename (fix typos)                        |
+| `POST /api/exercises/{src}/merge_into/{target}`           | Merge duplicates, move all sets           |
+| `DELETE /api/exercises/{id}`                              | Delete exercise and its set history       |
+| `GET/POST /api/workouts`, `GET/PUT/DELETE /api/workouts/{id}` | Workout CRUD (date, title, status, notes) |
+| `POST /api/workouts/{id}/sets`                            | Add a planned or executed set             |
+| `PUT/DELETE /api/sets/{id}`                               | Update/execute/delete a set               |
+| `POST /api/parse`                                         | Parse notes text into structured sets     |
+| `POST /api/workouts/{id}/import`                          | Parse + append sets to a workout          |
+| `GET /api/stats/overview`                                 | Totals, PRs, per-exercise summary, freq.  |
+| `GET /api/stats/exercise/{id}`                            | Per-exercise timeseries + PRs             |
 
 ## 6. Data & Configuration
 
@@ -118,6 +155,8 @@ The Playground does not expose a public API or library interface. Maintained pro
 | Solar system initial conditions | JSON    | Demo configuration  | Defined in solar system model config    |
 | GROOT simulation parameters     | YAML    | Experiment specs    | Schema defined in GROOT docs            |
 | Training datasets               | CSV/NPZ | GROOT data pipeline | Varies by experiment                    |
+| Workout notes text              | Text    | User input (Plans)  | Lines like `Bench 3x5 @ 135`, `135x5`   |
+| Workout set entries             | JSON    | Workout Tracker API | `exercise_name`, `actual_reps`, `actual_weight`, `rpe`, `unit`, `executed` |
 
 ### Output Data
 
@@ -127,12 +166,13 @@ The Playground does not expose a public API or library interface. Maintained pro
 | Model checkpoints       | PKL/PT   | `data/checkpoints/` | GROOT training model states               |
 | Evaluation metrics      | CSV/JSON | `eval/results/`     | Performance reports and benchmarks        |
 | Training logs           | TXT/CSV  | `logs/`             | Training progress and diagnostics         |
+| Workout tracker DB      | SQLite   | `~/.workout_tracker.db` (configurable) | Exercises, workouts, sets schema |
 
 ### Configuration
 
 Configuration is managed via:
 
-- **Environment variables**: `GROOT_SEED`, `GROOT_DEBUG`, `GROOT_DATA_PATH`
+- **Environment variables**: `GROOT_SEED`, `GROOT_DEBUG`, `GROOT_DATA_PATH`, `WORKOUT_DB_PATH` (SQLite path for Workout Tracker), `HOST`/`PORT`/`DEBUG` (Workout Tracker dev server)
 - **Config files**: YAML specifications in `src/Project_GROOT/conf/`
 - **CLI arguments**: Scripts in `src/Project_GROOT/tools/` accept configuration overrides
 - **.fleetrc**: Fleet protocol compliance configuration at repository root
@@ -166,6 +206,9 @@ Test pyramid approach with emphasis on unit tests covering individual components
 - [ ] Archived snapshots remain excluded from normal lint/test collection unless explicitly restored
 - [ ] Live simulation markers correctly skip in fast CI runs
 - [ ] All 20 test files execute without errors on Python 3.11+3.12
+- [ ] Workout Tracker: 78 tests across models, parser, autocomplete, stats, db, routes pass
+- [ ] Workout Tracker: fuzzy autocomplete recovers from typos (e.g. `bnech` → `Bench Press`)
+- [ ] Workout Tracker: parser handles `3x5 @ 135`, `135x5`, header-then-sets, comma-separated, bodyweight
 
 ## 8. Quality Standards
 
@@ -201,6 +244,7 @@ Test pyramid approach with emphasis on unit tests covering individual components
 | Package | Version | Purpose                                                       |
 | ------- | ------- | ------------------------------------------------------------- |
 | PyYAML  | >=6.0   | YAML configuration parsing for maintained Project GROOT tools |
+| Flask   | >=3.0   | Workout Tracker HTTP server (optional; only if running the app) |
 
 ### Development Dependencies
 
@@ -243,6 +287,11 @@ python src/solar_system_model/demo.py
 python -m src.Project_GROOT.sim --config conf/default_sim.yaml
 python -m src.Project_GROOT.train --config conf/default_train.yaml
 python -m src.Project_GROOT.eval --results data/checkpoints/model.pt
+
+# Running the Workout Tracker (Flask + SQLite PWA)
+pip install flask
+python -m workout_tracker   # -> http://127.0.0.1:5000
+# Override SQLite path: WORKOUT_DB_PATH=/tmp/wt.db python -m workout_tracker
 
 # Running tests
 pytest                          # All tests

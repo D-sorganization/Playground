@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
+    />
+    <meta name="theme-color" content="#0f1115" />
+    <title>Workout Tracker</title>
+    <link rel="manifest" href="/static/manifest.json" />
+    <link rel="stylesheet" href="/static/style.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <span class="dot"></span>
+        <h1>Workout</h1>
+      </div>
+      <nav class="tabs">
+        <button class="tab active" data-tab="today">Today</button>
+        <button class="tab" data-tab="plans">Plans</button>
+        <button class="tab" data-tab="history">History</button>
+        <button class="tab" data-tab="stats">Stats</button>
+        <button class="tab" data-tab="catalog">Catalog</button>
+      </nav>
+    </header>
+
+    <main id="app">
+      <!-- TODAY ----------------------------------------------------------- -->
+      <section id="tab-today" class="panel active">
+        <div class="card">
+          <div class="row between">
+            <h2 id="today-title">Today's Workout</h2>
+            <span class="muted small" id="today-date"></span>
+          </div>
+          <div id="active-empty" class="empty">
+            <p class="muted">No active workout. Start one in seconds.</p>
+            <button id="start-workout" class="btn primary big">
+              Start Workout
+            </button>
+          </div>
+          <div id="active-workout" class="hidden">
+            <div class="quick-add card-inset">
+              <label for="ex-input" class="lbl">Add set</label>
+              <div class="ac-wrap">
+                <input
+                  id="ex-input"
+                  autocomplete="off"
+                  placeholder="Exercise (e.g. Bench Press)"
+                  inputmode="text"
+                />
+                <ul id="ex-suggest" class="suggest hidden"></ul>
+              </div>
+              <div class="row gap">
+                <input
+                  id="reps-input"
+                  type="number"
+                  inputmode="numeric"
+                  min="0"
+                  placeholder="reps"
+                />
+                <input
+                  id="weight-input"
+                  type="number"
+                  inputmode="decimal"
+                  step="any"
+                  min="0"
+                  placeholder="weight"
+                />
+                <select id="unit-input">
+                  <option value="lbs">lbs</option>
+                  <option value="kg">kg</option>
+                </select>
+                <input
+                  id="rpe-input"
+                  type="number"
+                  inputmode="decimal"
+                  step="0.5"
+                  min="0"
+                  max="10"
+                  placeholder="rpe"
+                />
+              </div>
+              <div class="row gap">
+                <button id="add-set" class="btn primary grow">+ Log Set</button>
+                <button id="add-planned" class="btn">+ Plan Set</button>
+              </div>
+            </div>
+
+            <div id="set-list" class="set-list"></div>
+
+            <div class="row gap">
+              <button id="finish-workout" class="btn danger">
+                Finish Workout
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PLANS ----------------------------------------------------------- -->
+      <section id="tab-plans" class="panel">
+        <div class="card">
+          <h2>Create a Plan</h2>
+          <p class="muted small">
+            Type a notes-style plan. e.g.<br />
+            <code>Bench Press 5x5 @ 135<br />Squat 3x8 @ 185<br />Pull-ups 3x8</code>
+          </p>
+          <textarea
+            id="plan-text"
+            rows="9"
+            placeholder="Bench Press 5x5 @ 135"
+          ></textarea>
+          <div class="row gap">
+            <input
+              id="plan-date"
+              type="date"
+              aria-label="Plan date"
+            />
+            <input
+              id="plan-title"
+              placeholder="Title (optional)"
+              class="grow"
+            />
+          </div>
+          <div class="row gap">
+            <button id="preview-plan" class="btn">Preview</button>
+            <button id="save-plan" class="btn primary">Save Plan</button>
+          </div>
+          <div id="plan-preview" class="preview"></div>
+        </div>
+
+        <div class="card">
+          <h2>Saved Plans</h2>
+          <div id="plans-list" class="list"></div>
+        </div>
+      </section>
+
+      <!-- HISTORY --------------------------------------------------------- -->
+      <section id="tab-history" class="panel">
+        <div class="card">
+          <h2>Workout History</h2>
+          <div id="history-list" class="list"></div>
+        </div>
+      </section>
+
+      <!-- STATS ----------------------------------------------------------- -->
+      <section id="tab-stats" class="panel">
+        <div class="card">
+          <h2>Overview</h2>
+          <div id="stats-overview" class="grid-stats"></div>
+        </div>
+        <div class="card">
+          <h2>Personal Records</h2>
+          <div id="stats-prs" class="list"></div>
+        </div>
+        <div class="card">
+          <h2>Per-Exercise Summary</h2>
+          <div id="stats-summary" class="list"></div>
+        </div>
+        <div class="card">
+          <h2>Frequency</h2>
+          <div id="stats-frequency" class="list"></div>
+        </div>
+      </section>
+
+      <!-- CATALOG --------------------------------------------------------- -->
+      <section id="tab-catalog" class="panel">
+        <div class="card">
+          <div class="row between">
+            <h2>Exercise Catalog</h2>
+            <span class="muted small">Rename to fix typos. Merge to consolidate.</span>
+          </div>
+          <div id="catalog-list" class="list"></div>
+        </div>
+      </section>
+    </main>
+
+    <div id="toast" class="toast hidden"></div>
+
+    <script src="/static/app.js" defer></script>
+  </body>
+</html>
