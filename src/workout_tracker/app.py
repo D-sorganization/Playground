@@ -15,9 +15,10 @@ from __future__ import annotations
 
 import logging
 import os
+from collections.abc import Callable
 from datetime import date as date_t
 from pathlib import Path
-from typing import Any
+from typing import Any, ParamSpec, Protocol, TypeVar, cast
 
 from flask import Flask, abort, g, jsonify, render_template, request
 
@@ -32,9 +33,34 @@ DEFAULT_DB_PATH = os.environ.get(
     "WORKOUT_DB_PATH", str(Path.home() / ".workout_tracker.db")
 )
 
+P = ParamSpec("P")
+R = TypeVar("R")
 
-def create_app(db_path: str | None = None) -> Flask:
-    app = Flask(__name__)
+
+class _FlaskApp(Protocol):
+    config: dict[str, Any]
+
+    def before_request(self, func: Callable[P, R]) -> Callable[P, R]: ...
+
+    def teardown_request(self, func: Callable[P, R]) -> Callable[P, R]: ...
+
+    def errorhandler(self, code: int) -> Callable[[Callable[P, R]], Callable[P, R]]: ...
+
+    def get(self, rule: str) -> Callable[[Callable[P, R]], Callable[P, R]]: ...
+
+    def post(self, rule: str) -> Callable[[Callable[P, R]], Callable[P, R]]: ...
+
+    def put(self, rule: str) -> Callable[[Callable[P, R]], Callable[P, R]]: ...
+
+    def delete(self, rule: str) -> Callable[[Callable[P, R]], Callable[P, R]]: ...
+
+    def test_client(self) -> Any: ...
+
+    def run(self, *args: Any, **kwargs: Any) -> Any: ...
+
+
+def create_app(db_path: str | None = None) -> _FlaskApp:
+    app = cast(_FlaskApp, Flask(__name__))
     app.config["DB_PATH"] = db_path or DEFAULT_DB_PATH
     app.config["JSON_SORT_KEYS"] = False
 
@@ -60,9 +86,9 @@ def create_app(db_path: str | None = None) -> Flask:
 # --------------------------------------------------------------------- routes
 
 
-def register_routes(app: Flask) -> None:
+def register_routes(app: _FlaskApp) -> None:
     @app.get("/")
-    def index() -> str:
+    def index() -> Any:
         return render_template("index.html")
 
     # ---------- exercises ----------
