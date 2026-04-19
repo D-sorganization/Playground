@@ -34,11 +34,13 @@ jobs:
   quality-gate:
     needs: pick-runner
     runs-on: ${{ needs.pick-runner.outputs.runner }}
+    env:
+      PIP_CACHE_DIR: /home/dieterolson/actions-runners/.shared-tool-cache/pip
     steps:
       - uses: actions/checkout@v6
       - name: Bootstrap Python venv
         run: |
-          for py in python3.11 python3.12 python3.10 python3; do
+          for py in python3.12 python3.11 python3.10 python3; do
             if command -v $py &>/dev/null; then
               $py -m venv "$RUNNER_TEMP/ci-venv"
               break
@@ -109,14 +111,16 @@ jobs:
   tests:
     needs: [pick-runner, quality-gate]
     runs-on: ${{ needs.pick-runner.outputs.runner }}
+    env:
+      PIP_CACHE_DIR: /home/dieterolson/actions-runners/.shared-tool-cache/pip
     strategy:
       matrix:
-        python: ["3.11"]
+        python: ["3.12"]
     steps:
       - uses: actions/checkout@v6
       - name: Bootstrap Python venv
         run: |
-          for py in python3.11 python3.12 python3.10 python3; do
+          for py in python3.12 python3.11 python3.10 python3; do
             if command -v $py &>/dev/null; then
               $py -m venv "$RUNNER_TEMP/ci-venv"
               break
@@ -142,7 +146,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v4
-        with: { node-version: "20" }
+        with: { node-version: "24" }
       - name: Install & Test
         working-directory: ./
         run: |
@@ -174,7 +178,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-python@v6
-        with: { python-version: "3.11" }
+        with: { python-version: "3.12" }
       - run: pip install platformio
       - name: Verify Build
         working-directory: ./

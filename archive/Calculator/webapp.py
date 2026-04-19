@@ -37,11 +37,17 @@ class CalculationPayload:
     function: str | None = None
 
 
-def create_app() -> Flask:
+def create_app(rate_limit: int = 100, rate_window: int = 60) -> Flask:
+    """Create and configure the Flask application.
+
+    Args:
+        rate_limit: Maximum requests per rate window per IP (default 100).
+        rate_window: Rate-limit window in seconds (default 60).
+    """
     app = Flask(__name__, static_folder="static", template_folder="templates")
     calculator = TI89Calculator()
-    # Rate limit: 100 requests per 60 seconds per IP
-    app.limiter = RateLimiter(limit=100, window=60)  # type: ignore
+    # Rate limit: configurable per-IP window; tests may pass a lower limit.
+    app.limiter = RateLimiter(limit=rate_limit, window=rate_window)  # type: ignore
 
     @app.get("/")
     def index() -> str:

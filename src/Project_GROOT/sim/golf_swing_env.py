@@ -10,6 +10,15 @@ This environment:
 - Logs key performance metrics
 
 Based on Isaac Lab task template.
+
+Implementation note — object traversal chains:
+    Chains of the form ``self.robot.data.joint_pos`` or
+    ``self.robot.data.soft_joint_pos_limits`` are deliberate.  Isaac Lab's
+    public API is structured around an ``Articulation.data`` descriptor that
+    bundles all kinematic state; introducing a local alias or wrapper would
+    obscure the framework idiom without reducing coupling.  These are not
+    Law-of-Demeter violations in the practical sense because the entire chain
+    is owned by the same library (Isaac Lab ``Articulation`` interface).
 """
 
 from __future__ import annotations

@@ -10,16 +10,14 @@ from Calculator.webapp import create_app
 
 class TestRateLimitEnforcement(unittest.TestCase):
     def setUp(self):
-        self.app = create_app()
-        # Ensure TESTING is False (default)
+        # Pass a low rate_limit directly to create_app so the test does not
+        # need to reach through app internals (avoids Law of Demeter violation).
+        self.app = create_app(rate_limit=2)
+        # Ensure TESTING is False so the rate-limit path is exercised.
         self.app.config.update({"TESTING": False})
         self.client = self.app.test_client()
 
     def test_rate_limit_exceeded(self):
-        # Set low limit for testing
-        # We access the limiter attached to the app
-        self.app.limiter.limit = 2
-
         payload = {"operation": "evaluate", "expression": "1+1"}
 
         # 1st request - OK
