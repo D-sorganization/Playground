@@ -1,9 +1,9 @@
 flask==3.0.3
-sympy==1.13.1
-pytest
-pytest-cov
-numpy
-matplotlib
+sympy==1.14.0
+pytest>=8.2.0
+pytest-cov>=4.0.0
+numpy==1.26.4
+matplotlib==3.9.0
 PyYAML>=6.0
 # GUI dependencies for golf swing tools (optional)
 # mujoco  # Commented out - requires special installation
