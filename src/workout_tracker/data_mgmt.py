@@ -198,7 +198,7 @@ def export_db(repo: Any) -> dict[str, Any]:
     exercises = [e.to_dict() for e in repo.list_exercises()]
     workouts_raw = repo.list_workouts(limit=100_000)
     workouts = []
-    all_sets = []
+    all_sets: list[dict[str, Any]] = []
     for w in workouts_raw:
         wd = w.to_dict()
         wd.pop("sets", None)

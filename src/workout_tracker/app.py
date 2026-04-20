@@ -448,17 +448,17 @@ def register_routes(app: _FlaskApp) -> None:
     def copy_last_weekday() -> Any:
         repo: WorkoutRepository = g.repo
         data = request.get_json(force=True) or {}
-        weekday = data.get("weekday")
-        target_date = data.get("target_date") or date_t.today().isoformat()
-        if weekday is None:
+        weekday_raw = data.get("weekday")
+        target_date: str = data.get("target_date") or date_t.today().isoformat()
+        if weekday_raw is None:
             abort(400, "weekday required")
         try:
-            weekday = int(weekday)
+            weekday_int = int(weekday_raw)
         except (ValueError, TypeError):
             abort(400, "weekday must be an integer 0-6")
         try:
             w = planning.copy_last_weekday_session(
-                repo, weekday=weekday, target_date=target_date
+                repo, weekday=weekday_int, target_date=target_date
             )
         except ValueError as e:
             abort(400, str(e))
@@ -473,11 +473,12 @@ def register_routes(app: _FlaskApp) -> None:
         repo: WorkoutRepository = g.repo
         data = request.get_json(force=True) or {}
         schedule_raw = data.get("schedule")
-        week_start = data.get("week_start")
-        if not schedule_raw or not week_start:
+        week_start_raw = data.get("week_start")
+        if not schedule_raw or not week_start_raw:
             abort(400, "schedule and week_start required")
+        week_start: str = str(week_start_raw)
         try:
-            schedule = {int(k): v for k, v in schedule_raw.items()}
+            schedule: dict[int, Any] = {int(k): v for k, v in schedule_raw.items()}
         except (ValueError, AttributeError):
             abort(400, "schedule keys must be integer weekdays 0-6")
         try:
