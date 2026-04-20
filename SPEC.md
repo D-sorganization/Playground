@@ -196,7 +196,7 @@ Test pyramid approach with emphasis on unit tests covering individual components
 
 | Scope                                         | Minimum | Current | Enforced By                |
 | --------------------------------------------- | ------- | ------- | -------------------------- |
-| Overall                                       | 60%     | 70%+    | CI (`--cov-fail-under=60`) |
+| Overall                                       | 60%     | 76%     | CI (`--cov-fail-under=60`) |
 | Critical modules (asteroid_jumper, GROOT sim) | 75%     | 80%+    | CI linting checks          |
 
 ### Required Test Scenarios
@@ -206,9 +206,10 @@ Test pyramid approach with emphasis on unit tests covering individual components
 - [ ] Archived snapshots remain excluded from normal lint/test collection unless explicitly restored
 - [ ] Live simulation markers correctly skip in fast CI runs
 - [ ] All 20 test files execute without errors on Python 3.11+3.12
-- [ ] Workout Tracker: 78 tests across models, parser, autocomplete, stats, db, routes pass
+- [ ] Workout Tracker: 91 tests across models, parser, autocomplete, stats, db, routes pass
 - [ ] Workout Tracker: fuzzy autocomplete recovers from typos (e.g. `bnech` → `Bench Press`)
 - [ ] Workout Tracker: parser handles `3x5 @ 135`, `135x5`, header-then-sets, comma-separated, bodyweight
+- [ ] Workout Tracker: Flask startup and request-scoped SQLite connections release file handles on Windows before temporary database cleanup
 
 ## 8. Quality Standards
 
@@ -335,6 +336,7 @@ Active development with focus on Project GROOT implementation. Demos (Asteroid F
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | ---------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-04-20 | 1.0.23  | Test coverage(#nightly): close Workout Tracker startup schema connection after initialization; add route regressions for exercise rename/merge/delete, workout deletion, set validation/delete, executed imports, per-exercise stats, and Windows SQLite file-handle cleanup; set pytest `pythonpath` to `src` for targeted package tests.                                                                                  |
 | 2026-04-14 | 1.0.22  | docs(#256): document independent-experiments convention in README; add project maturity table; clarify per-project quality scope.                                                                                                                                                                                                                                                                                          |
 | 2026-04-14 | 1.0.21  | Refactor(#246): decompose `asteroid_jumper/renderer.py` into `camera.py` (Camera viewport class), `draw.py` (sprite/primitive drawing helpers), and `particles.py` (TrailBuffer particle system); `draw_helpers.py` retained as backward-compat re-export shim; 18 camera tests + 9 draw tests + 17 particle tests added.                                                                                                  |
 | 2026-04-14 | 1.0.20  | Refactor(#259): split 3 monolithic scripts; extracted `eval_plots.py`, `eval_report.py`, `renderer_draw.py`, `mypy_agent_types.py`, and `mypy_fix_strategies.py` into focused companion modules.                                                                                                                                                                                                                           |
