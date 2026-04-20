@@ -24,6 +24,8 @@ from workout_tracker.models import (
     normalize_name,
 )
 
+_NEW_SET_COLUMNS = ("group_id", "protocol", "is_bodyweight")
+
 logger = logging.getLogger(__name__)
 
 _LBS_PER_KG = 2.20462
@@ -43,18 +45,25 @@ def connect(db_path: str | Path) -> sqlite3.Connection:
 
 
 def _migrate(conn: sqlite3.Connection) -> None:
-    """Add new columns to existing tables (idempotent ALTER TABLE migrations)."""
+    """Add columns introduced after the initial schema deploy. SQLite-safe."""
     migrations = [
         ("exercises", "deleted_at", "TEXT"),
         ("workouts", "deleted_at", "TEXT"),
         ("sets", "deleted_at", "TEXT"),
+        ("sets", "group_id", "ALTER TABLE sets ADD COLUMN group_id TEXT"),
+        ("sets", "protocol", "ALTER TABLE sets ADD COLUMN protocol TEXT"),
+        (
+            "sets",
+            "is_bodyweight",
+            "ALTER TABLE sets ADD COLUMN is_bodyweight INTEGER NOT NULL DEFAULT 0",
+        ),
     ]
-    for table, column, col_type in migrations:
+    for table, column, sql in migrations:
         existing = {
             row[1] for row in conn.execute(f"PRAGMA table_info({table})").fetchall()
         }
         if column not in existing:
-            conn.execute(f"ALTER TABLE {table} ADD COLUMN {column} {col_type}")
+            conn.execute(sql)
     conn.commit()
 
 
@@ -62,8 +71,8 @@ def init_db(conn: sqlite3.Connection) -> None:
     """Create tables if missing, then apply column migrations. Idempotent."""
     schema = resources.files("workout_tracker").joinpath("schema.sql").read_text()
     conn.executescript(schema)
-    conn.commit()
     _migrate(conn)
+    conn.commit()
 
 
 class WorkoutRepository:
@@ -158,6 +167,40 @@ class WorkoutRepository:
                 (source_id, target_id),
             )
             cur.execute("DELETE FROM exercises WHERE id = ?", (source_id,))
+
+    def resolve_exercise_by_name(self, name: str) -> Exercise | None:
+        """Look up an exercise by normalized name. Returns None if not found."""
+        norm = normalize_name(name)
+        row = self.conn.execute(
+            "SELECT * FROM exercises WHERE normalized_name = ?",
+            (norm,),
+        ).fetchone()
+        if row is None:
+            return None
+        return self._row_to_exercise(row)
+
+    def last_session_sets(self, exercise_id: int, limit: int = 10) -> list[WorkoutSet]:
+        """Return most-recent executed sets for an exercise (last session only)."""
+        # Find the most recent workout date that has executed sets for this exercise
+        row = self.conn.execute(
+            "SELECT w.date FROM workouts w "
+            "JOIN sets s ON s.workout_id = w.id "
+            "WHERE s.exercise_id = ? AND s.executed = 1 "
+            "ORDER BY w.date DESC, w.id DESC LIMIT 1",
+            (exercise_id,),
+        ).fetchone()
+        if row is None:
+            return []
+        last_date = row["date"]
+        rows = self.conn.execute(
+            "SELECT s.*, e.name AS exercise_name FROM sets s "
+            "JOIN exercises e ON e.id = s.exercise_id "
+            "JOIN workouts w ON w.id = s.workout_id "
+            "WHERE s.exercise_id = ? AND s.executed = 1 AND w.date = ? "
+            "ORDER BY w.id DESC, s.position ASC LIMIT ?",
+            (exercise_id, last_date, limit),
+        ).fetchall()
+        return [self._row_to_set(r) for r in rows]
 
     def delete_exercise(self, exercise_id: int) -> None:
         """Soft-delete exercise and all its sets."""
@@ -270,7 +313,7 @@ class WorkoutRepository:
         row = self.conn.execute(
             "SELECT e.* FROM exercises e "
             "JOIN exercise_aliases a ON a.exercise_id = e.id "
-            "WHERE a.normalized_alias = ?",
+            "WHERE a.normalized_alias = ? AND e.deleted_at IS NULL",
             (norm,),
         ).fetchone()
         if row is None:
@@ -450,8 +493,9 @@ class WorkoutRepository:
             cur.execute(
                 "INSERT INTO sets (workout_id, exercise_id, position, "
                 "planned_reps, planned_weight, actual_reps, actual_weight, "
-                "rpe, unit, executed, notes, completed_at) "
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                "rpe, unit, executed, notes, completed_at, "
+                "group_id, protocol, is_bodyweight) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 (
                     s.workout_id,
                     s.exercise_id,
@@ -465,6 +509,9 @@ class WorkoutRepository:
                     int(bool(s.executed)),
                     s.notes,
                     s.completed_at,
+                    s.group_id,
+                    s.protocol,
+                    int(bool(s.is_bodyweight)),
                 ),
             )
             set_id = cur.lastrowid
@@ -497,6 +544,9 @@ class WorkoutRepository:
             "completed_at",
             "position",
             "exercise_id",
+            "group_id",
+            "protocol",
+            "is_bodyweight",
         }
         unknown = set(fields) - allowed
         if unknown:
@@ -636,6 +686,7 @@ class WorkoutRepository:
 
     @staticmethod
     def _row_to_set(row: sqlite3.Row) -> WorkoutSet:
+        keys = row.keys()
         return WorkoutSet(
             id=row["id"],
             workout_id=row["workout_id"],
@@ -650,7 +701,10 @@ class WorkoutRepository:
             executed=bool(row["executed"]),
             notes=row["notes"],
             completed_at=row["completed_at"],
-            exercise_name=row["exercise_name"]
-            if "exercise_name" in row.keys()
-            else None,
+            exercise_name=row["exercise_name"] if "exercise_name" in keys else None,
+            group_id=row["group_id"] if "group_id" in keys else None,
+            protocol=row["protocol"] if "protocol" in keys else None,
+            is_bodyweight=(
+                bool(row["is_bodyweight"]) if "is_bodyweight" in keys else False
+            ),
         )

@@ -35,7 +35,7 @@ jobs:
     needs: pick-runner
     runs-on: ${{ needs.pick-runner.outputs.runner }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
       - name: Bootstrap Python venv
         run: |
           for py in python3.11 python3.12 python3.10 python3; do
@@ -113,7 +113,7 @@ jobs:
       matrix:
         python: ["3.11"]
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
       - name: Bootstrap Python venv
         run: |
           for py in python3.11 python3.12 python3.10 python3; do
@@ -140,7 +140,7 @@ jobs:
     needs: [pick-runner, quality-gate]
     runs-on: ${{ needs.pick-runner.outputs.runner }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: "20" }
       - name: Install & Test
@@ -160,7 +160,7 @@ jobs:
     if: false
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
       - uses: matlab-actions/setup-matlab@v2
       - uses: matlab-actions/run-command@v2
         with:
@@ -172,7 +172,7 @@ jobs:
     needs: [pick-runner, quality-gate]
     runs-on: ${{ needs.pick-runner.outputs.runner }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
       - uses: actions/setup-python@v6
         with: { python-version: "3.11" }
       - run: pip install platformio

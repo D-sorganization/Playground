@@ -94,3 +94,37 @@ class TestWorkout:
         d = w.to_dict()
         assert isinstance(d["sets"], list)
         assert len(d["sets"]) == 1
+
+
+class TestWorkoutSetProtocol:
+    def test_valid_protocols(self) -> None:
+        from workout_tracker.models import VALID_PROTOCOLS
+
+        for p in VALID_PROTOCOLS:
+            s = WorkoutSet(workout_id=1, exercise_id=1, position=0, protocol=p)
+            assert s.protocol == p
+
+    def test_invalid_protocol_rejected(self) -> None:
+        with pytest.raises(ValueError, match="protocol"):
+            WorkoutSet(workout_id=1, exercise_id=1, position=0, protocol="tabata")
+
+    def test_none_protocol_allowed(self) -> None:
+        s = WorkoutSet(workout_id=1, exercise_id=1, position=0, protocol=None)
+        assert s.protocol is None
+
+
+class TestWorkoutSetGroupAndBW:
+    def test_group_id_stored(self) -> None:
+        s = WorkoutSet(workout_id=1, exercise_id=1, position=0, group_id="A")
+        assert s.group_id == "A"
+
+    def test_is_bodyweight_default_false(self) -> None:
+        s = WorkoutSet(workout_id=1, exercise_id=1, position=0)
+        assert s.is_bodyweight is False
+
+    def test_to_dict_is_bodyweight_is_bool(self) -> None:
+        s = WorkoutSet(workout_id=1, exercise_id=1, position=0, is_bodyweight=True)
+        d = s.to_dict()
+        assert d["is_bodyweight"] is True
+        assert d["group_id"] is None
+        assert d["protocol"] is None

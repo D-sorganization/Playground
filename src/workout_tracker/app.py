@@ -65,15 +65,18 @@ def create_app(db_path: str | None = None) -> _FlaskApp:
     app.config["JSON_SORT_KEYS"] = False
 
     # Initialize the schema once at startup
-    with connect(app.config["DB_PATH"]) as conn:
+    conn = connect(app.config["DB_PATH"])
+    try:
         init_db(conn)
+    finally:
+        conn.close()
 
     @app.before_request
     def _open_conn() -> None:
         g.conn = connect(app.config["DB_PATH"])
         g.repo = WorkoutRepository(g.conn)
 
-    @app.teardown_request
+    @app.teardown_appcontext
     def _close_conn(exc: BaseException | None) -> None:
         conn = g.pop("conn", None)
         if conn is not None:
@@ -331,6 +334,9 @@ def register_routes(app: _FlaskApp) -> None:
                 unit=data.get("unit", "lbs"),
                 executed=bool(data.get("executed", False)),
                 notes=data.get("notes"),
+                group_id=data.get("group_id") or None,
+                protocol=data.get("protocol") or None,
+                is_bodyweight=bool(data.get("is_bodyweight", False)),
             )
         except ValueError as e:
             abort(400, str(e))
@@ -371,6 +377,8 @@ def register_routes(app: _FlaskApp) -> None:
                             "weight": s.weight,
                             "rpe": s.rpe,
                             "unit": s.unit,
+                            "is_bodyweight": s.is_bodyweight,
+                            "protocol": s.protocol,
                         }
                         for s in e.sets
                     ],
@@ -402,6 +410,8 @@ def register_routes(app: _FlaskApp) -> None:
                     rpe=ps.rpe,
                     unit=ps.unit,
                     executed=executed,
+                    is_bodyweight=ps.is_bodyweight,
+                    protocol=ps.protocol,
                 )
                 created.append(repo.add_set(s).to_dict())
         return jsonify(created), 201
@@ -441,6 +451,27 @@ def register_routes(app: _FlaskApp) -> None:
         except ValueError as e:
             abort(400, str(e))
         return jsonify(w.to_dict()), 201
+
+    # ---------- last session sets (GH295 — ergonomic logging) ----------
+
+    @app.get("/api/last_session_sets")
+    def last_session_sets() -> Any:
+        """Return the most-recent executed sets for a given exercise name.
+
+        Query params:
+            exercise_name (str, required)
+            limit (int, default 10) — max sets to return
+        """
+        repo: WorkoutRepository = g.repo
+        exercise_name = (request.args.get("exercise_name") or "").strip()
+        if not exercise_name:
+            abort(400, "exercise_name required")
+        limit = min(int(request.args.get("limit", 10)), 50)
+        ex = repo.resolve_exercise_by_name(exercise_name)
+        if ex is None:
+            return jsonify([])
+        sets = repo.last_session_sets(ex.id or 0, limit=limit)
+        return jsonify([s.to_dict() for s in sets])
 
     # ---------- copy last weekday ----------
 
@@ -559,18 +590,22 @@ def register_routes(app: _FlaskApp) -> None:
     @app.post("/api/stats/ratio")
     def stats_ratio() -> Any:
         repo: WorkoutRepository = g.repo
-        data = request.get_json(force=True) or {}
+        data = cast(dict[str, Any], request.get_json(force=True) or {})
         ex_a_id = data.get("exercise_a_id")
         ex_b_id = data.get("exercise_b_id")
         if not ex_a_id or not ex_b_id:
             abort(400, "exercise_a_id and exercise_b_id required")
+        ex_a_int = int(cast(int | str, ex_a_id))
+        ex_b_int = int(cast(int | str, ex_b_id))
         exercises = {e.id: e for e in repo.list_exercises()}
-        ex_a = exercises.get(int(ex_a_id))
-        ex_b = exercises.get(int(ex_b_id))
+        ex_a = exercises.get(ex_a_int)
+        ex_b = exercises.get(ex_b_int)
         if not ex_a or not ex_b:
             abort(404)
-        sets_a = repo.list_sets_for_exercise(int(ex_a_id), executed_only=True)
-        sets_b = repo.list_sets_for_exercise(int(ex_b_id), executed_only=True)
+        assert ex_a is not None
+        assert ex_b is not None
+        sets_a = repo.list_sets_for_exercise(ex_a_int, executed_only=True)
+        sets_b = repo.list_sets_for_exercise(ex_b_int, executed_only=True)
         ratio = stats.strength_ratio(sets_a, sets_b)
         return jsonify(
             {

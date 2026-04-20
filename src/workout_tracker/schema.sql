@@ -44,6 +44,9 @@ CREATE TABLE IF NOT EXISTS sets (
     notes TEXT,
     completed_at TEXT,
     deleted_at TEXT,
+    group_id TEXT,
+    protocol TEXT,
+    is_bodyweight INTEGER NOT NULL DEFAULT 0,
     FOREIGN KEY (workout_id) REFERENCES workouts(id) ON DELETE CASCADE,
     FOREIGN KEY (exercise_id) REFERENCES exercises(id)
 );

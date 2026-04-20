@@ -203,7 +203,7 @@ def draw_hud_lines(ctrl: object) -> list[tuple[str, object]]:
     ]
     if phase == "ready":
         raw.append("← Drag on asteroid to set jump angle")
-    result = []
+    result: list[tuple[str, object]] = []
     for i, text in enumerate(raw):
         color = C_BLUE if i == 0 else (C_GREEN if i < 5 else C_SUBTEXT)
         result.append((text, color))

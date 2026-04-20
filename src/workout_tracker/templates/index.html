@@ -41,8 +41,23 @@
             </button>
           </div>
           <div id="active-workout" class="hidden">
+            <!-- Session timer + rest timer strip (GH295) -->
+            <div class="timer-strip">
+              <div class="timer-item">
+                <span class="timer-lbl">Session</span>
+                <span id="session-timer" class="timer-val">0:00</span>
+              </div>
+              <div class="timer-item">
+                <span class="timer-lbl">Rest</span>
+                <span id="rest-timer" class="timer-val rest-idle">—</span>
+              </div>
+              <button id="plate-calc-btn" class="btn icon" title="Plate calculator">⚖</button>
+            </div>
+
             <div class="quick-add card-inset">
               <label for="ex-input" class="lbl">Add set</label>
+              <!-- Last-session recall strip (GH295) -->
+              <div id="last-session-strip" class="last-session-strip hidden"></div>
               <div class="ac-wrap">
                 <input
                   id="ex-input"
@@ -52,6 +67,11 @@
                 />
                 <ul id="ex-suggest" class="suggest hidden"></ul>
               </div>
+              <!-- Voice input button (GH295) -->
+              <div class="row gap">
+                <button id="voice-btn" class="btn icon" title="Voice input" aria-label="Voice input">🎤</button>
+                <span id="voice-status" class="muted small hidden">Listening…</span>
+              </div>
               <div class="row gap">
                 <input
                   id="reps-input"
@@ -60,14 +80,24 @@
                   min="0"
                   placeholder="reps"
                 />
-                <input
-                  id="weight-input"
-                  type="number"
-                  inputmode="decimal"
-                  step="any"
-                  min="0"
-                  placeholder="weight"
-                />
+                <!-- Quick weight ± buttons (GH295) -->
+                <div class="weight-wrap">
+                  <input
+                    id="weight-input"
+                    type="number"
+                    inputmode="decimal"
+                    step="any"
+                    min="0"
+                    placeholder="weight"
+                  />
+                  <div class="weight-adj">
+                    <button class="btn icon adj-btn" data-delta="-5">−5</button>
+                    <button class="btn icon adj-btn" data-delta="-2.5">−2.5</button>
+                    <button class="btn icon adj-btn" data-delta="2.5">+2.5</button>
+                    <button class="btn icon adj-btn" data-delta="5">+5</button>
+                    <button class="btn icon adj-btn" data-delta="10">+10</button>
+                  </div>
+                </div>
                 <select id="unit-input">
                   <option value="lbs">lbs</option>
                   <option value="kg">kg</option>
@@ -94,6 +124,34 @@
               <button id="finish-workout" class="btn danger">
                 Finish Workout
               </button>
+            </div>
+          </div>
+
+          <!-- Plate calculator modal (GH295) -->
+          <div id="plate-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-label="Plate calculator">
+            <div class="modal-box">
+              <div class="row between">
+                <h3>Plate Calculator</h3>
+                <button id="plate-modal-close" class="btn icon">✕</button>
+              </div>
+              <div class="row gap">
+                <label class="lbl grow">
+                  Target weight
+                  <input id="plate-target" type="number" inputmode="decimal" step="any" min="0" placeholder="e.g. 225" />
+                </label>
+                <label class="lbl">
+                  Bar weight
+                  <input id="plate-bar" type="number" inputmode="decimal" step="any" min="0" value="45" style="width:80px"/>
+                </label>
+                <label class="lbl">
+                  Unit
+                  <select id="plate-unit" style="width:70px">
+                    <option value="lbs">lbs</option>
+                    <option value="kg">kg</option>
+                  </select>
+                </label>
+              </div>
+              <div id="plate-result" class="plate-result"></div>
             </div>
           </div>
         </div>
