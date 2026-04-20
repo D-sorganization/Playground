@@ -37,15 +37,12 @@ jobs:
       - uses: actions/checkout@v6
       - name: Update PRs with strictly linear history
         env:
-          GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN || github.token }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           if ! PRS=$(gh pr list --state open --json number --jq '.[].number' 2>gh-pr-list.err); then
             cat gh-pr-list.err
-            if grep -qi "rate limit" gh-pr-list.err; then
-              echo "::warning::Skipping auto-update because the GitHub API rate limit is exhausted."
-              exit 0
-            fi
-            exit 1
+            echo "::warning::Skipping auto-update because GitHub PR listing failed."
+            exit 0
           fi
 
           if [ -z "$PRS" ]; then
