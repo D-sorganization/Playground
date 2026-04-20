@@ -6,3 +6,84 @@
 #   - Only Discovery may add items; only Delivery may update status
 
 items:
+
+  - id: GH306
+    title: "Review deep object traversal hotspots"
+    priority: medium
+    status: refined
+    github_issue: 306
+    artefact: .gaai/project/contexts/artefacts/stories/GH306.story.md
+    dependencies: []
+    created_at: 2026-04-20
+
+  - id: GH302
+    title: "Workout Tracker: Offline-first PWA with background sync"
+    priority: medium
+    status: refined
+    github_issue: 302
+    artefact: .gaai/project/contexts/artefacts/stories/GH302.story.md
+    dependencies: []
+    created_at: 2026-04-20
+
+  - id: GH301
+    title: "Workout Tracker: UX polish – tags, theme, undo, shortcuts"
+    priority: medium
+    status: refined
+    github_issue: 301
+    artefact: .gaai/project/contexts/artefacts/stories/GH301.story.md
+    dependencies: []
+    created_at: 2026-04-20
+
+  - id: GH300
+    title: "Workout Tracker: Search, filters, and exercise aliases"
+    priority: medium
+    status: refined
+    github_issue: 300
+    artefact: .gaai/project/contexts/artefacts/stories/GH300.story.md
+    dependencies: []
+    created_at: 2026-04-20
+
+  - id: GH299
+    title: "Workout Tracker: Data management – export/import/CSV/trash/bulk-edit"
+    priority: medium
+    status: refined
+    github_issue: 299
+    artefact: .gaai/project/contexts/artefacts/stories/GH299.story.md
+    dependencies: []
+    created_at: 2026-04-20
+
+  - id: GH298
+    title: "Workout Tracker: Advanced stats – charts, heatmap, streaks, ratios"
+    priority: medium
+    status: refined
+    github_issue: 298
+    artefact: .gaai/project/contexts/artefacts/stories/GH298.story.md
+    dependencies: []
+    created_at: 2026-04-20
+
+  - id: GH297
+    title: "Workout Tracker: Planning – templates, copy-last, weekly schedule, % sets"
+    priority: medium
+    status: refined
+    github_issue: 297
+    artefact: .gaai/project/contexts/artefacts/stories/GH297.story.md
+    dependencies: []
+    created_at: 2026-04-20
+
+  - id: GH296
+    title: "Workout Tracker: Supersets, circuits, and training protocols"
+    priority: medium
+    status: refined
+    github_issue: 296
+    artefact: .gaai/project/contexts/artefacts/stories/GH296.story.md
+    dependencies: []
+    created_at: 2026-04-20
+
+  - id: GH295
+    title: "Workout Tracker: In-gym ergonomic logging (quick wins)"
+    priority: medium
+    status: refined
+    github_issue: 295
+    artefact: .gaai/project/contexts/artefacts/stories/GH295.story.md
+    dependencies: []
+    created_at: 2026-04-20
