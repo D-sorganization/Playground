@@ -25,9 +25,7 @@ def _copy_sets_as_planned(
         planned_weight = (
             s.planned_weight if s.planned_weight is not None else s.actual_weight
         )
-        planned_reps = (
-            s.planned_reps if s.planned_reps is not None else s.actual_reps
-        )
+        planned_reps = s.planned_reps if s.planned_reps is not None else s.actual_reps
         repo.add_set(
             WorkoutSet(
                 workout_id=target_workout_id,
@@ -165,8 +163,7 @@ def copy_last_weekday_session(
     candidates = [
         w
         for w in all_workouts
-        if date_t.fromisoformat(w.date).weekday() == weekday
-        and w.date < target_date
+        if date_t.fromisoformat(w.date).weekday() == weekday and w.date < target_date
     ]
     if not candidates:
         return None

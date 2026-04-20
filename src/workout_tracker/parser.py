@@ -206,8 +206,12 @@ def _try_parse_set_line(line: str) -> list[ParsedSet] | None:
         rpe = float(m["rpe"]) if m["rpe"] else None
         return [
             ParsedSet(
-                reps=reps, weight=bw_added, rpe=rpe,
-                unit="lbs", is_bodyweight=True, protocol=protocol,
+                reps=reps,
+                weight=bw_added,
+                rpe=rpe,
+                unit="lbs",
+                is_bodyweight=True,
+                protocol=protocol,
             )
             for _ in range(n_sets)
         ]
@@ -254,8 +258,12 @@ def _try_parse_full_line(line: str) -> ParsedEntry | None:
             rpe = float(m["rpe"]) if m["rpe"] else None
             sets = [
                 ParsedSet(
-                    reps=reps, weight=bw_added, rpe=rpe,
-                    unit="lbs", is_bodyweight=True, protocol=protocol,
+                    reps=reps,
+                    weight=bw_added,
+                    rpe=rpe,
+                    unit="lbs",
+                    is_bodyweight=True,
+                    protocol=protocol,
                 )
                 for _ in range(n_sets)
             ]
@@ -276,15 +284,21 @@ def _try_parse_full_line(line: str) -> ParsedEntry | None:
     if weight is not None:
         # "N sets x M reps @ W"
         sets = [
-            ParsedSet(reps=n_second, weight=weight, rpe=rpe, unit=unit,
-                      protocol=protocol)
+            ParsedSet(
+                reps=n_second, weight=weight, rpe=rpe, unit=unit, protocol=protocol
+            )
             for _ in range(n_first)
         ]
     elif n_first > _WEIGHT_VS_SETS_THRESHOLD:
         # "Bench Press 135x5" - single set, weight x reps
         sets = [
-            ParsedSet(reps=n_second, weight=float(n_first), rpe=rpe, unit=unit,
-                      protocol=protocol)
+            ParsedSet(
+                reps=n_second,
+                weight=float(n_first),
+                rpe=rpe,
+                unit=unit,
+                protocol=protocol,
+            )
         ]
     else:
         # "Pull-ups 3x8" - N sets x M reps bodyweight

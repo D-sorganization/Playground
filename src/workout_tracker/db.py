@@ -303,8 +303,7 @@ class WorkoutRepository:
             params.append(date_to)
         if min_weight is not None:
             conditions.append(
-                "w.id IN (SELECT s.workout_id FROM sets s "
-                "WHERE s.actual_weight >= ?)"
+                "w.id IN (SELECT s.workout_id FROM sets s WHERE s.actual_weight >= ?)"
             )
             params.append(min_weight)
         if status is not None:
