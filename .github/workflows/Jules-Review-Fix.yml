@@ -56,7 +56,7 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.ref }}
       - uses: actions/setup-node@v6
-        with: { node-version: "20" }
+        with: { node-version: "22" }
       - run: npm install -g @google/jules
 
       - name: Compile Feedback
