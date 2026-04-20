@@ -249,7 +249,7 @@ class TestWorkoutSearchRoute:
         assert r.status_code == 400
 
     def test_search_route_before_workout_id_route(self, client) -> None:
-        # This verifies /api/workouts/search is not mistaken for /api/workouts/<int:w_id>
+        # Verifies /api/workouts/search is not mistaken for /api/workouts/<int:w_id>
         # with w_id="search" — Flask should route it correctly
         r = client.get("/api/workouts/search")
         assert r.status_code == 200
@@ -288,7 +288,7 @@ class TestAdvancedStatsRoutes:
     """GH298 — advanced stats endpoints."""
 
     def _setup_workout(self, client):
-        """Helper: create a workout with 3 executed sets and return workout id + exercise id."""
+        """Create a workout with 3 executed sets and return workout id + exercise id."""
         r = client.post(
             "/api/workouts",
             json={"date": "2024-05-03", "status": "in_progress"},
