@@ -7,6 +7,7 @@ smoke-tested manually against a dev server.
 All checks run inside a single Node process to keep runtime tight on slow
 sandboxes — the Node cold-start is ~1s which would otherwise dominate.
 """
+
 from __future__ import annotations
 
 import json
@@ -19,7 +20,10 @@ import pytest
 
 LIB = (
     Path(__file__).resolve().parents[1]
-    / "src" / "workout_tracker" / "static" / "lib.js"
+    / "src"
+    / "workout_tracker"
+    / "static"
+    / "lib.js"
 )
 
 # Each item is (name, JS expression). We pack them all into one node invocation
@@ -165,31 +169,46 @@ def test_step_snap(results: dict[str, Any]) -> None:
 
 def test_voice_bench(results: dict[str, Any]) -> None:
     assert results["voice_bench_5_by_135"] == {
-        "exercise": "Bench", "reps": 5, "weight": 135, "unit": None,
+        "exercise": "Bench",
+        "reps": 5,
+        "weight": 135,
+        "unit": None,
     }
 
 
 def test_voice_words(results: dict[str, Any]) -> None:
     assert results["voice_squat_words"] == {
-        "exercise": "Squat", "reps": 5, "weight": 225, "unit": None,
+        "exercise": "Squat",
+        "reps": 5,
+        "weight": 225,
+        "unit": None,
     }
 
 
 def test_voice_3x405(results: dict[str, Any]) -> None:
     assert results["voice_deadlift_3x405"] == {
-        "exercise": "Deadlift", "reps": 3, "weight": 405, "unit": None,
+        "exercise": "Deadlift",
+        "reps": 3,
+        "weight": 405,
+        "unit": None,
     }
 
 
 def test_voice_multiword(results: dict[str, Any]) -> None:
     assert results["voice_overhead_reps_at"] == {
-        "exercise": "Overhead Press", "reps": 8, "weight": 95, "unit": "lbs",
+        "exercise": "Overhead Press",
+        "reps": 8,
+        "weight": 95,
+        "unit": "lbs",
     }
 
 
 def test_voice_kg(results: dict[str, Any]) -> None:
     assert results["voice_front_squat_kg"] == {
-        "exercise": "Front Squat", "reps": 5, "weight": 100, "unit": "kg",
+        "exercise": "Front Squat",
+        "reps": 5,
+        "weight": 100,
+        "unit": "kg",
     }
 
 

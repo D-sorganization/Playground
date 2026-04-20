@@ -390,9 +390,7 @@ class TestExerciseLastSession:
             },
         )
 
-        r = client.get(
-            f"/api/exercises/last_session?q=Squat&exclude={active['id']}"
-        )
+        r = client.get(f"/api/exercises/last_session?q=Squat&exclude={active['id']}")
         assert r.status_code == 200
         assert r.json["date"] == "2024-05-01"
         assert [s["weight"] for s in r.json["sets"]] == [225]

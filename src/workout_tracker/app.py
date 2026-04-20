@@ -145,9 +145,7 @@ def register_routes(app: _FlaskApp) -> None:
                 continue
             by_workout.setdefault(s.workout_id, []).append(s)
         if not by_workout:
-            return jsonify(
-                {"date": None, "exercise_name": ex.name, "sets": []}
-            )
+            return jsonify({"date": None, "exercise_name": ex.name, "sets": []})
         # Pick the workout whose sets are most recent by workout date.
         workouts = {w.id: w for w in repo.list_workouts(limit=500)}
         best_wid = max(
