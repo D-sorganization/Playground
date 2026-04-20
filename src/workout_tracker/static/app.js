@@ -123,6 +123,7 @@
         return showEmpty();
       }
       state.activeWorkoutId = w.id;
+      _lastActive = w;
       renderActive(w);
     } catch {
       localStorage.removeItem("active_workout_id");
@@ -139,6 +140,7 @@
   async function refreshActiveWorkout() {
     if (!state.activeWorkoutId) return;
     const w = await api.get(`/api/workouts/${state.activeWorkoutId}`);
+    _lastActive = w;
     renderActive(w);
   }
 
@@ -659,6 +661,50 @@
     return el("div", { class: "item" }, [meta, actions]);
   }
 
+  // ---------- Repeat last set (#295) ----------
+
+  // Cache of the most recent active-workout payload, so Repeat Last Set
+  // can read `sets` without a round-trip.
+  let _lastActive = null;
+
+  function pickLastSet(workout, exerciseName) {
+    if (!workout || !workout.sets || !workout.sets.length) return null;
+    const sets = workout.sets;
+    if (exerciseName) {
+      const needle = exerciseName.trim().toLowerCase();
+      for (let i = sets.length - 1; i >= 0; i--) {
+        const s = sets[i];
+        if ((s.exercise_name || "").toLowerCase() === needle) return s;
+      }
+    }
+    // Fallback: most recent set in the workout, regardless of exercise.
+    return sets[sets.length - 1];
+  }
+
+  async function repeatLastSet() {
+    const wid = state.activeWorkoutId;
+    if (!wid) return toast("Start a workout first", "danger");
+    const workout = _lastActive || (await api.get(`/api/workouts/${wid}`));
+    _lastActive = workout;
+    const nameHint = $("#ex-input").value.trim();
+    const last = pickLastSet(workout, nameHint);
+    if (!last) return toast("No previous set to repeat", "danger");
+    const body = {
+      exercise_name: last.exercise_name,
+      unit: last.unit || "lbs",
+      executed: true,
+      actual_reps: last.actual_reps ?? last.planned_reps ?? null,
+      actual_weight: last.actual_weight ?? last.planned_weight ?? null,
+      rpe: last.rpe ?? null,
+    };
+    await api.post(`/api/workouts/${wid}/sets`, body);
+    toast(
+      `Repeated ${body.exercise_name}: ${body.actual_reps ?? "?"}` +
+        (body.actual_weight != null ? ` × ${body.actual_weight}${body.unit}` : ""),
+    );
+    refreshActiveWorkout();
+  }
+
   // ---------- Quick weight ± steppers (#295) ----------
 
   function bindWeightSteppers() {
@@ -769,6 +815,7 @@
   function bindButtons() {
     $("#start-workout").addEventListener("click", startWorkout);
     $("#add-set").addEventListener("click", () => addSet(true));
+    $("#repeat-set").addEventListener("click", repeatLastSet);
     $("#add-planned").addEventListener("click", () => addSet(false));
     $("#finish-workout").addEventListener("click", finishWorkout);
     $("#preview-plan").addEventListener("click", previewPlan);
