@@ -13,6 +13,7 @@ from typing import Any
 
 VALID_STATUSES = ("planned", "in_progress", "completed")
 VALID_UNITS = ("lbs", "kg")
+VALID_PROTOCOLS = ("amrap", "emom", "drop_set", "failure", "partials")
 
 _NORMALIZE_RE = re.compile(r"[^a-z0-9]+")
 
@@ -81,6 +82,9 @@ class WorkoutSet:
     notes: str | None = None
     completed_at: str | None = None
     exercise_name: str | None = None  # joined for display, not persisted
+    group_id: str | None = None
+    protocol: str | None = None
+    is_bodyweight: bool = False
 
     def __post_init__(self) -> None:
         if self.unit not in VALID_UNITS:
@@ -95,10 +99,13 @@ class WorkoutSet:
             v = getattr(self, field_name)
             if v is not None and v < 0:
                 raise ValueError(f"{field_name} must be >= 0")
+        if self.protocol is not None and self.protocol not in VALID_PROTOCOLS:
+            raise ValueError(f"protocol must be one of {VALID_PROTOCOLS}")
 
     def to_dict(self) -> dict[str, Any]:
         d = asdict(self)
         d["executed"] = bool(self.executed)
+        d["is_bodyweight"] = bool(self.is_bodyweight)
         return d
 
 

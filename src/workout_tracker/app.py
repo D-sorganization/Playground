@@ -288,6 +288,9 @@ def register_routes(app: _FlaskApp) -> None:
                 unit=data.get("unit", "lbs"),
                 executed=bool(data.get("executed", False)),
                 notes=data.get("notes"),
+                group_id=data.get("group_id") or None,
+                protocol=data.get("protocol") or None,
+                is_bodyweight=bool(data.get("is_bodyweight", False)),
             )
         except ValueError as e:
             abort(400, str(e))
@@ -328,6 +331,8 @@ def register_routes(app: _FlaskApp) -> None:
                             "weight": s.weight,
                             "rpe": s.rpe,
                             "unit": s.unit,
+                            "is_bodyweight": s.is_bodyweight,
+                            "protocol": s.protocol,
                         }
                         for s in e.sets
                     ],
@@ -359,6 +364,8 @@ def register_routes(app: _FlaskApp) -> None:
                     rpe=ps.rpe,
                     unit=ps.unit,
                     executed=executed,
+                    is_bodyweight=ps.is_bodyweight,
+                    protocol=ps.protocol,
                 )
                 created.append(repo.add_set(s).to_dict())
         return jsonify(created), 201

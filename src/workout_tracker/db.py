@@ -24,6 +24,8 @@ from workout_tracker.models import (
     normalize_name,
 )
 
+_NEW_SET_COLUMNS = ("group_id", "protocol", "is_bodyweight")
+
 logger = logging.getLogger(__name__)
 
 
@@ -43,7 +45,24 @@ def init_db(conn: sqlite3.Connection) -> None:
     """Create tables if missing. Idempotent."""
     schema = resources.files("workout_tracker").joinpath("schema.sql").read_text()
     conn.executescript(schema)
+    _migrate(conn)
     conn.commit()
+
+
+def _migrate(conn: sqlite3.Connection) -> None:
+    """Add columns introduced after initial schema deploy. SQLite-safe."""
+    existing = {r[1] for r in conn.execute("PRAGMA table_info(sets)").fetchall()}
+    migrations = [
+        ("group_id", "ALTER TABLE sets ADD COLUMN group_id TEXT"),
+        ("protocol", "ALTER TABLE sets ADD COLUMN protocol TEXT"),
+        (
+            "is_bodyweight",
+            "ALTER TABLE sets ADD COLUMN is_bodyweight INTEGER NOT NULL DEFAULT 0",
+        ),
+    ]
+    for col, sql in migrations:
+        if col not in existing:
+            conn.execute(sql)
 
 
 class WorkoutRepository:
@@ -322,8 +341,9 @@ class WorkoutRepository:
             cur.execute(
                 "INSERT INTO sets (workout_id, exercise_id, position, "
                 "planned_reps, planned_weight, actual_reps, actual_weight, "
-                "rpe, unit, executed, notes, completed_at) "
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                "rpe, unit, executed, notes, completed_at, "
+                "group_id, protocol, is_bodyweight) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 (
                     s.workout_id,
                     s.exercise_id,
@@ -337,6 +357,9 @@ class WorkoutRepository:
                     int(bool(s.executed)),
                     s.notes,
                     s.completed_at,
+                    s.group_id,
+                    s.protocol,
+                    int(bool(s.is_bodyweight)),
                 ),
             )
             set_id = cur.lastrowid
@@ -368,6 +391,9 @@ class WorkoutRepository:
             "completed_at",
             "position",
             "exercise_id",
+            "group_id",
+            "protocol",
+            "is_bodyweight",
         }
         unknown = set(fields) - allowed
         if unknown:
@@ -460,6 +486,7 @@ class WorkoutRepository:
 
     @staticmethod
     def _row_to_set(row: sqlite3.Row) -> WorkoutSet:
+        keys = row.keys()
         return WorkoutSet(
             id=row["id"],
             workout_id=row["workout_id"],
@@ -474,7 +501,10 @@ class WorkoutRepository:
             executed=bool(row["executed"]),
             notes=row["notes"],
             completed_at=row["completed_at"],
-            exercise_name=row["exercise_name"]
-            if "exercise_name" in row.keys()
-            else None,
+            exercise_name=row["exercise_name"] if "exercise_name" in keys else None,
+            group_id=row["group_id"] if "group_id" in keys else None,
+            protocol=row["protocol"] if "protocol" in keys else None,
+            is_bodyweight=(
+                bool(row["is_bodyweight"]) if "is_bodyweight" in keys else False
+            ),
         )

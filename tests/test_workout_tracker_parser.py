@@ -94,3 +94,83 @@ class TestEmptyInput:
     def test_empty_returns_empty(self) -> None:
         assert parse_notes("") == []
         assert parse_notes("   \n\n  ") == []
+
+
+class TestBodyweightPlusAdded:
+    def test_bw_x_reps_set_line(self) -> None:
+        entries = parse_notes("Pull-ups\nBW+25x5")
+        s = entries[0].sets[0]
+        assert s.is_bodyweight is True
+        assert s.weight == 25.0
+        assert s.reps == 5
+
+    def test_bw_no_added_x_reps(self) -> None:
+        entries = parse_notes("Dips\nBWx10")
+        s = entries[0].sets[0]
+        assert s.is_bodyweight is True
+        assert s.weight is None
+        assert s.reps == 10
+
+    def test_reps_at_bw_added(self) -> None:
+        entries = parse_notes("Pull-ups\n8 @ BW+45")
+        s = entries[0].sets[0]
+        assert s.is_bodyweight is True
+        assert s.weight == 45.0
+        assert s.reps == 8
+
+    def test_full_line_sets_x_reps_at_bw(self) -> None:
+        entries = parse_notes("Weighted Pull-ups 3x5 @ BW+25")
+        assert len(entries) == 1
+        assert entries[0].exercise_name == "Weighted Pull-ups"
+        sets = entries[0].sets
+        assert len(sets) == 3
+        for s in sets:
+            assert s.is_bodyweight is True
+            assert s.weight == 25.0
+            assert s.reps == 5
+
+    def test_full_line_sets_x_reps_at_bw_no_added(self) -> None:
+        entries = parse_notes("Dips 3x12 @ BW")
+        sets = entries[0].sets
+        assert all(s.is_bodyweight for s in sets)
+        assert all(s.weight is None for s in sets)
+
+    def test_bw_with_rpe(self) -> None:
+        entries = parse_notes("Pull-ups\nBW+25x5 RPE 8")
+        s = entries[0].sets[0]
+        assert s.is_bodyweight is True
+        assert s.rpe == 8.0
+
+    def test_regular_sets_not_bodyweight(self) -> None:
+        entries = parse_notes("Bench Press 3x5 @ 135")
+        for s in entries[0].sets:
+            assert s.is_bodyweight is False
+
+
+class TestProtocolParsing:
+    def test_amrap_suffix(self) -> None:
+        entries = parse_notes("Bench Press 1x20 @ 135 AMRAP")
+        s = entries[0].sets[0]
+        assert s.protocol == "amrap"
+
+    def test_emom_suffix(self) -> None:
+        entries = parse_notes("Squat 5x3 @ 225 EMOM")
+        for s in entries[0].sets:
+            assert s.protocol == "emom"
+
+    def test_drop_set_suffix(self) -> None:
+        entries = parse_notes("Bench Press 1x10 @ 135 DROP SET")
+        assert entries[0].sets[0].protocol == "drop_set"
+
+    def test_failure_suffix(self) -> None:
+        entries = parse_notes("Pull-ups\n3x10 FAILURE")
+        assert entries[0].sets[0].protocol == "failure"
+
+    def test_partials_suffix(self) -> None:
+        entries = parse_notes("Squat\n225x5 PARTIALS")
+        assert entries[0].sets[0].protocol == "partials"
+
+    def test_no_protocol_is_none(self) -> None:
+        entries = parse_notes("Bench Press 3x5 @ 135")
+        for s in entries[0].sets:
+            assert s.protocol is None

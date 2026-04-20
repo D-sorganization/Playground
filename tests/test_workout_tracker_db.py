@@ -316,3 +316,81 @@ class TestSearchWorkouts:
             repo.create_workout(date=f"2024-01-{i + 1:02d}", status="planned")
         results = repo.search_workouts()
         assert len(results) == 5
+
+
+class TestNewSetFields:
+    def test_add_set_with_group_and_protocol(self, repo: WorkoutRepository) -> None:
+        ex = repo.get_or_create_exercise("Bench Press")
+        w = repo.create_workout(date="2024-06-01", status="in_progress")
+        s = repo.add_set(
+            WorkoutSet(
+                workout_id=w.id or 0,
+                exercise_id=ex.id or 0,
+                position=0,
+                actual_reps=10,
+                actual_weight=135,
+                executed=True,
+                group_id="A1",
+                protocol="amrap",
+            )
+        )
+        assert s.group_id == "A1"
+        assert s.protocol == "amrap"
+        assert s.is_bodyweight is False
+
+    def test_add_bodyweight_set(self, repo: WorkoutRepository) -> None:
+        ex = repo.get_or_create_exercise("Pull-ups")
+        w = repo.create_workout(date="2024-06-01", status="in_progress")
+        s = repo.add_set(
+            WorkoutSet(
+                workout_id=w.id or 0,
+                exercise_id=ex.id or 0,
+                position=0,
+                actual_reps=8,
+                actual_weight=25,
+                executed=True,
+                is_bodyweight=True,
+            )
+        )
+        assert s.is_bodyweight is True
+        assert s.actual_weight == 25.0
+
+    def test_update_set_group_and_protocol(self, repo: WorkoutRepository) -> None:
+        ex = repo.get_or_create_exercise("Squat")
+        w = repo.create_workout(date="2024-06-01", status="in_progress")
+        s = repo.add_set(
+            WorkoutSet(workout_id=w.id or 0, exercise_id=ex.id or 0, position=0)
+        )
+        after = repo.update_set(s.id or 0, group_id="B2", protocol="emom")
+        assert after.group_id == "B2"
+        assert after.protocol == "emom"
+
+    def test_update_set_is_bodyweight(self, repo: WorkoutRepository) -> None:
+        ex = repo.get_or_create_exercise("Dips")
+        w = repo.create_workout(date="2024-06-01", status="in_progress")
+        s = repo.add_set(
+            WorkoutSet(workout_id=w.id or 0, exercise_id=ex.id or 0, position=0)
+        )
+        after = repo.update_set(s.id or 0, is_bodyweight=True, actual_weight=45)
+        assert after.is_bodyweight is True
+
+    def test_fields_persisted_across_get_workout(self, repo: WorkoutRepository) -> None:
+        ex = repo.get_or_create_exercise("Pull-ups")
+        w = repo.create_workout(date="2024-06-01", status="in_progress")
+        repo.add_set(
+            WorkoutSet(
+                workout_id=w.id or 0,
+                exercise_id=ex.id or 0,
+                position=0,
+                actual_reps=10,
+                is_bodyweight=True,
+                group_id="A1",
+                protocol="failure",
+                executed=True,
+            )
+        )
+        fetched = repo.get_workout(w.id or 0)
+        s = fetched.sets[0]
+        assert s.is_bodyweight is True
+        assert s.group_id == "A1"
+        assert s.protocol == "failure"
