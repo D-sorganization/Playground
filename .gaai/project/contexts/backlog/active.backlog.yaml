@@ -10,7 +10,8 @@ items:
   - id: GH306
     title: "Review deep object traversal hotspots"
     priority: medium
-    status: refined
+    status: in_progress
+    started_at: "2026-04-20T10:01:01Z"
     github_issue: 306
     artefact: .gaai/project/contexts/artefacts/stories/GH306.story.md
     dependencies: []
