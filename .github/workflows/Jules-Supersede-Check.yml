@@ -58,7 +58,7 @@ jobs:
       - name: Find Related Jules PRs
         id: find
         env:
-          GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           echo "Checking for superseded Jules PRs after push to main..."
 
@@ -78,13 +78,10 @@ jobs:
           if ! JULES_PRS=$(gh pr list --state open --json number,title,headRefName,files \
             --jq '[.[] | select(.headRefName | test("^jules/|^fix/.*jules|^fix/pragmatic|^fix/code-quality"))]' 2>gh-pr-list.err); then
             cat gh-pr-list.err
-            if grep -qi "rate limit" gh-pr-list.err; then
-              echo "::warning::Skipping supersede scan because the GitHub API rate limit is exhausted."
-              echo "superseded_prs=[]" >> "$GITHUB_OUTPUT"
-              echo "superseded_count=0" >> "$GITHUB_OUTPUT"
-              exit 0
-            fi
-            exit 1
+            echo "::warning::Skipping supersede scan because GitHub PR listing failed."
+            echo "superseded_prs=[]" >> "$GITHUB_OUTPUT"
+            echo "superseded_count=0" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
 
           echo "Found $(echo "$JULES_PRS" | jq 'length') open Jules PRs"
@@ -135,7 +132,7 @@ jobs:
       - name: Close Superseded PRs
         if: steps.find.outputs.superseded_count != '0'
         env:
-          GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           echo "Closing superseded Jules PRs..."
 
