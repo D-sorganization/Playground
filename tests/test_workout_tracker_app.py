@@ -367,7 +367,7 @@ class TestAdvancedStatsRoutes:
     """GH298 — advanced stats endpoints."""
 
     def _setup_workout(self, client):
-        """Create a workout with 3 executed sets and return workout id + exercise id."""
+        """Helper: create a workout with 3 sets; return workout id + exercise id."""
         r = client.post(
             "/api/workouts",
             json={"date": "2024-05-03", "status": "in_progress"},
