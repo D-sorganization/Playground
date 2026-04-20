@@ -41,8 +41,31 @@
             </button>
           </div>
           <div id="active-workout" class="hidden">
+            <div class="timers" aria-live="polite">
+              <div class="timer">
+                <span class="lbl">Session</span>
+                <span id="session-timer" class="val">00:00</span>
+              </div>
+              <div class="timer rest">
+                <span class="lbl">Rest</span>
+                <span id="rest-timer" class="val">—</span>
+                <button id="rest-reset" class="btn icon" title="Reset rest timer">↺</button>
+              </div>
+            </div>
             <div class="quick-add card-inset">
               <label for="ex-input" class="lbl">Add set</label>
+              <div id="recall-strip" class="recall-strip hidden" aria-live="polite"></div>
+              <div class="row gap">
+                <button
+                  id="voice-btn"
+                  type="button"
+                  class="btn hidden"
+                  aria-pressed="false"
+                  title="Voice entry (e.g. &quot;bench 5 by 135&quot;)"
+                >
+                  🎙 <span id="voice-label">Voice</span>
+                </button>
+              </div>
               <div class="ac-wrap">
                 <input
                   id="ex-input"
@@ -68,6 +91,15 @@
                   min="0"
                   placeholder="weight"
                 />
+                <button
+                  id="plate-open"
+                  type="button"
+                  class="btn icon"
+                  aria-label="Plate calculator"
+                  title="Plate calculator"
+                >
+                  🧮
+                </button>
                 <select id="unit-input">
                   <option value="lbs">lbs</option>
                   <option value="kg">kg</option>
@@ -82,8 +114,18 @@
                   placeholder="rpe"
                 />
               </div>
+              <div class="row gap weight-steps" aria-label="Quick weight adjust">
+                <button type="button" class="btn icon step" data-step="-5">−5</button>
+                <button type="button" class="btn icon step" data-step="-2.5">−2.5</button>
+                <button type="button" class="btn icon step" data-step="2.5">+2.5</button>
+                <button type="button" class="btn icon step" data-step="5">+5</button>
+                <button type="button" class="btn icon step" data-step="10">+10</button>
+              </div>
               <div class="row gap">
                 <button id="add-set" class="btn primary grow">+ Log Set</button>
+                <button id="repeat-set" class="btn" title="Repeat last set">
+                  ↻ Repeat
+                </button>
                 <button id="add-planned" class="btn">+ Plan Set</button>
               </div>
             </div>
@@ -179,6 +221,35 @@
 
     <div id="toast" class="toast hidden"></div>
 
+    <!-- Plate calculator modal (#295) -->
+    <div id="plate-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="plate-modal-title">
+      <div class="modal-card">
+        <div class="row between">
+          <h2 id="plate-modal-title">Plate Calculator</h2>
+          <button id="plate-close" class="btn icon" aria-label="Close">✕</button>
+        </div>
+        <div class="row gap">
+          <label class="grow">
+            <span class="lbl">Target weight</span>
+            <input id="plate-target" type="number" inputmode="decimal" step="any" min="0" placeholder="225" />
+          </label>
+          <label>
+            <span class="lbl">Bar</span>
+            <input id="plate-bar" type="number" inputmode="decimal" step="any" min="0" value="45" />
+          </label>
+          <label>
+            <span class="lbl">Unit</span>
+            <select id="plate-unit">
+              <option value="lbs">lbs</option>
+              <option value="kg">kg</option>
+            </select>
+          </label>
+        </div>
+        <div id="plate-result" class="plate-result"></div>
+      </div>
+    </div>
+
+    <script src="/static/lib.js" defer></script>
     <script src="/static/app.js" defer></script>
   </body>
 </html>

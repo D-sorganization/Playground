@@ -108,6 +108,67 @@ def register_routes(app: _FlaskApp) -> None:
         results = autocomplete.suggest(q, catalog, limit=limit)
         return jsonify([e.to_dict() for e in results])
 
+    @app.get("/api/exercises/last_session")
+    def exercise_last_session() -> Any:
+        """Return the most recent previous session's executed sets for an
+        exercise, keyed by either `q` (name) or `id`. Excludes the workout
+        with id `exclude` so the currently-active workout isn't returned as
+        its own "last session".
+
+        Response: `{date, exercise_name, sets: [{reps, weight, unit, rpe}]}`
+        or `{date: null, sets: []}` when no prior session exists.
+        """
+        repo: WorkoutRepository = g.repo
+        q = (request.args.get("q") or "").strip()
+        ex_id_str = request.args.get("id")
+        exclude_raw = request.args.get("exclude")
+        exclude_id = int(exclude_raw) if exclude_raw and exclude_raw.isdigit() else None
+
+        ex = None
+        if ex_id_str and ex_id_str.isdigit():
+            ex_id = int(ex_id_str)
+            ex = next((e for e in repo.list_exercises() if e.id == ex_id), None)
+        elif q:
+            norm = q.lower()
+            for e in repo.list_exercises():
+                if e.name.lower() == norm:
+                    ex = e
+                    break
+        if ex is None or ex.id is None:
+            return jsonify({"date": None, "exercise_name": q, "sets": []})
+
+        sets_for = repo.list_sets_for_exercise(ex.id, executed_only=True)
+        # Group by workout and pick the most recent that isn't `exclude_id`.
+        by_workout: dict[int, list[Any]] = {}
+        for s in sets_for:
+            if exclude_id is not None and s.workout_id == exclude_id:
+                continue
+            by_workout.setdefault(s.workout_id, []).append(s)
+        if not by_workout:
+            return jsonify({"date": None, "exercise_name": ex.name, "sets": []})
+        # Pick the workout whose sets are most recent by workout date.
+        workouts = {w.id: w for w in repo.list_workouts(limit=500)}
+        best_wid = max(
+            by_workout.keys(),
+            key=lambda wid: workouts[wid].date if wid in workouts else "",
+        )
+        last_sets = by_workout[best_wid]
+        return jsonify(
+            {
+                "date": workouts[best_wid].date if best_wid in workouts else None,
+                "exercise_name": ex.name,
+                "sets": [
+                    {
+                        "reps": s.actual_reps,
+                        "weight": s.actual_weight,
+                        "unit": s.unit,
+                        "rpe": s.rpe,
+                    }
+                    for s in last_sets
+                ],
+            }
+        )
+
     @app.post("/api/exercises")
     def create_exercise() -> Any:
         repo: WorkoutRepository = g.repo
