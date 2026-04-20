@@ -75,7 +75,8 @@ items:
   - id: GH298
     title: "Workout Tracker: Advanced stats – charts, heatmap, streaks, ratios"
     priority: medium
-    status: refined
+    status: in_progress
+    started_at: "2026-04-20T11:13:28Z"
     github_issue: 298
     artefact: .gaai/project/contexts/artefacts/stories/GH298.story.md
     dependencies: []
