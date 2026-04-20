@@ -123,6 +123,7 @@
         return showEmpty();
       }
       state.activeWorkoutId = w.id;
+      _lastActive = w;
       renderActive(w);
     } catch {
       localStorage.removeItem("active_workout_id");
@@ -134,11 +135,14 @@
     $("#active-empty").classList.remove("hidden");
     $("#active-workout").classList.add("hidden");
     $("#today-date").textContent = new Date().toLocaleDateString();
+    stopTimers();
+    releaseWakeLock();
   }
 
   async function refreshActiveWorkout() {
     if (!state.activeWorkoutId) return;
     const w = await api.get(`/api/workouts/${state.activeWorkoutId}`);
+    _lastActive = w;
     renderActive(w);
   }
 
@@ -147,6 +151,8 @@
     $("#active-workout").classList.remove("hidden");
     $("#today-date").textContent = w.date;
     $("#today-title").textContent = w.title || "Today's Workout";
+    startTimers();
+    acquireWakeLock();
 
     const list = $("#set-list");
     list.innerHTML = "";
@@ -187,6 +193,7 @@
                 actual_reps: s.actual_reps ?? s.planned_reps,
                 actual_weight: s.actual_weight ?? s.planned_weight,
               });
+              startRestTimer();
               refreshActiveWorkout();
             },
           },
@@ -283,6 +290,7 @@
   function pickSuggestion(name) {
     $("#ex-input").value = name;
     $("#ex-suggest").classList.add("hidden");
+    scheduleRecall();
     $("#reps-input").focus();
   }
 
@@ -293,6 +301,7 @@
     input.addEventListener("input", () => {
       clearTimeout(lastTimer);
       lastTimer = setTimeout(() => refreshSuggestions(input.value), 80);
+      scheduleRecall();
     });
     input.addEventListener("focus", () => refreshSuggestions(input.value));
     input.addEventListener("blur", () =>
@@ -358,6 +367,8 @@
     await api.post(`/api/workouts/${wid}/sets`, body);
     $("#reps-input").value = "";
     // Keep weight + exercise to make repeated sets fast
+    if (executed) startRestTimer();
+    invalidateRecallFor(name);
     toast(executed ? "Set logged ✓" : "Set planned");
     refreshActiveWorkout();
   }
@@ -370,6 +381,7 @@
     });
     localStorage.removeItem("active_workout_id");
     state.activeWorkoutId = null;
+    stopTimers();
     showEmpty();
     toast("Workout saved ✓");
   }
@@ -659,6 +671,464 @@
     return el("div", { class: "item" }, [meta, actions]);
   }
 
+  // ---------- Voice input (#295) ----------
+  // Progressive enhancement: the button stays hidden on browsers without
+  // webkitSpeechRecognition / SpeechRecognition. On supported browsers,
+  // a tap starts a single-utterance listen; transcript is parsed by
+  // WorkoutLib.parseVoiceCommand and used to populate the set form
+  // (and submit immediately if fully specified).
+  const voice = { rec: null, active: false };
+
+  function getSpeechRecognition() {
+    return (
+      window.SpeechRecognition ||
+      window.webkitSpeechRecognition ||
+      null
+    );
+  }
+
+  function bindVoiceInput() {
+    const btn = $("#voice-btn");
+    if (!btn) return;
+    const Ctor = getSpeechRecognition();
+    if (!Ctor) {
+      // Leave button hidden; feature unavailable.
+      return;
+    }
+    btn.classList.remove("hidden");
+    btn.addEventListener("click", () => {
+      if (voice.active) {
+        stopListening();
+      } else {
+        startListening(Ctor);
+      }
+    });
+  }
+
+  function startListening(Ctor) {
+    const btn = $("#voice-btn");
+    const label = $("#voice-label");
+    try {
+      const rec = new Ctor();
+      rec.lang = navigator.language || "en-US";
+      rec.interimResults = false;
+      rec.maxAlternatives = 3;
+      rec.continuous = false;
+      rec.onstart = () => {
+        voice.active = true;
+        btn.setAttribute("aria-pressed", "true");
+        if (label) label.textContent = "Listening…";
+      };
+      rec.onerror = (e) => {
+        toast(`Voice error: ${e.error || "unknown"}`, "danger");
+      };
+      rec.onend = () => {
+        voice.active = false;
+        voice.rec = null;
+        btn.setAttribute("aria-pressed", "false");
+        if (label) label.textContent = "Voice";
+      };
+      rec.onresult = (e) => {
+        const lib = window.WorkoutLib;
+        let parsed = null;
+        let transcript = "";
+        const alts = e.results[0] || [];
+        for (let i = 0; i < alts.length; i++) {
+          transcript = alts[i].transcript;
+          if (!lib) break;
+          parsed = lib.parseVoiceCommand(transcript);
+          if (parsed) break;
+        }
+        if (!parsed) {
+          // Populate exercise field with raw transcript so user can finish by hand.
+          if (transcript) {
+            $("#ex-input").value = transcript.trim();
+            scheduleRecall();
+            toast(`Heard: "${transcript}" — finish manually`, "danger");
+          } else {
+            toast("Didn't catch that", "danger");
+          }
+          return;
+        }
+        applyVoiceResult(parsed);
+      };
+      voice.rec = rec;
+      rec.start();
+    } catch (err) {
+      toast(`Voice unavailable: ${err.message || err}`, "danger");
+    }
+  }
+
+  function stopListening() {
+    if (voice.rec) {
+      try {
+        voice.rec.stop();
+      } catch {
+        /* ignore */
+      }
+    }
+  }
+
+  function applyVoiceResult(parsed) {
+    $("#ex-input").value = parsed.exercise;
+    if (parsed.reps != null) $("#reps-input").value = String(parsed.reps);
+    if (parsed.weight != null) $("#weight-input").value = String(parsed.weight);
+    if (parsed.unit) $("#unit-input").value = parsed.unit;
+    scheduleRecall();
+    // If we got a full triple, auto-log it.
+    if (parsed.exercise && parsed.reps != null && parsed.weight != null) {
+      addSet(true);
+    }
+  }
+
+  // ---------- Last-session recall strip (#295) ----------
+
+  let _recallTimer = null;
+  const _recallCache = new Map(); // normalized-name → payload
+
+  function daysAgo(iso) {
+    if (!iso) return null;
+    const then = new Date(iso + "T00:00:00");
+    const now = new Date();
+    const midnightNow = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const diffMs = midnightNow - then;
+    return Math.max(0, Math.round(diffMs / 86400000));
+  }
+
+  function renderRecall(payload) {
+    const strip = $("#recall-strip");
+    if (!strip) return;
+    if (!payload || !payload.sets || !payload.sets.length) {
+      strip.classList.add("hidden");
+      strip.innerHTML = "";
+      return;
+    }
+    const lib = window.WorkoutLib;
+    const line = lib
+      ? lib.formatRecall(payload.sets)
+      : payload.sets
+          .map((s) => `${s.reps}×${s.weight}`)
+          .join(", ");
+    strip.innerHTML = "";
+    strip.appendChild(el("span", { class: "tag" }, "Last"));
+    strip.appendChild(el("span", { class: "name" }, payload.exercise_name));
+    strip.appendChild(document.createTextNode(line));
+    const d = daysAgo(payload.date);
+    if (d != null) {
+      strip.appendChild(
+        el("span", { class: "when" }, d === 0 ? "today" : `${d}d ago`)
+      );
+    }
+    strip.classList.remove("hidden");
+  }
+
+  async function refreshRecall() {
+    const name = $("#ex-input").value.trim();
+    const strip = $("#recall-strip");
+    if (!strip) return;
+    if (!name) {
+      strip.classList.add("hidden");
+      strip.innerHTML = "";
+      return;
+    }
+    const key = name.toLowerCase();
+    if (_recallCache.has(key)) {
+      renderRecall(_recallCache.get(key));
+      return;
+    }
+    try {
+      const params = new URLSearchParams({ q: name });
+      if (state.activeWorkoutId) {
+        params.set("exclude", String(state.activeWorkoutId));
+      }
+      const payload = await api.get(
+        `/api/exercises/last_session?${params.toString()}`,
+      );
+      _recallCache.set(key, payload);
+      // Only render if the user hasn't typed ahead.
+      if ($("#ex-input").value.trim().toLowerCase() === key) {
+        renderRecall(payload);
+      }
+    } catch {
+      strip.classList.add("hidden");
+    }
+  }
+
+  function scheduleRecall() {
+    clearTimeout(_recallTimer);
+    _recallTimer = setTimeout(refreshRecall, 200);
+  }
+
+  function invalidateRecallFor(name) {
+    if (name) _recallCache.delete(name.trim().toLowerCase());
+  }
+
+  // ---------- Screen Wake Lock (#295) ----------
+  // Progressive enhancement: no-op on browsers without navigator.wakeLock.
+  // Acquired when an active workout renders, released on finish / tab hide.
+  // Re-acquired automatically on visibilitychange (the Wake Lock API
+  // releases the sentinel when the tab is backgrounded).
+  const wake = { sentinel: null, wanted: false };
+
+  async function acquireWakeLock() {
+    wake.wanted = true;
+    if (!("wakeLock" in navigator)) return;
+    if (wake.sentinel) return;
+    try {
+      wake.sentinel = await navigator.wakeLock.request("screen");
+      wake.sentinel.addEventListener("release", () => {
+        wake.sentinel = null;
+      });
+    } catch (err) {
+      // Permission denied / not allowed — silently fall back.
+      console.debug("wakeLock.request failed:", err && err.message);
+    }
+  }
+
+  async function releaseWakeLock() {
+    wake.wanted = false;
+    if (wake.sentinel) {
+      try {
+        await wake.sentinel.release();
+      } catch {
+        /* ignore */
+      }
+      wake.sentinel = null;
+    }
+  }
+
+  function bindWakeLockLifecycle() {
+    if (!("wakeLock" in navigator)) return;
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible" && wake.wanted) {
+        acquireWakeLock();
+      }
+    });
+  }
+
+  // ---------- Timers (#295) ----------
+  // Session: counts UP from when active workout became visible.
+  // Rest: counts UP from the last ✓ executed set (or manual reset).
+  const timers = {
+    sessionStart: null, // ms
+    restStart: null,    // ms (null = idle)
+    tick: null,         // setInterval handle
+  };
+
+  function fmtMMSS(totalSec) {
+    // Prefer shared lib; fallback keeps timer UI alive if lib.js 404's.
+    if (window.WorkoutLib && window.WorkoutLib.fmtMMSS) {
+      return window.WorkoutLib.fmtMMSS(totalSec);
+    }
+    const s = Math.max(0, Math.floor(totalSec));
+    const m = Math.floor(s / 60);
+    const r = s % 60;
+    return `${String(m).padStart(2, "0")}:${String(r).padStart(2, "0")}`;
+  }
+
+  function startTimers() {
+    if (timers.sessionStart == null) timers.sessionStart = Date.now();
+    if (timers.tick == null) {
+      timers.tick = setInterval(renderTimers, 1000);
+    }
+    renderTimers();
+  }
+
+  function stopTimers() {
+    if (timers.tick != null) {
+      clearInterval(timers.tick);
+      timers.tick = null;
+    }
+    timers.sessionStart = null;
+    timers.restStart = null;
+    const s = $("#session-timer");
+    const r = $("#rest-timer");
+    if (s) s.textContent = "00:00";
+    if (r) {
+      r.textContent = "—";
+      $(".timers .timer.rest")?.classList.remove("running");
+    }
+  }
+
+  function renderTimers() {
+    const now = Date.now();
+    const sessEl = $("#session-timer");
+    const restEl = $("#rest-timer");
+    const restBox = $(".timers .timer.rest");
+    if (sessEl && timers.sessionStart != null) {
+      sessEl.textContent = fmtMMSS((now - timers.sessionStart) / 1000);
+    }
+    if (restEl) {
+      if (timers.restStart != null) {
+        restEl.textContent = fmtMMSS((now - timers.restStart) / 1000);
+        restBox?.classList.add("running");
+      } else {
+        restEl.textContent = "—";
+        restBox?.classList.remove("running");
+      }
+    }
+  }
+
+  function startRestTimer() {
+    timers.restStart = Date.now();
+    renderTimers();
+  }
+
+  function resetRestTimer() {
+    timers.restStart = null;
+    renderTimers();
+  }
+
+  // ---------- Repeat last set (#295) ----------
+
+  // Cache of the most recent active-workout payload, so Repeat Last Set
+  // can read `sets` without a round-trip.
+  let _lastActive = null;
+
+  function pickLastSet(workout, exerciseName) {
+    if (!workout || !workout.sets || !workout.sets.length) return null;
+    const sets = workout.sets;
+    if (exerciseName) {
+      const needle = exerciseName.trim().toLowerCase();
+      for (let i = sets.length - 1; i >= 0; i--) {
+        const s = sets[i];
+        if ((s.exercise_name || "").toLowerCase() === needle) return s;
+      }
+    }
+    // Fallback: most recent set in the workout, regardless of exercise.
+    return sets[sets.length - 1];
+  }
+
+  async function repeatLastSet() {
+    const wid = state.activeWorkoutId;
+    if (!wid) return toast("Start a workout first", "danger");
+    const workout = _lastActive || (await api.get(`/api/workouts/${wid}`));
+    _lastActive = workout;
+    const nameHint = $("#ex-input").value.trim();
+    const last = pickLastSet(workout, nameHint);
+    if (!last) return toast("No previous set to repeat", "danger");
+    const body = {
+      exercise_name: last.exercise_name,
+      unit: last.unit || "lbs",
+      executed: true,
+      actual_reps: last.actual_reps ?? last.planned_reps ?? null,
+      actual_weight: last.actual_weight ?? last.planned_weight ?? null,
+      rpe: last.rpe ?? null,
+    };
+    await api.post(`/api/workouts/${wid}/sets`, body);
+    startRestTimer();
+    toast(
+      `Repeated ${body.exercise_name}: ${body.actual_reps ?? "?"}` +
+        (body.actual_weight != null ? ` × ${body.actual_weight}${body.unit}` : ""),
+    );
+    refreshActiveWorkout();
+  }
+
+  // ---------- Quick weight ± steppers (#295) ----------
+
+  function bindWeightSteppers() {
+    const input = $("#weight-input");
+    if (!input) return;
+    $$(".weight-steps .step").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const lib = window.WorkoutLib;
+        const delta = Number(btn.dataset.step);
+        const current = input.value === "" ? 0 : Number(input.value);
+        const next = lib
+          ? lib.stepWeight(current, delta)
+          : Math.max(0, Math.round((current + delta) * 4) / 4);
+        input.value = String(next);
+        // Fire input event so any listeners (e.g. plate modal when open) update.
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+      });
+    });
+  }
+
+  // ---------- Plate calculator modal (#295) ----------
+
+  function openPlateModal() {
+    const modal = $("#plate-modal");
+    if (!modal) return;
+    // Seed target with the current weight-input value and unit.
+    const w = $("#weight-input").value;
+    const unit = $("#unit-input").value || "lbs";
+    $("#plate-target").value = w || "";
+    $("#plate-unit").value = unit;
+    // Default bar: 45 lbs, 20 kg. Preserve user override via localStorage.
+    const savedBar = localStorage.getItem(`plate_bar_${unit}`);
+    $("#plate-bar").value = savedBar || (unit === "kg" ? 20 : 45);
+    modal.classList.remove("hidden");
+    renderPlateResult();
+    $("#plate-target").focus();
+  }
+
+  function closePlateModal() {
+    const modal = $("#plate-modal");
+    if (modal) modal.classList.add("hidden");
+  }
+
+  function renderPlateResult() {
+    const lib = window.WorkoutLib;
+    const out = $("#plate-result");
+    if (!lib || !out) return;
+    const target = Number($("#plate-target").value);
+    const bar = Number($("#plate-bar").value);
+    const unit = $("#plate-unit").value || "lbs";
+    localStorage.setItem(`plate_bar_${unit}`, String(bar));
+    if (!target) {
+      out.innerHTML = "";
+      return;
+    }
+    const plates = unit === "kg" ? lib.DEFAULT_PLATES_KG : lib.DEFAULT_PLATES_LBS;
+    const r = lib.platesFor(target, bar, plates);
+    out.innerHTML = "";
+    out.appendChild(
+      el("div", { class: "headline" }, lib.formatPlates(r))
+    );
+    if (r.perSide && r.perSide.length) {
+      const chips = el("div", { class: "plates" });
+      for (const p of r.perSide) {
+        chips.appendChild(
+          el("span", { class: "chip" }, `${p.count} × ${p.plate}${unit}`)
+        );
+      }
+      out.appendChild(chips);
+    }
+    if (r.warning === "below_bar") {
+      out.appendChild(
+        el("div", { class: "warn" }, `Target is below bar weight (${bar}${unit}).`)
+      );
+    } else if (r.leftover && r.leftover > 0) {
+      out.appendChild(
+        el(
+          "div",
+          { class: "warn" },
+          `Short by ${r.leftover}${unit} (achievable: ${r.achievable}${unit}).`
+        )
+      );
+    }
+  }
+
+  function bindPlateModal() {
+    const btn = $("#plate-open");
+    if (!btn) return;
+    btn.addEventListener("click", openPlateModal);
+    $("#plate-close").addEventListener("click", closePlateModal);
+    $("#plate-modal").addEventListener("click", (e) => {
+      if (e.target === $("#plate-modal")) closePlateModal();
+    });
+    ["input", "change"].forEach((evt) => {
+      $("#plate-target").addEventListener(evt, renderPlateResult);
+      $("#plate-bar").addEventListener(evt, renderPlateResult);
+      $("#plate-unit").addEventListener(evt, renderPlateResult);
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && !$("#plate-modal").classList.contains("hidden")) {
+        closePlateModal();
+      }
+    });
+  }
+
   // ---------- Init ----------
 
   // Adjust the weight input by a delta (quick ± buttons). Treats an empty
@@ -697,8 +1167,10 @@
   function bindButtons() {
     $("#start-workout").addEventListener("click", startWorkout);
     $("#add-set").addEventListener("click", () => addSet(true));
+    $("#repeat-set").addEventListener("click", repeatLastSet);
     $("#add-planned").addEventListener("click", () => addSet(false));
     $("#finish-workout").addEventListener("click", finishWorkout);
+    $("#rest-reset").addEventListener("click", resetRestTimer);
     $("#preview-plan").addEventListener("click", previewPlan);
     $("#save-plan").addEventListener("click", savePlan);
     $("#plan-date").value = localDateISO();
@@ -713,6 +1185,10 @@
     bindTabs();
     bindAutocomplete();
     bindButtons();
+    bindWeightSteppers();
+    bindPlateModal();
+    bindWakeLockLifecycle();
+    bindVoiceInput();
     tryResumeActive();
   }
 
