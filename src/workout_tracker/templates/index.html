@@ -41,6 +41,17 @@
             </button>
           </div>
           <div id="active-workout" class="hidden">
+            <div class="timers" aria-live="polite">
+              <div class="timer">
+                <span class="lbl">Session</span>
+                <span id="session-timer" class="val">00:00</span>
+              </div>
+              <div class="timer rest">
+                <span class="lbl">Rest</span>
+                <span id="rest-timer" class="val">—</span>
+                <button id="rest-reset" class="btn icon" title="Reset rest timer">↺</button>
+              </div>
+            </div>
             <div class="quick-add card-inset">
               <label for="ex-input" class="lbl">Add set</label>
               <div class="ac-wrap">

@@ -236,6 +236,33 @@ input:focus, select:focus, textarea:focus {
 }
 .toast.danger { border-color: var(--danger); color: var(--danger); }
 
+/* Session + rest timers (#295) */
+.timers {
+  display: flex; gap: 10px; margin-bottom: 10px;
+}
+.timers .timer {
+  flex: 1;
+  display: flex; align-items: center; gap: 8px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+}
+.timers .timer .lbl {
+  font-size: .7rem; text-transform: uppercase; letter-spacing: .08em;
+  color: var(--fg-muted);
+}
+.timers .timer .val {
+  font-variant-numeric: tabular-nums; font-weight: 600;
+  font-size: 1.1rem; color: var(--fg);
+  margin-left: auto;
+}
+.timers .timer.rest .val { color: var(--accent-2); }
+.timers .timer.rest.running .val { color: var(--accent); }
+.timers .timer .btn.icon {
+  padding: 4px 8px; min-height: 28px;
+}
+
 /* Quick weight ± steppers (#295) */
 .weight-steps { gap: 4px; }
 .weight-steps .step {

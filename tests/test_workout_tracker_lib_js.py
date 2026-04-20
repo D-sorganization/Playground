@@ -56,6 +56,13 @@ CHECKS: list[tuple[str, str]] = [
     ("voice_front_squat_kg", "lib.parseVoiceCommand('front squat 5 by 100 kg')"),
     ("voice_gibberish", "lib.parseVoiceCommand('hello world')"),
     ("voice_empty", "lib.parseVoiceCommand('')"),
+    # ---- mm:ss formatting ----
+    ("mmss_0", "lib.fmtMMSS(0)"),
+    ("mmss_59", "lib.fmtMMSS(59)"),
+    ("mmss_60", "lib.fmtMMSS(60)"),
+    ("mmss_125", "lib.fmtMMSS(125)"),
+    ("mmss_negative", "lib.fmtMMSS(-5)"),
+    ("mmss_fractional", "lib.fmtMMSS(90.7)"),
     # ---- recall formatting ----
     (
         "recall_basic",
@@ -192,6 +199,31 @@ def test_voice_gibberish_none(results: dict[str, Any]) -> None:
 
 def test_voice_empty_none(results: dict[str, Any]) -> None:
     assert results["voice_empty"] is None
+
+
+def test_mmss_zero(results: dict[str, Any]) -> None:
+    assert results["mmss_0"] == "00:00"
+
+
+def test_mmss_59(results: dict[str, Any]) -> None:
+    assert results["mmss_59"] == "00:59"
+
+
+def test_mmss_60(results: dict[str, Any]) -> None:
+    assert results["mmss_60"] == "01:00"
+
+
+def test_mmss_125(results: dict[str, Any]) -> None:
+    assert results["mmss_125"] == "02:05"
+
+
+def test_mmss_negative(results: dict[str, Any]) -> None:
+    assert results["mmss_negative"] == "00:00"
+
+
+def test_mmss_fractional(results: dict[str, Any]) -> None:
+    # 90.7 → floor → 90 → 01:30
+    assert results["mmss_fractional"] == "01:30"
 
 
 def test_recall_basic(results: dict[str, Any]) -> None:

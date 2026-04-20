@@ -135,6 +135,7 @@
     $("#active-empty").classList.remove("hidden");
     $("#active-workout").classList.add("hidden");
     $("#today-date").textContent = new Date().toLocaleDateString();
+    stopTimers();
   }
 
   async function refreshActiveWorkout() {
@@ -149,6 +150,7 @@
     $("#active-workout").classList.remove("hidden");
     $("#today-date").textContent = w.date;
     $("#today-title").textContent = w.title || "Today's Workout";
+    startTimers();
 
     const list = $("#set-list");
     list.innerHTML = "";
@@ -189,6 +191,7 @@
                 actual_reps: s.actual_reps ?? s.planned_reps,
                 actual_weight: s.actual_weight ?? s.planned_weight,
               });
+              startRestTimer();
               refreshActiveWorkout();
             },
           },
@@ -360,6 +363,7 @@
     await api.post(`/api/workouts/${wid}/sets`, body);
     $("#reps-input").value = "";
     // Keep weight + exercise to make repeated sets fast
+    if (executed) startRestTimer();
     toast(executed ? "Set logged ✓" : "Set planned");
     refreshActiveWorkout();
   }
@@ -372,6 +376,7 @@
     });
     localStorage.removeItem("active_workout_id");
     state.activeWorkoutId = null;
+    stopTimers();
     showEmpty();
     toast("Workout saved ✓");
   }
@@ -661,6 +666,79 @@
     return el("div", { class: "item" }, [meta, actions]);
   }
 
+  // ---------- Timers (#295) ----------
+  // Session: counts UP from when active workout became visible.
+  // Rest: counts UP from the last ✓ executed set (or manual reset).
+  const timers = {
+    sessionStart: null, // ms
+    restStart: null,    // ms (null = idle)
+    tick: null,         // setInterval handle
+  };
+
+  function fmtMMSS(totalSec) {
+    // Prefer shared lib; fallback keeps timer UI alive if lib.js 404's.
+    if (window.WorkoutLib && window.WorkoutLib.fmtMMSS) {
+      return window.WorkoutLib.fmtMMSS(totalSec);
+    }
+    const s = Math.max(0, Math.floor(totalSec));
+    const m = Math.floor(s / 60);
+    const r = s % 60;
+    return `${String(m).padStart(2, "0")}:${String(r).padStart(2, "0")}`;
+  }
+
+  function startTimers() {
+    if (timers.sessionStart == null) timers.sessionStart = Date.now();
+    if (timers.tick == null) {
+      timers.tick = setInterval(renderTimers, 1000);
+    }
+    renderTimers();
+  }
+
+  function stopTimers() {
+    if (timers.tick != null) {
+      clearInterval(timers.tick);
+      timers.tick = null;
+    }
+    timers.sessionStart = null;
+    timers.restStart = null;
+    const s = $("#session-timer");
+    const r = $("#rest-timer");
+    if (s) s.textContent = "00:00";
+    if (r) {
+      r.textContent = "—";
+      $(".timers .timer.rest")?.classList.remove("running");
+    }
+  }
+
+  function renderTimers() {
+    const now = Date.now();
+    const sessEl = $("#session-timer");
+    const restEl = $("#rest-timer");
+    const restBox = $(".timers .timer.rest");
+    if (sessEl && timers.sessionStart != null) {
+      sessEl.textContent = fmtMMSS((now - timers.sessionStart) / 1000);
+    }
+    if (restEl) {
+      if (timers.restStart != null) {
+        restEl.textContent = fmtMMSS((now - timers.restStart) / 1000);
+        restBox?.classList.add("running");
+      } else {
+        restEl.textContent = "—";
+        restBox?.classList.remove("running");
+      }
+    }
+  }
+
+  function startRestTimer() {
+    timers.restStart = Date.now();
+    renderTimers();
+  }
+
+  function resetRestTimer() {
+    timers.restStart = null;
+    renderTimers();
+  }
+
   // ---------- Repeat last set (#295) ----------
 
   // Cache of the most recent active-workout payload, so Repeat Last Set
@@ -698,6 +776,7 @@
       rpe: last.rpe ?? null,
     };
     await api.post(`/api/workouts/${wid}/sets`, body);
+    startRestTimer();
     toast(
       `Repeated ${body.exercise_name}: ${body.actual_reps ?? "?"}` +
         (body.actual_weight != null ? ` × ${body.actual_weight}${body.unit}` : ""),
@@ -818,6 +897,7 @@
     $("#repeat-set").addEventListener("click", repeatLastSet);
     $("#add-planned").addEventListener("click", () => addSet(false));
     $("#finish-workout").addEventListener("click", finishWorkout);
+    $("#rest-reset").addEventListener("click", resetRestTimer);
     $("#preview-plan").addEventListener("click", previewPlan);
     $("#save-plan").addEventListener("click", savePlan);
     $("#plan-date").value = localDateISO();

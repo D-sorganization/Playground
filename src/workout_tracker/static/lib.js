@@ -149,6 +149,14 @@
    *   [{reps:5,weight:135},{reps:5,weight:145}]  → "5×135, 5×145"
    * Omits unit; caller can append if desired.
    */
+  /** Format a seconds count as MM:SS (negative/NaN → "00:00"). */
+  function fmtMMSS(totalSeconds) {
+    const s = Math.max(0, Math.floor(Number(totalSeconds) || 0));
+    const m = Math.floor(s / 60);
+    const r = s % 60;
+    return `${String(m).padStart(2, "0")}:${String(r).padStart(2, "0")}`;
+  }
+
   function formatRecall(sets) {
     if (!sets || !sets.length) return "";
     return sets
@@ -172,5 +180,6 @@
     stepWeight,
     parseVoiceCommand,
     formatRecall,
+    fmtMMSS,
   };
 });
