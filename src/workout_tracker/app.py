@@ -411,13 +411,13 @@ def register_routes(app: _FlaskApp) -> None:
     @app.post("/api/workouts/copy_last_weekday")
     def copy_last_weekday() -> Any:
         repo: WorkoutRepository = g.repo
-        data = request.get_json(force=True) or {}
+        data = cast(dict[str, Any], request.get_json(force=True) or {})
         weekday_raw = data.get("weekday")
         target_date: str = data.get("target_date") or date_t.today().isoformat()
         if weekday_raw is None:
             return abort(400, "weekday required")
         try:
-            weekday_int: int = int(weekday_raw)
+            weekday_int = int(cast(int | str, weekday_raw))
         except (ValueError, TypeError):
             return abort(400, "weekday must be an integer 0-6")
         try:
@@ -428,6 +428,7 @@ def register_routes(app: _FlaskApp) -> None:
             return abort(400, str(e))
         if w is None:
             return abort(404, "no prior session found for that weekday")
+        assert w is not None
         return jsonify(w.to_dict()), 201
 
     # ---------- weekly schedule ----------
@@ -435,19 +436,18 @@ def register_routes(app: _FlaskApp) -> None:
     @app.post("/api/schedule/apply")
     def apply_weekly_schedule() -> Any:
         repo: WorkoutRepository = g.repo
-        data = request.get_json(force=True) or {}
+        data = cast(dict[str, Any], request.get_json(force=True) or {})
         schedule_raw = data.get("schedule")
         week_start_raw = data.get("week_start")
-        if not schedule_raw or not week_start_raw:
+        if not isinstance(schedule_raw, dict) or not isinstance(week_start_raw, str):
             return abort(400, "schedule and week_start required")
-        week_start: str = str(week_start_raw)
         try:
             schedule: dict[int, Any] = {int(k): v for k, v in schedule_raw.items()}
         except (ValueError, AttributeError):
             return abort(400, "schedule keys must be integer weekdays 0-6")
         try:
             workouts = planning.apply_weekly_schedule(
-                repo, schedule, week_start=week_start
+                repo, schedule, week_start=week_start_raw
             )
         except ValueError as e:
             return abort(400, str(e))
@@ -523,18 +523,19 @@ def register_routes(app: _FlaskApp) -> None:
     @app.post("/api/stats/ratio")
     def stats_ratio() -> Any:
         repo: WorkoutRepository = g.repo
-        data = request.get_json(force=True) or {}
+        data = cast(dict[str, Any], request.get_json(force=True) or {})
         ex_a_id = data.get("exercise_a_id")
         ex_b_id = data.get("exercise_b_id")
         if not ex_a_id or not ex_b_id:
             return abort(400, "exercise_a_id and exercise_b_id required")
-        ex_a_int: int = int(ex_a_id)
-        ex_b_int: int = int(ex_b_id)
+        ex_a_int = int(cast(int | str, ex_a_id))
+        ex_b_int = int(cast(int | str, ex_b_id))
         exercises = {e.id: e for e in repo.list_exercises()}
         ex_a = exercises.get(ex_a_int)
         ex_b = exercises.get(ex_b_int)
         if not ex_a or not ex_b:
             return abort(404)
+        assert ex_a is not None and ex_b is not None
         sets_a = repo.list_sets_for_exercise(ex_a_int, executed_only=True)
         sets_b = repo.list_sets_for_exercise(ex_b_int, executed_only=True)
         ratio = stats.strength_ratio(sets_a, sets_b)
