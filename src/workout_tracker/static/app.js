@@ -290,6 +290,7 @@
   function pickSuggestion(name) {
     $("#ex-input").value = name;
     $("#ex-suggest").classList.add("hidden");
+    scheduleRecall();
     $("#reps-input").focus();
   }
 
@@ -300,6 +301,7 @@
     input.addEventListener("input", () => {
       clearTimeout(lastTimer);
       lastTimer = setTimeout(() => refreshSuggestions(input.value), 80);
+      scheduleRecall();
     });
     input.addEventListener("focus", () => refreshSuggestions(input.value));
     input.addEventListener("blur", () =>
@@ -366,6 +368,7 @@
     $("#reps-input").value = "";
     // Keep weight + exercise to make repeated sets fast
     if (executed) startRestTimer();
+    invalidateRecallFor(name);
     toast(executed ? "Set logged ✓" : "Set planned");
     refreshActiveWorkout();
   }
@@ -666,6 +669,88 @@
       ),
     ]);
     return el("div", { class: "item" }, [meta, actions]);
+  }
+
+  // ---------- Last-session recall strip (#295) ----------
+
+  let _recallTimer = null;
+  const _recallCache = new Map(); // normalized-name → payload
+
+  function daysAgo(iso) {
+    if (!iso) return null;
+    const then = new Date(iso + "T00:00:00");
+    const now = new Date();
+    const midnightNow = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const diffMs = midnightNow - then;
+    return Math.max(0, Math.round(diffMs / 86400000));
+  }
+
+  function renderRecall(payload) {
+    const strip = $("#recall-strip");
+    if (!strip) return;
+    if (!payload || !payload.sets || !payload.sets.length) {
+      strip.classList.add("hidden");
+      strip.innerHTML = "";
+      return;
+    }
+    const lib = window.WorkoutLib;
+    const line = lib
+      ? lib.formatRecall(payload.sets)
+      : payload.sets
+          .map((s) => `${s.reps}×${s.weight}`)
+          .join(", ");
+    strip.innerHTML = "";
+    strip.appendChild(el("span", { class: "tag" }, "Last"));
+    strip.appendChild(el("span", { class: "name" }, payload.exercise_name));
+    strip.appendChild(document.createTextNode(line));
+    const d = daysAgo(payload.date);
+    if (d != null) {
+      strip.appendChild(
+        el("span", { class: "when" }, d === 0 ? "today" : `${d}d ago`)
+      );
+    }
+    strip.classList.remove("hidden");
+  }
+
+  async function refreshRecall() {
+    const name = $("#ex-input").value.trim();
+    const strip = $("#recall-strip");
+    if (!strip) return;
+    if (!name) {
+      strip.classList.add("hidden");
+      strip.innerHTML = "";
+      return;
+    }
+    const key = name.toLowerCase();
+    if (_recallCache.has(key)) {
+      renderRecall(_recallCache.get(key));
+      return;
+    }
+    try {
+      const params = new URLSearchParams({ q: name });
+      if (state.activeWorkoutId) {
+        params.set("exclude", String(state.activeWorkoutId));
+      }
+      const payload = await api.get(
+        `/api/exercises/last_session?${params.toString()}`,
+      );
+      _recallCache.set(key, payload);
+      // Only render if the user hasn't typed ahead.
+      if ($("#ex-input").value.trim().toLowerCase() === key) {
+        renderRecall(payload);
+      }
+    } catch {
+      strip.classList.add("hidden");
+    }
+  }
+
+  function scheduleRecall() {
+    clearTimeout(_recallTimer);
+    _recallTimer = setTimeout(refreshRecall, 200);
+  }
+
+  function invalidateRecallFor(name) {
+    if (name) _recallCache.delete(name.trim().toLowerCase());
   }
 
   // ---------- Screen Wake Lock (#295) ----------

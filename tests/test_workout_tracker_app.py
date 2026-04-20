@@ -327,3 +327,77 @@ class TestStatsRoutes:
             record["metric"] == "max_weight" and record["weight"] == 245
             for record in r.json["personal_records"]
         )
+
+
+class TestExerciseLastSession:
+    """/api/exercises/last_session powers the in-gym recall strip (#295)."""
+
+    def test_no_history_returns_empty(self, client) -> None:
+        r = client.get("/api/exercises/last_session?q=Bench%20Press")
+        assert r.status_code == 200
+        assert r.json == {"date": None, "exercise_name": "Bench Press", "sets": []}
+
+    def test_returns_most_recent_session_sorted(self, client) -> None:
+        old = _create_workout(client, date="2024-05-01", status="in_progress")
+        for weight in (135, 145):
+            client.post(
+                f"/api/workouts/{old['id']}/sets",
+                json={
+                    "exercise_name": "Bench Press",
+                    "actual_reps": 5,
+                    "actual_weight": weight,
+                    "executed": True,
+                },
+            )
+        new = _create_workout(client, date="2024-05-10", status="in_progress")
+        for weight in (155, 165):
+            client.post(
+                f"/api/workouts/{new['id']}/sets",
+                json={
+                    "exercise_name": "Bench Press",
+                    "actual_reps": 5,
+                    "actual_weight": weight,
+                    "executed": True,
+                },
+            )
+
+        r = client.get("/api/exercises/last_session?q=Bench%20Press")
+        assert r.status_code == 200
+        assert r.json["date"] == "2024-05-10"
+        assert r.json["exercise_name"] == "Bench Press"
+        weights = [s["weight"] for s in r.json["sets"]]
+        assert weights == [155, 165]
+
+    def test_exclude_active_workout(self, client) -> None:
+        old = _create_workout(client, date="2024-05-01", status="in_progress")
+        client.post(
+            f"/api/workouts/{old['id']}/sets",
+            json={
+                "exercise_name": "Squat",
+                "actual_reps": 5,
+                "actual_weight": 225,
+                "executed": True,
+            },
+        )
+        active = _create_workout(client, date="2024-05-20", status="in_progress")
+        client.post(
+            f"/api/workouts/{active['id']}/sets",
+            json={
+                "exercise_name": "Squat",
+                "actual_reps": 5,
+                "actual_weight": 245,
+                "executed": True,
+            },
+        )
+
+        r = client.get(
+            f"/api/exercises/last_session?q=Squat&exclude={active['id']}"
+        )
+        assert r.status_code == 200
+        assert r.json["date"] == "2024-05-01"
+        assert [s["weight"] for s in r.json["sets"]] == [225]
+
+    def test_unknown_exercise_returns_empty(self, client) -> None:
+        r = client.get("/api/exercises/last_session?q=Nonexistent")
+        assert r.status_code == 200
+        assert r.json["sets"] == []

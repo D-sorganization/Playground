@@ -236,6 +236,24 @@ input:focus, select:focus, textarea:focus {
 }
 .toast.danger { border-color: var(--danger); color: var(--danger); }
 
+/* Last-session recall strip (#295) */
+.recall-strip {
+  background: var(--bg-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  font-size: .9rem;
+  color: var(--fg-muted);
+  display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+}
+.recall-strip .tag {
+  text-transform: uppercase; letter-spacing: .06em; font-size: .7rem;
+  color: var(--accent-2);
+}
+.recall-strip .name { color: var(--fg); font-weight: 600; }
+.recall-strip .when { margin-left: auto; font-size: .75rem; }
+
 /* Session + rest timers (#295) */
 .timers {
   display: flex; gap: 10px; margin-bottom: 10px;
