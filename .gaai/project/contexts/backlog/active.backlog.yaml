@@ -46,11 +46,12 @@ items:
     title: "Workout Tracker: Search, filters, and exercise aliases"
     priority: medium
     status: done
-    started_at: "2026-04-20T10:40:17Z"
+    started_at: "2026-04-20T03:40:17-07:00"
     pr_url: "https://github.com/D-sorganization/Playground/pull/317"
     pr_number: 317
     pr_status: "open"
-    completed_at: "2026-04-20T10:55:46Z"
+    completed_at: "2026-04-20T03:55:50-07:00"
+    cost_usd: 2.4352
     github_issue: 300
     artefact: .gaai/project/contexts/artefacts/stories/GH300.story.md
     dependencies: []
