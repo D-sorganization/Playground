@@ -406,6 +406,27 @@ def register_routes(app: _FlaskApp) -> None:
             abort(400, str(e))
         return jsonify(w.to_dict()), 201
 
+    # ---------- last session sets (GH295 — ergonomic logging) ----------
+
+    @app.get("/api/last_session_sets")
+    def last_session_sets() -> Any:
+        """Return the most-recent executed sets for a given exercise name.
+
+        Query params:
+            exercise_name (str, required)
+            limit (int, default 10) — max sets to return
+        """
+        repo: WorkoutRepository = g.repo
+        exercise_name = (request.args.get("exercise_name") or "").strip()
+        if not exercise_name:
+            abort(400, "exercise_name required")
+        limit = min(int(request.args.get("limit", 10)), 50)
+        ex = repo.resolve_exercise_by_name(exercise_name)
+        if ex is None:
+            return jsonify([])
+        sets = repo.last_session_sets(ex.id or 0, limit=limit)
+        return jsonify([s.to_dict() for s in sets])
+
     # ---------- copy last weekday ----------
 
     @app.post("/api/workouts/copy_last_weekday")
@@ -415,19 +436,19 @@ def register_routes(app: _FlaskApp) -> None:
         weekday_raw = data.get("weekday")
         target_date: str = data.get("target_date") or date_t.today().isoformat()
         if weekday_raw is None:
-            return abort(400, "weekday required")
+            abort(400, "weekday required")
         try:
             weekday_int = int(cast(int | str, weekday_raw))
         except (ValueError, TypeError):
-            return abort(400, "weekday must be an integer 0-6")
+            abort(400, "weekday must be an integer 0-6")
         try:
             w = planning.copy_last_weekday_session(
                 repo, weekday=weekday_int, target_date=target_date
             )
         except ValueError as e:
-            return abort(400, str(e))
+            abort(400, str(e))
         if w is None:
-            return abort(404, "no prior session found for that weekday")
+            abort(404, "no prior session found for that weekday")
         assert w is not None
         return jsonify(w.to_dict()), 201
 
@@ -436,21 +457,23 @@ def register_routes(app: _FlaskApp) -> None:
     @app.post("/api/schedule/apply")
     def apply_weekly_schedule() -> Any:
         repo: WorkoutRepository = g.repo
-        data = cast(dict[str, Any], request.get_json(force=True) or {})
-        schedule_raw = data.get("schedule")
-        week_start_raw = data.get("week_start")
-        if not isinstance(schedule_raw, dict) or not isinstance(week_start_raw, str):
-            return abort(400, "schedule and week_start required")
+        data = request.get_json(force=True) or {}
+        schedule_raw = cast(dict[Any, Any] | None, data.get("schedule"))
+        week_start = cast(str | None, data.get("week_start"))
+        if schedule_raw is None or week_start is None or not schedule_raw:
+            abort(400, "schedule and week_start required")
+        assert schedule_raw is not None
+        assert week_start is not None
         try:
             schedule: dict[int, Any] = {int(k): v for k, v in schedule_raw.items()}
         except (ValueError, AttributeError):
-            return abort(400, "schedule keys must be integer weekdays 0-6")
+            abort(400, "schedule keys must be integer weekdays 0-6")
         try:
             workouts = planning.apply_weekly_schedule(
-                repo, schedule, week_start=week_start_raw
+                repo, schedule, week_start=week_start
             )
         except ValueError as e:
-            return abort(400, str(e))
+            abort(400, str(e))
         return jsonify([w.to_dict() for w in workouts]), 201
 
     # ---------- stats ----------
@@ -527,15 +550,16 @@ def register_routes(app: _FlaskApp) -> None:
         ex_a_id = data.get("exercise_a_id")
         ex_b_id = data.get("exercise_b_id")
         if not ex_a_id or not ex_b_id:
-            return abort(400, "exercise_a_id and exercise_b_id required")
+            abort(400, "exercise_a_id and exercise_b_id required")
         ex_a_int = int(cast(int | str, ex_a_id))
         ex_b_int = int(cast(int | str, ex_b_id))
         exercises = {e.id: e for e in repo.list_exercises()}
         ex_a = exercises.get(ex_a_int)
         ex_b = exercises.get(ex_b_int)
         if not ex_a or not ex_b:
-            return abort(404)
-        assert ex_a is not None and ex_b is not None
+            abort(404)
+        assert ex_a is not None
+        assert ex_b is not None
         sets_a = repo.list_sets_for_exercise(ex_a_int, executed_only=True)
         sets_b = repo.list_sets_for_exercise(ex_b_int, executed_only=True)
         ratio = stats.strength_ratio(sets_a, sets_b)
