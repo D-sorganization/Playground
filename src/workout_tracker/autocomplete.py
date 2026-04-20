@@ -15,7 +15,7 @@ Empty/whitespace queries fall back to a popularity-ranked top-N.
 
 from __future__ import annotations
 
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 
 from workout_tracker.models import Exercise, normalize_name
 
@@ -92,16 +92,41 @@ def suggest(
     catalog: Iterable[Exercise],
     limit: int = 8,
     min_score: float = 50.0,
+    alias_resolver: Callable[[str], Exercise | None] | None = None,
 ) -> list[Exercise]:
     """Return ranked suggestions. Empty query returns most-used exercises."""
     catalog_list = list(catalog)
     q = normalize_name(query)
     if not q:
         return sorted(catalog_list, key=lambda e: -e.use_count)[:limit]
-    scored: list[tuple[float, Exercise]] = []
+
+    # Detect multi-word queries
+    tokens_raw = query.strip().split()
+    is_multiword = len(tokens_raw) > 1
+
+    if is_multiword:
+        tokens = [normalize_name(t) for t in tokens_raw if normalize_name(t)]
+        scored: list[tuple[float, Exercise]] = []
+        for ex in catalog_list:
+            if all(t in ex.normalized_name for t in tokens):
+                sc = min(ex.use_count, 100) + 100.0  # base score for multiword matches
+                scored.append((sc, ex))
+        scored.sort(key=lambda p: (-p[0], p[1].name.lower()))
+        return [ex for _, ex in scored[:limit]]
+
+    # Check alias resolver before main loop
+    alias_boost_id: int | None = None
+    if alias_resolver and q:
+        resolved = alias_resolver(q)
+        if resolved is not None:
+            alias_boost_id = resolved.id
+
+    scored2: list[tuple[float, Exercise]] = []
     for ex in catalog_list:
         sc = score(q, ex)
+        if alias_boost_id is not None and ex.id == alias_boost_id:
+            sc += 6000
         if sc >= min_score:
-            scored.append((sc, ex))
-    scored.sort(key=lambda p: (-p[0], p[1].name.lower()))
-    return [ex for _, ex in scored[:limit]]
+            scored2.append((sc, ex))
+    scored2.sort(key=lambda p: (-p[0], p[1].name.lower()))
+    return [ex for _, ex in scored2[:limit]]

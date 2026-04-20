@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 
 from workout_tracker.db import WorkoutRepository, connect, init_db
-from workout_tracker.models import WorkoutSet
+from workout_tracker.models import ExerciseAlias, WorkoutSet
 
 
 @pytest.fixture()
@@ -188,3 +188,131 @@ class TestSetsRepo:
         sets = repo.list_sets_for_exercise(ex.id or 0)
         assert len(sets) == 1
         assert sets[0].exercise_name == "Squat"
+
+
+class TestAliasRepo:
+    def test_add_and_list_aliases(self, repo: WorkoutRepository) -> None:
+        ex = repo.get_or_create_exercise("Bench Press")
+        alias = repo.add_alias(ex.id or 0, "BP")
+        assert alias.id is not None
+        assert alias.alias == "BP"
+        assert alias.exercise_id == ex.id
+        aliases = repo.list_aliases(ex.id or 0)
+        assert len(aliases) == 1
+        assert aliases[0].alias == "BP"
+
+    def test_alias_normalized(self, repo: WorkoutRepository) -> None:
+        ex = repo.get_or_create_exercise("Bench Press")
+        alias = repo.add_alias(ex.id or 0, "Bench-Press!")
+        assert alias.normalized_alias == "benchpress"
+
+    def test_resolve_alias_returns_exercise(self, repo: WorkoutRepository) -> None:
+        ex = repo.get_or_create_exercise("Bench Press")
+        repo.add_alias(ex.id or 0, "BP")
+        resolved = repo.resolve_alias("BP")
+        assert resolved is not None
+        assert resolved.id == ex.id
+
+    def test_resolve_alias_unknown_returns_none(self, repo: WorkoutRepository) -> None:
+        assert repo.resolve_alias("nonexistent") is None
+
+    def test_delete_alias(self, repo: WorkoutRepository) -> None:
+        ex = repo.get_or_create_exercise("Bench Press")
+        alias = repo.add_alias(ex.id or 0, "BP")
+        repo.delete_alias(alias.id or 0)
+        aliases = repo.list_aliases(ex.id or 0)
+        assert aliases == []
+
+    def test_alias_unique_constraint(self, repo: WorkoutRepository) -> None:
+        ex = repo.get_or_create_exercise("Bench Press")
+        repo.add_alias(ex.id or 0, "BP")
+        with pytest.raises(Exception):
+            repo.add_alias(ex.id or 0, "BP")
+
+    def test_alias_cascade_delete_with_exercise(self, repo: WorkoutRepository) -> None:
+        ex = repo.get_or_create_exercise("Bench Press")
+        repo.add_alias(ex.id or 0, "BP")
+        repo.delete_exercise(ex.id or 0)
+        # Exercise deleted, alias should be gone too
+        resolved = repo.resolve_alias("BP")
+        assert resolved is None
+
+
+class TestSearchWorkouts:
+    def test_search_all_returns_workouts(self, repo: WorkoutRepository) -> None:
+        repo.create_workout(date="2024-01-10", status="completed")
+        repo.create_workout(date="2024-02-10", status="planned")
+        results = repo.search_workouts()
+        assert len(results) == 2
+
+    def test_search_by_date_from(self, repo: WorkoutRepository) -> None:
+        repo.create_workout(date="2024-01-10", status="completed")
+        repo.create_workout(date="2024-06-10", status="completed")
+        results = repo.search_workouts(date_from="2024-03-01")
+        assert len(results) == 1
+        assert results[0].date == "2024-06-10"
+
+    def test_search_by_date_to(self, repo: WorkoutRepository) -> None:
+        repo.create_workout(date="2024-01-10", status="completed")
+        repo.create_workout(date="2024-06-10", status="completed")
+        results = repo.search_workouts(date_to="2024-03-01")
+        assert len(results) == 1
+        assert results[0].date == "2024-01-10"
+
+    def test_search_by_status(self, repo: WorkoutRepository) -> None:
+        repo.create_workout(date="2024-01-10", status="completed")
+        repo.create_workout(date="2024-02-10", status="planned")
+        results = repo.search_workouts(status="completed")
+        assert len(results) == 1
+        assert results[0].status == "completed"
+
+    def test_search_by_exercise_name(self, repo: WorkoutRepository) -> None:
+        ex1 = repo.get_or_create_exercise("Bench Press")
+        ex2 = repo.get_or_create_exercise("Squat")
+        w1 = repo.create_workout(date="2024-01-10", status="completed")
+        w2 = repo.create_workout(date="2024-02-10", status="completed")
+        from workout_tracker.models import WorkoutSet as WS
+
+        repo.add_set(WS(workout_id=w1.id or 0, exercise_id=ex1.id or 0, position=0))
+        repo.add_set(WS(workout_id=w2.id or 0, exercise_id=ex2.id or 0, position=0))
+        results = repo.search_workouts(exercise_name="bench")
+        assert len(results) == 1
+        assert results[0].id == w1.id
+
+    def test_search_by_min_weight(self, repo: WorkoutRepository) -> None:
+        ex = repo.get_or_create_exercise("Bench Press")
+        w1 = repo.create_workout(date="2024-01-10", status="completed")
+        w2 = repo.create_workout(date="2024-02-10", status="completed")
+        from workout_tracker.models import WorkoutSet as WS
+
+        repo.add_set(
+            WS(
+                workout_id=w1.id or 0,
+                exercise_id=ex.id or 0,
+                position=0,
+                actual_weight=100.0,
+                executed=True,
+            )
+        )
+        repo.add_set(
+            WS(
+                workout_id=w2.id or 0,
+                exercise_id=ex.id or 0,
+                position=0,
+                actual_weight=200.0,
+                executed=True,
+            )
+        )
+        results = repo.search_workouts(min_weight=150.0)
+        assert len(results) == 1
+        assert results[0].id == w2.id
+
+    def test_search_invalid_status_raises(self, repo: WorkoutRepository) -> None:
+        with pytest.raises(ValueError):
+            repo.search_workouts(status="bogus")
+
+    def test_search_limit_200(self, repo: WorkoutRepository) -> None:
+        for i in range(5):
+            repo.create_workout(date=f"2024-01-{i + 1:02d}", status="planned")
+        results = repo.search_workouts()
+        assert len(results) == 5

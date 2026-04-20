@@ -29,6 +29,24 @@ def normalize_name(name: str) -> str:
 
 
 @dataclass(frozen=True)
+class ExerciseAlias:
+    exercise_id: int
+    alias: str
+    normalized_alias: str = ""
+    id: int | None = None
+    created_at: str | None = None
+
+    def __post_init__(self) -> None:
+        if not self.alias or not self.alias.strip():
+            raise ValueError("Alias cannot be empty")
+        if not self.normalized_alias:
+            object.__setattr__(self, "normalized_alias", normalize_name(self.alias))
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+
+@dataclass(frozen=True)
 class Exercise:
     name: str
     normalized_name: str = ""
