@@ -671,6 +671,116 @@
     return el("div", { class: "item" }, [meta, actions]);
   }
 
+  // ---------- Voice input (#295) ----------
+  // Progressive enhancement: the button stays hidden on browsers without
+  // webkitSpeechRecognition / SpeechRecognition. On supported browsers,
+  // a tap starts a single-utterance listen; transcript is parsed by
+  // WorkoutLib.parseVoiceCommand and used to populate the set form
+  // (and submit immediately if fully specified).
+  const voice = { rec: null, active: false };
+
+  function getSpeechRecognition() {
+    return (
+      window.SpeechRecognition ||
+      window.webkitSpeechRecognition ||
+      null
+    );
+  }
+
+  function bindVoiceInput() {
+    const btn = $("#voice-btn");
+    if (!btn) return;
+    const Ctor = getSpeechRecognition();
+    if (!Ctor) {
+      // Leave button hidden; feature unavailable.
+      return;
+    }
+    btn.classList.remove("hidden");
+    btn.addEventListener("click", () => {
+      if (voice.active) {
+        stopListening();
+      } else {
+        startListening(Ctor);
+      }
+    });
+  }
+
+  function startListening(Ctor) {
+    const btn = $("#voice-btn");
+    const label = $("#voice-label");
+    try {
+      const rec = new Ctor();
+      rec.lang = navigator.language || "en-US";
+      rec.interimResults = false;
+      rec.maxAlternatives = 3;
+      rec.continuous = false;
+      rec.onstart = () => {
+        voice.active = true;
+        btn.setAttribute("aria-pressed", "true");
+        if (label) label.textContent = "Listening…";
+      };
+      rec.onerror = (e) => {
+        toast(`Voice error: ${e.error || "unknown"}`, "danger");
+      };
+      rec.onend = () => {
+        voice.active = false;
+        voice.rec = null;
+        btn.setAttribute("aria-pressed", "false");
+        if (label) label.textContent = "Voice";
+      };
+      rec.onresult = (e) => {
+        const lib = window.WorkoutLib;
+        let parsed = null;
+        let transcript = "";
+        const alts = e.results[0] || [];
+        for (let i = 0; i < alts.length; i++) {
+          transcript = alts[i].transcript;
+          if (!lib) break;
+          parsed = lib.parseVoiceCommand(transcript);
+          if (parsed) break;
+        }
+        if (!parsed) {
+          // Populate exercise field with raw transcript so user can finish by hand.
+          if (transcript) {
+            $("#ex-input").value = transcript.trim();
+            scheduleRecall();
+            toast(`Heard: "${transcript}" — finish manually`, "danger");
+          } else {
+            toast("Didn't catch that", "danger");
+          }
+          return;
+        }
+        applyVoiceResult(parsed);
+      };
+      voice.rec = rec;
+      rec.start();
+    } catch (err) {
+      toast(`Voice unavailable: ${err.message || err}`, "danger");
+    }
+  }
+
+  function stopListening() {
+    if (voice.rec) {
+      try {
+        voice.rec.stop();
+      } catch {
+        /* ignore */
+      }
+    }
+  }
+
+  function applyVoiceResult(parsed) {
+    $("#ex-input").value = parsed.exercise;
+    if (parsed.reps != null) $("#reps-input").value = String(parsed.reps);
+    if (parsed.weight != null) $("#weight-input").value = String(parsed.weight);
+    if (parsed.unit) $("#unit-input").value = parsed.unit;
+    scheduleRecall();
+    // If we got a full triple, auto-log it.
+    if (parsed.exercise && parsed.reps != null && parsed.weight != null) {
+      addSet(true);
+    }
+  }
+
   // ---------- Last-session recall strip (#295) ----------
 
   let _recallTimer = null;
@@ -1040,6 +1150,7 @@
     bindWeightSteppers();
     bindPlateModal();
     bindWakeLockLifecycle();
+    bindVoiceInput();
     tryResumeActive();
   }
 
