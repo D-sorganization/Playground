@@ -171,6 +171,25 @@ def register_routes(app: _FlaskApp) -> None:
         repo.delete_alias(alias_id)
         return jsonify({"ok": True})
 
+    @app.put("/api/exercises/<int:ex_id>/tags")
+    def update_exercise_tags(ex_id: int) -> Any:
+        repo: WorkoutRepository = g.repo
+        data = request.get_json(force=True) or {}
+        tags = data.get("tags")
+        if tags is not None and not isinstance(tags, str):
+            abort(400, "tags must be a string or null")
+        try:
+            ex = repo.update_exercise_tags(ex_id, tags)
+        except KeyError:
+            abort(404)
+        return jsonify(ex.to_dict())
+
+    @app.post("/api/exercises/<int:ex_id>/restore")
+    def restore_exercise(ex_id: int) -> Any:
+        repo: WorkoutRepository = g.repo
+        repo.restore_exercise(ex_id)
+        return jsonify({"ok": True})
+
     @app.post("/api/exercises/bulk")
     def bulk_edit_exercises() -> Any:
         repo: WorkoutRepository = g.repo
@@ -305,6 +324,12 @@ def register_routes(app: _FlaskApp) -> None:
         repo.delete_workout(w_id)
         return jsonify({"ok": True})
 
+    @app.post("/api/workouts/<int:w_id>/restore")
+    def restore_workout(w_id: int) -> Any:
+        repo: WorkoutRepository = g.repo
+        repo.restore_workout(w_id)
+        return jsonify({"ok": True})
+
     # ---------- sets ----------
 
     @app.post("/api/workouts/<int:w_id>/sets")
@@ -358,6 +383,12 @@ def register_routes(app: _FlaskApp) -> None:
     def delete_set(set_id: int) -> Any:
         repo: WorkoutRepository = g.repo
         repo.delete_set(set_id)
+        return jsonify({"ok": True})
+
+    @app.post("/api/sets/<int:set_id>/restore")
+    def restore_set(set_id: int) -> Any:
+        repo: WorkoutRepository = g.repo
+        repo.restore_set(set_id)
         return jsonify({"ok": True})
 
     # ---------- parser ----------

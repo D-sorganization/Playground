@@ -396,3 +396,57 @@ class TestNewSetFields:
         assert s.is_bodyweight is True
         assert s.group_id == "A1"
         assert s.protocol == "failure"
+
+
+class TestMuscleTags:
+    def test_update_and_clear_tags(self, repo: WorkoutRepository) -> None:
+        ex = repo.get_or_create_exercise("Bench Press")
+        updated = repo.update_exercise_tags(ex.id or 0, "chest, shoulders")
+        assert updated.muscle_tags == "chest, shoulders"
+        cleared = repo.update_exercise_tags(ex.id or 0, "")
+        assert cleared.muscle_tags is None
+
+    def test_tags_persist_in_exercise_listing(self, repo: WorkoutRepository) -> None:
+        ex = repo.get_or_create_exercise("Deadlift")
+        repo.update_exercise_tags(ex.id or 0, "back,legs")
+        listed = [e for e in repo.list_exercises() if e.name == "Deadlift"]
+        assert listed[0].muscle_tags == "back,legs"
+
+    def test_unknown_exercise_raises(self, repo: WorkoutRepository) -> None:
+        with pytest.raises(KeyError):
+            repo.update_exercise_tags(99999, "chest")
+
+
+class TestSoftDelete:
+    def test_delete_and_restore_exercise(self, repo: WorkoutRepository) -> None:
+        ex = repo.get_or_create_exercise("Bench Press")
+        repo.delete_exercise(ex.id or 0)
+        assert "Bench Press" not in [e.name for e in repo.list_exercises()]
+        repo.restore_exercise(ex.id or 0)
+        assert "Bench Press" in [e.name for e in repo.list_exercises()]
+
+    def test_delete_and_restore_workout(self, repo: WorkoutRepository) -> None:
+        w = repo.create_workout(date="2024-05-01")
+        repo.delete_workout(w.id or 0)
+        with pytest.raises(KeyError):
+            repo.get_workout(w.id or 0)
+        repo.restore_workout(w.id or 0)
+        assert w.id in [x.id for x in repo.list_workouts()]
+
+    def test_delete_and_restore_set(self, repo: WorkoutRepository) -> None:
+        ex = repo.get_or_create_exercise("Squat")
+        w = repo.create_workout(date="2024-05-01", status="in_progress")
+        s = repo.add_set(
+            WorkoutSet(
+                workout_id=w.id or 0,
+                exercise_id=ex.id or 0,
+                position=0,
+                actual_reps=5,
+                actual_weight=100,
+                executed=True,
+            )
+        )
+        repo.delete_set(s.id or 0)
+        assert all(x.id != s.id for x in repo.get_workout(w.id or 0).sets)
+        repo.restore_set(s.id or 0)
+        assert any(x.id == s.id for x in repo.get_workout(w.id or 0).sets)

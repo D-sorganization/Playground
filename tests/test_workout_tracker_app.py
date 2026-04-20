@@ -255,6 +255,85 @@ class TestWorkoutSearchRoute:
         assert r.status_code == 200
 
 
+class TestExerciseTagsRoute:
+    def test_update_tags(self, client) -> None:
+        r = client.post("/api/exercises", json={"name": "Bench Press"})
+        ex_id = r.json["id"]
+        r = client.put(f"/api/exercises/{ex_id}/tags", json={"tags": "chest,shoulders"})
+        assert r.status_code == 200
+        assert r.json["muscle_tags"] == "chest,shoulders"
+
+    def test_clear_tags(self, client) -> None:
+        r = client.post("/api/exercises", json={"name": "Squat"})
+        ex_id = r.json["id"]
+        client.put(f"/api/exercises/{ex_id}/tags", json={"tags": "legs"})
+        r = client.put(f"/api/exercises/{ex_id}/tags", json={"tags": ""})
+        assert r.status_code == 200
+        assert r.json["muscle_tags"] is None
+
+    def test_tags_on_missing_exercise_returns_404(self, client) -> None:
+        r = client.put("/api/exercises/99999/tags", json={"tags": "chest"})
+        assert r.status_code == 404
+
+    def test_tags_must_be_string_or_null(self, client) -> None:
+        r = client.post("/api/exercises", json={"name": "Row"})
+        ex_id = r.json["id"]
+        r = client.put(f"/api/exercises/{ex_id}/tags", json={"tags": 123})
+        assert r.status_code == 400
+
+
+class TestSoftDeleteRestoreRoutes:
+    def test_delete_and_restore_exercise(self, client) -> None:
+        r = client.post("/api/exercises", json={"name": "Bench Press"})
+        ex_id = r.json["id"]
+        # delete (soft)
+        r = client.delete(f"/api/exercises/{ex_id}")
+        assert r.status_code == 200
+        # no longer in list
+        exs = client.get("/api/exercises").json
+        assert not any(e["id"] == ex_id for e in exs)
+        # restore
+        r = client.post(f"/api/exercises/{ex_id}/restore")
+        assert r.status_code == 200
+        # back in list
+        exs = client.get("/api/exercises").json
+        assert any(e["id"] == ex_id for e in exs)
+
+    def test_delete_and_restore_workout(self, client) -> None:
+        r = client.post("/api/workouts", json={"date": "2024-06-01"})
+        wid = r.json["id"]
+        client.delete(f"/api/workouts/{wid}")
+        r = client.get("/api/workouts?limit=200")
+        ids = [w["id"] for w in r.json]
+        assert wid not in ids
+        client.post(f"/api/workouts/{wid}/restore")
+        r = client.get("/api/workouts?limit=200")
+        ids = [w["id"] for w in r.json]
+        assert wid in ids
+
+    def test_delete_and_restore_set(self, client) -> None:
+        r = client.post(
+            "/api/workouts", json={"date": "2024-06-01", "status": "in_progress"}
+        )
+        wid = r.json["id"]
+        r = client.post(
+            f"/api/workouts/{wid}/sets",
+            json={
+                "exercise_name": "Deadlift",
+                "actual_reps": 3,
+                "actual_weight": 300,
+                "executed": True,
+            },
+        )
+        sid = r.json["id"]
+        client.delete(f"/api/sets/{sid}")
+        w = client.get(f"/api/workouts/{wid}").json
+        assert not any(s["id"] == sid for s in w["sets"])
+        client.post(f"/api/sets/{sid}/restore")
+        w = client.get(f"/api/workouts/{wid}").json
+        assert any(s["id"] == sid for s in w["sets"])
+
+
 class TestStatsRoutes:
     def test_overview_after_logging(self, client) -> None:
         # create workout + log sets

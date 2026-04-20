@@ -46,16 +46,69 @@
     return e;
   };
 
-  function toast(msg, type = "ok") {
+  function toast(msg, type = "ok", undoFn = null) {
     const t = $("#toast");
-    t.textContent = msg;
-    t.className = `toast ${type === "danger" ? "danger" : ""}`;
+    t.innerHTML = "";
+    t.appendChild(document.createTextNode(msg));
+    if (undoFn) {
+      const btn = el(
+        "button",
+        {
+          class: "toast-undo",
+          onclick: () => {
+            clearTimeout(t._tm);
+            t.classList.add("hidden");
+            undoFn();
+          },
+        },
+        "Undo"
+      );
+      t.appendChild(btn);
+    }
+    t.className = `toast${type === "danger" ? " danger" : ""}`;
     setTimeout(() => t.classList.add("hidden"), 10);
     requestAnimationFrame(() => {
       t.classList.remove("hidden");
       clearTimeout(t._tm);
-      t._tm = setTimeout(() => t.classList.add("hidden"), 2200);
+      const delay = undoFn ? 5000 : 2200;
+      t._tm = setTimeout(() => t.classList.add("hidden"), delay);
     });
+  }
+
+  function applyTheme(theme) {
+    document.documentElement.setAttribute("data-theme", theme);
+    const btn = $("#theme-toggle");
+    if (btn) btn.textContent = theme === "light" ? "☽" : "☀";
+  }
+
+  function initTheme() {
+    const stored = localStorage.getItem("theme");
+    if (stored) {
+      applyTheme(stored);
+    } else {
+      const preferLight = window.matchMedia("(prefers-color-scheme: light)").matches;
+      applyTheme(preferLight ? "light" : "dark");
+    }
+  }
+
+  function toggleTheme() {
+    const current = document.documentElement.getAttribute("data-theme") || "dark";
+    const next = current === "dark" ? "light" : "dark";
+    localStorage.setItem("theme", next);
+    applyTheme(next);
+  }
+
+  function switchToTab(tabName) {
+    $$(".tab").forEach((x) => x.classList.remove("active"));
+    $$(".panel").forEach((x) => x.classList.remove("active"));
+    const tabBtn = $(`.tab[data-tab="${tabName}"]`);
+    if (tabBtn) tabBtn.classList.add("active");
+    const panel = $(`#tab-${tabName}`);
+    if (panel) panel.classList.add("active");
+    if (tabName === "history") loadHistory();
+    if (tabName === "stats") loadStats();
+    if (tabName === "plans") loadPlans();
+    if (tabName === "catalog") loadCatalog();
   }
 
   function fmtWeight(s) {
@@ -101,16 +154,7 @@
   // ---------- Tabs ----------
   function bindTabs() {
     $$(".tab").forEach((t) =>
-      t.addEventListener("click", () => {
-        $$(".tab").forEach((x) => x.classList.remove("active"));
-        $$(".panel").forEach((x) => x.classList.remove("active"));
-        t.classList.add("active");
-        $(`#tab-${t.dataset.tab}`).classList.add("active");
-        if (t.dataset.tab === "history") loadHistory();
-        if (t.dataset.tab === "stats") loadStats();
-        if (t.dataset.tab === "plans") loadPlans();
-        if (t.dataset.tab === "catalog") loadCatalog();
-      })
+      t.addEventListener("click", () => switchToTab(t.dataset.tab))
     );
   }
 
@@ -272,6 +316,10 @@
             if (!confirm("Delete this set?")) return;
             await api.delete(`/api/sets/${s.id}`);
             refreshActiveWorkout();
+            toast("Set deleted", "ok", async () => {
+              await api.post(`/api/sets/${s.id}/restore`);
+              refreshActiveWorkout();
+            });
           },
         },
         "✕"
@@ -839,6 +887,10 @@
             if (!confirm("Delete this workout?")) return;
             await api.delete(`/api/workouts/${w.id}`);
             isPlan ? loadPlans() : loadHistory();
+            toast("Workout deleted", "ok", async () => {
+              await api.post(`/api/workouts/${w.id}/restore`);
+              isPlan ? loadPlans() : loadHistory();
+            });
           },
         },
         "✕"
@@ -1227,6 +1279,16 @@
 
   // ---------- Catalog (manage exercises / fix typos) ----------
 
+  function renderTagChips(tagsStr) {
+    if (!tagsStr) return null;
+    const chips = tagsStr
+      .split(",")
+      .map((t) => t.trim())
+      .filter(Boolean);
+    if (!chips.length) return null;
+    return el("div", { class: "tags" }, chips.map((t) => el("span", { class: "tag-chip" }, t)));
+  }
+
   async function loadCatalog() {
     const list = $("#catalog-list");
     list.innerHTML = "";
@@ -1241,15 +1303,40 @@
   }
 
   function renderExerciseItem(e, all) {
-    const meta = el("div", { class: "meta" }, [
+    const tagChips = renderTagChips(e.muscle_tags);
+    const metaKids = [
       el("span", { class: "title" }, e.name),
       el(
         "span",
         { class: "sub" },
         `used ${e.use_count}× · last ${e.last_used_at || "never"}`
       ),
-    ]);
+    ];
+    if (tagChips) metaKids.push(tagChips);
+    const meta = el("div", { class: "meta" }, metaKids);
     const actions = el("div", { class: "actions" }, [
+      el(
+        "button",
+        {
+          class: "btn icon",
+          onclick: async () => {
+            const current = e.muscle_tags || "";
+            const t = prompt(
+              "Muscle tags (comma-separated, e.g. chest,shoulders):",
+              current
+            );
+            if (t === null) return;
+            try {
+              await api.put(`/api/exercises/${e.id}/tags`, { tags: t });
+              loadCatalog();
+              toast("Tags updated ✓");
+            } catch (err) {
+              toast(err.message, "danger");
+            }
+          },
+        },
+        "Tags"
+      ),
       el(
         "button",
         {
@@ -1303,7 +1390,10 @@
               return;
             await api.delete(`/api/exercises/${e.id}`);
             loadCatalog();
-            toast("Deleted");
+            toast("Deleted", "ok", async () => {
+              await api.post(`/api/exercises/${e.id}/restore`);
+              loadCatalog();
+            });
           },
         },
         "✕"
@@ -1327,10 +1417,58 @@
     });
   }
 
+  function activeTab() {
+    const t = $(".tab.active");
+    return t ? t.dataset.tab : null;
+  }
+
+  function bindKeyboardShortcuts() {
+    document.addEventListener("keydown", (e) => {
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+
+      if (e.key === "/") {
+        const inp = $("#ex-input");
+        if (inp) {
+          e.preventDefault();
+          switchToTab("today");
+          inp.focus();
+          inp.select();
+        }
+        return;
+      }
+
+      if (e.key === "Escape") {
+        if (document.activeElement) document.activeElement.blur();
+        const ul = $("#ex-suggest");
+        if (ul) ul.classList.add("hidden");
+        return;
+      }
+
+      const focused = document.activeElement;
+      const tag = focused && focused.tagName;
+      if (tag && ["INPUT", "TEXTAREA", "SELECT"].includes(tag)) return;
+
+      if (e.key === "t") {
+        switchToTab("today");
+      } else if (e.key === "n") {
+        switchToTab("today");
+        if (!state.activeWorkoutId) startWorkout();
+      } else if (e.key === "s") {
+        if (activeTab() === "today" && state.activeWorkoutId) {
+          addSet(true);
+        }
+      }
+    });
+  }
+
   function init() {
     bindTabs();
     bindAutocomplete();
     bindButtons();
+    const themeBtn = $("#theme-toggle");
+    if (themeBtn) themeBtn.addEventListener("click", toggleTheme);
+    initTheme();
+    bindKeyboardShortcuts();
     bindWeightAdj();
     bindPlateCalc();
     bindVoiceInput();
