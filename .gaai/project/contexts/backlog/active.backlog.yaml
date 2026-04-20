@@ -105,7 +105,8 @@ items:
   - id: GH296
     title: "Workout Tracker: Supersets, circuits, and training protocols"
     priority: medium
-    status: refined
+    status: in_progress
+    started_at: "2026-04-20T11:40:38Z"
     github_issue: 296
     artefact: .gaai/project/contexts/artefacts/stories/GH296.story.md
     dependencies: []
