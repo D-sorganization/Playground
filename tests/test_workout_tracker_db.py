@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+import sqlite3
+
 import pytest
 
 from workout_tracker.db import WorkoutRepository, connect, init_db
-from workout_tracker.models import ExerciseAlias, WorkoutSet
+from workout_tracker.models import WorkoutSet
 
 
 @pytest.fixture()
@@ -226,7 +228,7 @@ class TestAliasRepo:
     def test_alias_unique_constraint(self, repo: WorkoutRepository) -> None:
         ex = repo.get_or_create_exercise("Bench Press")
         repo.add_alias(ex.id or 0, "BP")
-        with pytest.raises(Exception):
+        with pytest.raises(sqlite3.IntegrityError):
             repo.add_alias(ex.id or 0, "BP")
 
     def test_alias_cascade_delete_with_exercise(self, repo: WorkoutRepository) -> None:
