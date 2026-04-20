@@ -394,6 +394,67 @@ def register_routes(app: _FlaskApp) -> None:
             }
         )
 
+    # ---------- advanced stats (GH298) ----------
+
+    @app.get("/api/stats/advanced")
+    def stats_advanced() -> Any:
+        repo: WorkoutRepository = g.repo
+        all_sets = repo.list_all_executed_sets()
+        streak = stats.training_streak(all_sets)
+        heatmap = stats.calendar_heatmap_data(all_sets, weeks=26)
+        sessions = stats.session_metrics(all_sets)
+        return jsonify(
+            {
+                "streak": streak.__dict__,
+                "heatmap": [h.__dict__ for h in heatmap],
+                "sessions": [s.__dict__ for s in sessions[:30]],
+            }
+        )
+
+    @app.get("/api/stats/exercise/<int:ex_id>/trend")
+    def stats_exercise_trend(ex_id: int) -> Any:
+        repo: WorkoutRepository = g.repo
+        period = request.args.get("period", "weekly")
+        if period not in ("weekly", "monthly"):
+            abort(400, "period must be 'weekly' or 'monthly'")
+        sets_for = repo.list_sets_for_exercise(ex_id, executed_only=True)
+        trend = stats.volume_trend(sets_for, period=period)
+        series = stats.exercise_timeseries(sets_for)
+        prs = stats.personal_records(sets_for)
+        return jsonify(
+            {
+                "trend": [tp.__dict__ for tp in trend],
+                "timeseries": [tp.__dict__ for tp in series],
+                "personal_records": [p.__dict__ for p in prs],
+            }
+        )
+
+    @app.post("/api/stats/ratio")
+    def stats_ratio() -> Any:
+        repo: WorkoutRepository = g.repo
+        data = request.get_json(force=True) or {}
+        ex_a_id = data.get("exercise_a_id")
+        ex_b_id = data.get("exercise_b_id")
+        if not ex_a_id or not ex_b_id:
+            abort(400, "exercise_a_id and exercise_b_id required")
+        exercises = {e.id: e for e in repo.list_exercises()}
+        ex_a = exercises.get(int(ex_a_id))
+        ex_b = exercises.get(int(ex_b_id))
+        if not ex_a or not ex_b:
+            abort(404)
+        sets_a = repo.list_sets_for_exercise(int(ex_a_id), executed_only=True)
+        sets_b = repo.list_sets_for_exercise(int(ex_b_id), executed_only=True)
+        ratio = stats.strength_ratio(sets_a, sets_b)
+        return jsonify(
+            {
+                "ratio": ratio.ratio,
+                "e1rm_a": ratio.e1rm_a,
+                "e1rm_b": ratio.e1rm_b,
+                "name_a": ex_a.name,
+                "name_b": ex_b.name,
+            }
+        )
+
     # ---------- error handlers ----------
 
     @app.errorhandler(400)

@@ -236,9 +236,77 @@ input:focus, select:focus, textarea:focus {
 }
 .toast.danger { border-color: var(--danger); color: var(--danger); }
 
+/* Advanced stats — GH298 */
+
+/* Streak */
+.streak-wrap { margin-top: 12px; display: flex; gap: 16px; flex-wrap: wrap; }
+.streak-badge {
+  display: flex; flex-direction: column; align-items: center;
+  background: var(--bg-2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 12px 20px;
+  min-width: 120px;
+}
+.streak-badge .streak-num {
+  font-size: 2rem; font-weight: 700; color: var(--accent);
+  line-height: 1;
+}
+.streak-badge .streak-lbl {
+  font-size: .8rem; color: var(--fg-muted); margin-top: 4px;
+}
+
+/* Heatmap */
+.heatmap-wrap { overflow-x: auto; }
+.heatmap-svg { display: block; }
+.heatmap-wrap .hm-cell { rx: 2; ry: 2; }
+
+/* Sparkline / chart SVGs */
+.sparkline-svg { display: block; width: 100%; overflow: visible; }
+.sparkline-line { fill: none; stroke: var(--accent); stroke-width: 2; }
+.sparkline-pr { fill: var(--warn); stroke: none; }
+.sparkline-e1rm { fill: none; stroke: var(--accent-2); stroke-width: 2; }
+.sparkline-axis { stroke: var(--border); stroke-width: 1; }
+.sparkline-label {
+  font-size: 10px; fill: var(--fg-muted);
+  font-family: ui-monospace, monospace;
+}
+
+/* Ratio */
+.ratio-display {
+  text-align: center; padding: 16px;
+  background: var(--bg-2); border-radius: var(--radius-sm);
+  margin-top: 8px; border: 1px solid var(--border);
+}
+.ratio-display .ratio-num {
+  font-size: 2.4rem; font-weight: 700; color: var(--accent-2);
+}
+.ratio-display .ratio-sub {
+  font-size: .85rem; color: var(--fg-muted); margin-top: 4px;
+}
+
+/* Sessions */
+.sessions-table {
+  width: 100%; border-collapse: collapse; font-size: .9rem;
+  margin-top: 8px;
+}
+.sessions-table th {
+  text-align: left; color: var(--fg-muted); font-weight: 500;
+  border-bottom: 1px solid var(--border); padding: 6px 8px;
+}
+.sessions-table td { padding: 8px; border-bottom: 1px solid rgba(42,49,66,.5); }
+.sessions-table tr:last-child td { border-bottom: none; }
+
+/* Exercise detail panel */
+#stats-exercise-detail {
+  margin-top: 12px; padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+#stats-detail-charts { margin-top: 12px; }
+
 /* Mobile */
 @media (max-width: 480px) {
   main { padding: 10px 10px 80px; }
   .card { padding: 12px; }
   .stat-tile .num { font-size: 1.3rem; }
+  .streak-badge .streak-num { font-size: 1.5rem; }
+  .ratio-display .ratio-num { font-size: 1.8rem; }
 }

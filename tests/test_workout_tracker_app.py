@@ -280,3 +280,110 @@ class TestStatsRoutes:
             p["metric"] == "max_weight" and p["weight"] == 120
             for p in data["personal_records"]
         )
+
+
+class TestAdvancedStatsRoutes:
+    """GH298 — advanced stats endpoints."""
+
+    def _setup_workout(self, client):
+        """Helper: create a workout with 3 executed sets and return workout id + exercise id."""
+        r = client.post(
+            "/api/workouts",
+            json={"date": "2024-05-03", "status": "in_progress"},
+        )
+        wid = r.json["id"]
+        ex_id = None
+        for w in (100, 110, 120):
+            r2 = client.post(
+                f"/api/workouts/{wid}/sets",
+                json={
+                    "exercise_name": "Bench Press",
+                    "actual_reps": 5,
+                    "actual_weight": w,
+                    "executed": True,
+                },
+            )
+            ex_id = r2.json["exercise_id"]
+        return wid, ex_id
+
+    def test_advanced_returns_expected_keys(self, client) -> None:
+        self._setup_workout(client)
+        r = client.get("/api/stats/advanced")
+        assert r.status_code == 200
+        data = r.json
+        assert "streak" in data
+        assert "heatmap" in data
+        assert "sessions" in data
+        assert "current_streak" in data["streak"]
+        assert "longest_streak" in data["streak"]
+
+    def test_advanced_empty_db(self, client) -> None:
+        r = client.get("/api/stats/advanced")
+        assert r.status_code == 200
+        data = r.json
+        assert data["streak"]["current_streak"] == 0
+        assert data["heatmap"] == []
+        assert data["sessions"] == []
+
+    def test_exercise_trend_weekly(self, client) -> None:
+        _, ex_id = self._setup_workout(client)
+        r = client.get(f"/api/stats/exercise/{ex_id}/trend?period=weekly")
+        assert r.status_code == 200
+        data = r.json
+        assert "trend" in data
+        assert "timeseries" in data
+        assert "personal_records" in data
+
+    def test_exercise_trend_monthly(self, client) -> None:
+        _, ex_id = self._setup_workout(client)
+        r = client.get(f"/api/stats/exercise/{ex_id}/trend?period=monthly")
+        assert r.status_code == 200
+        assert "trend" in r.json
+
+    def test_exercise_trend_bad_period_returns_400(self, client) -> None:
+        _, ex_id = self._setup_workout(client)
+        r = client.get(f"/api/stats/exercise/{ex_id}/trend?period=bogus")
+        assert r.status_code == 400
+
+    def test_ratio_returns_result(self, client) -> None:
+        # Create two exercises with sets
+        r1 = client.post("/api/exercises", json={"name": "Bench Press"})
+        ex_a = r1.json["id"]
+        r2 = client.post("/api/exercises", json={"name": "Overhead Press"})
+        ex_b = r2.json["id"]
+
+        wid = client.post("/api/workouts", json={"date": "2024-05-01"}).json["id"]
+        client.post(
+            f"/api/workouts/{wid}/sets",
+            json={"exercise_id": ex_a, "actual_reps": 5, "actual_weight": 200, "executed": True},
+        )
+        client.post(
+            f"/api/workouts/{wid}/sets",
+            json={"exercise_id": ex_b, "actual_reps": 5, "actual_weight": 100, "executed": True},
+        )
+
+        r = client.post(
+            "/api/stats/ratio",
+            json={"exercise_a_id": ex_a, "exercise_b_id": ex_b},
+        )
+        assert r.status_code == 200
+        data = r.json
+        assert "ratio" in data
+        assert data["ratio"] is not None
+        assert data["ratio"] > 1.0  # 200lb bench > 100lb OHP
+
+    def test_ratio_missing_body_returns_400(self, client) -> None:
+        r = client.post("/api/stats/ratio", json={})
+        assert r.status_code == 400
+
+    def test_ratio_no_sets_returns_none_ratio(self, client) -> None:
+        r1 = client.post("/api/exercises", json={"name": "Bench Press"})
+        ex_a = r1.json["id"]
+        r2 = client.post("/api/exercises", json={"name": "Overhead Press"})
+        ex_b = r2.json["id"]
+        r = client.post(
+            "/api/stats/ratio",
+            json={"exercise_a_id": ex_a, "exercise_b_id": ex_b},
+        )
+        assert r.status_code == 200
+        assert r.json["ratio"] is None
