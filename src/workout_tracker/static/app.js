@@ -659,6 +659,26 @@
     return el("div", { class: "item" }, [meta, actions]);
   }
 
+  // ---------- Quick weight ± steppers (#295) ----------
+
+  function bindWeightSteppers() {
+    const input = $("#weight-input");
+    if (!input) return;
+    $$(".weight-steps .step").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const lib = window.WorkoutLib;
+        const delta = Number(btn.dataset.step);
+        const current = input.value === "" ? 0 : Number(input.value);
+        const next = lib
+          ? lib.stepWeight(current, delta)
+          : Math.max(0, Math.round((current + delta) * 4) / 4);
+        input.value = String(next);
+        // Fire input event so any listeners (e.g. plate modal when open) update.
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+      });
+    });
+  }
+
   // ---------- Plate calculator modal (#295) ----------
 
   function openPlateModal() {
@@ -760,6 +780,7 @@
     bindTabs();
     bindAutocomplete();
     bindButtons();
+    bindWeightSteppers();
     bindPlateModal();
     tryResumeActive();
   }
