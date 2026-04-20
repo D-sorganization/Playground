@@ -76,11 +76,12 @@ items:
     title: "Workout Tracker: Advanced stats – charts, heatmap, streaks, ratios"
     priority: medium
     status: done
-    started_at: "2026-04-20T11:13:28Z"
-    completed_at: "2026-04-20T11:28:22Z"
+    started_at: "2026-04-20T04:13:28-07:00"
+    completed_at: "2026-04-20T04:29:01-07:00"
     pr_url: "https://github.com/D-sorganization/Playground/pull/319"
     pr_number: 319
     pr_status: "open"
+    cost_usd: 2.9081
     github_issue: 298
     artefact: .gaai/project/contexts/artefacts/stories/GH298.story.md
     dependencies: []
