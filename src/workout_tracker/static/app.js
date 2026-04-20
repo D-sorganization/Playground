@@ -58,14 +58,30 @@
     });
   }
 
-  function fmtSet(s) {
-    const r = s.actual_reps ?? s.planned_reps ?? "?";
+  function fmtWeight(s) {
     const w = s.actual_weight ?? s.planned_weight;
     const unit = s.unit || "lbs";
-    const main = w == null ? `${r}` : `${r} × ${w}${unit}`;
+    if (s.is_bodyweight) {
+      return w != null ? `BW+${w}${unit}` : "BW";
+    }
+    return w != null ? `${w}${unit}` : null;
+  }
+
+  function fmtSet(s) {
+    const r = s.actual_reps ?? s.planned_reps ?? "?";
+    const wStr = fmtWeight(s);
+    const main = wStr == null ? `${r}` : `${r} × ${wStr}`;
     const rpe = s.rpe ? ` · RPE ${s.rpe}` : "";
     return main + rpe;
   }
+
+  const PROTOCOL_LABELS = {
+    amrap: "AMRAP",
+    emom: "EMOM",
+    drop_set: "DROP",
+    failure: "FAIL",
+    partials: "PART",
+  };
 
   // ---------- State ----------
   const state = {
@@ -169,9 +185,17 @@
 
   function renderSetRow(s, n) {
     const cls = "set-row" + (s.executed ? " exec" : " planned");
+    const groupBadge = s.group_id
+      ? el("span", { class: "pill group-badge" }, s.group_id)
+      : null;
+    const protoBadge = s.protocol
+      ? el("span", { class: "pill proto-badge" }, PROTOCOL_LABELS[s.protocol] || s.protocol)
+      : null;
     const meta = el("div", { class: "meta" }, [
       el("span", { class: "pill" }, `Set ${n}`),
+      groupBadge,
       el("span", {}, fmtSet(s)),
+      protoBadge,
       s.executed ? null : el("span", { class: "pill" }, "planned"),
     ]);
     const actions = el("div", { class: "actions" });
@@ -384,12 +408,13 @@
         (e) =>
           `${e.exercise_name}\n` +
           e.sets
-            .map(
-              (s) =>
-                `  · ${s.reps}${
-                  s.weight != null ? ` × ${s.weight}${s.unit}` : ""
-                }${s.rpe ? ` @RPE${s.rpe}` : ""}`
-            )
+            .map((s) => {
+              const wStr = s.is_bodyweight
+                ? (s.weight != null ? `BW+${s.weight}${s.unit}` : "BW")
+                : (s.weight != null ? `${s.weight}${s.unit}` : "");
+              const proto = s.protocol ? ` [${s.protocol.toUpperCase()}]` : "";
+              return `  · ${s.reps}${wStr ? ` × ${wStr}` : ""}${s.rpe ? ` @RPE${s.rpe}` : ""}${proto}`;
+            })
             .join("\n")
       )
       .join("\n\n");

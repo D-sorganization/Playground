@@ -200,7 +200,9 @@ class TestAliasRoutes:
 
 
 class TestWorkoutSearchRoute:
-    def _create_workout_with_set(self, client, date, status, exercise_name, weight=None):  # noqa: E501
+    def _create_workout_with_set(
+        self, client, date, status, exercise_name, weight=None
+    ):  # noqa: E501
         r = client.post("/api/exercises", json={"name": exercise_name})
         ex_id = r.json["id"]
         r = client.post("/api/workouts", json={"date": date, "status": status})
@@ -355,11 +357,21 @@ class TestAdvancedStatsRoutes:
         wid = client.post("/api/workouts", json={"date": "2024-05-01"}).json["id"]
         client.post(
             f"/api/workouts/{wid}/sets",
-            json={"exercise_id": ex_a, "actual_reps": 5, "actual_weight": 200, "executed": True},  # noqa: E501
+            json={
+                "exercise_id": ex_a,
+                "actual_reps": 5,
+                "actual_weight": 200,
+                "executed": True,
+            },  # noqa: E501
         )
         client.post(
             f"/api/workouts/{wid}/sets",
-            json={"exercise_id": ex_b, "actual_reps": 5, "actual_weight": 100, "executed": True},  # noqa: E501
+            json={
+                "exercise_id": ex_b,
+                "actual_reps": 5,
+                "actual_weight": 100,
+                "executed": True,
+            },  # noqa: E501
         )
 
         r = client.post(

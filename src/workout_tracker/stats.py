@@ -364,9 +364,7 @@ def session_metrics(sets: Iterable[WorkoutSet]) -> list[SessionMetrics]:
 
     out: list[SessionMetrics] = []
     for wid, ws in by_workout.items():
-        tonnage = sum(
-            (s.actual_weight or 0.0) * (s.actual_reps or 0) for s in ws
-        )
+        tonnage = sum((s.actual_weight or 0.0) * (s.actual_reps or 0) for s in ws)
         exercises = len({s.exercise_id for s in ws})
         # Use the earliest completed_at date as the session date
         dates = [s.completed_at[:10] for s in ws if s.completed_at]
@@ -406,10 +404,7 @@ def calendar_heatmap_data(
         d = date_t.fromisoformat(s.completed_at[:10])
         if d >= cutoff:
             counts[s.completed_at[:10]] += 1
-    return [
-        HeatmapDay(date=day, count=cnt)
-        for day, cnt in sorted(counts.items())
-    ]
+    return [HeatmapDay(date=day, count=cnt) for day, cnt in sorted(counts.items())]
 
 
 @dataclass
@@ -466,9 +461,11 @@ def strength_ratio(
     Returns ratio=None if either exercise has no executed sets.
     Pure math — no advice.
     """
+
     def _best(ss: list[WorkoutSet]) -> float:
         executed = [
-            s for s in ss
+            s
+            for s in ss
             if s.executed and s.actual_weight is not None and s.actual_reps
         ]
         if not executed:
