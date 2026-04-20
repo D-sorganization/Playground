@@ -109,8 +109,10 @@ class TestLastSessionSets:
 
     def test_limit_is_respected(self, repo) -> None:
         self._add_workout_with_sets(
-            repo, "2024-01-10", "Deadlift",
-            [(5, 225), (5, 245), (5, 265), (3, 275), (1, 285)]
+            repo,
+            "2024-01-10",
+            "Deadlift",
+            [(5, 225), (5, 245), (5, 265), (3, 275), (1, 285)],
         )
         ex = repo.resolve_exercise_by_name("Deadlift")
         assert ex is not None
@@ -124,8 +126,12 @@ class TestLastSessionSets:
         ex = repo.get_or_create_exercise("OHP")
         # planned set (not executed)
         planned = WorkoutSet(
-            workout_id=w.id or 0, exercise_id=ex.id or 0,
-            position=-1, planned_reps=5, planned_weight=95, executed=False,
+            workout_id=w.id or 0,
+            exercise_id=ex.id or 0,
+            position=-1,
+            planned_reps=5,
+            planned_weight=95,
+            executed=False,
         )
         repo.add_set(planned)
         sets = repo.last_session_sets(ex.id or 0)
@@ -204,8 +210,12 @@ class TestLastSessionSetsRoute:
         wid = r.json["id"]
         client.post(
             f"/api/workouts/{wid}/sets",
-            json={"exercise_name": "Overhead Press", "actual_reps": 5,
-                  "actual_weight": 95, "executed": True},
+            json={
+                "exercise_name": "Overhead Press",
+                "actual_reps": 5,
+                "actual_weight": 95,
+                "executed": True,
+            },
         )
         r = client.get("/api/last_session_sets?exercise_name=overhead+press")
         assert r.status_code == 200

@@ -202,7 +202,7 @@ class TestAliasRoutes:
 class TestWorkoutSearchRoute:
     def _create_workout_with_set(
         self, client, date, status, exercise_name, weight=None
-    ):  # noqa: E501
+    ):
         r = client.post("/api/exercises", json={"name": exercise_name})
         ex_id = r.json["id"]
         r = client.post("/api/workouts", json={"date": date, "status": status})
@@ -249,8 +249,7 @@ class TestWorkoutSearchRoute:
         assert r.status_code == 400
 
     def test_search_route_before_workout_id_route(self, client) -> None:
-        # This verifies /api/workouts/search is not mistaken for /api/workouts/<int:w_id>  # noqa: E501
-        # with w_id="search" — Flask should route it correctly
+        # Verifies /api/workouts/search is not mistaken for /api/workouts/<int:w_id>.
         r = client.get("/api/workouts/search")
         assert r.status_code == 200
 
@@ -288,7 +287,7 @@ class TestAdvancedStatsRoutes:
     """GH298 — advanced stats endpoints."""
 
     def _setup_workout(self, client):
-        """Helper: create a workout with 3 executed sets and return workout id + exercise id."""  # noqa: E501
+        """Create a workout with 3 executed sets and return workout id + exercise id."""
         r = client.post(
             "/api/workouts",
             json={"date": "2024-05-03", "status": "in_progress"},
@@ -362,7 +361,7 @@ class TestAdvancedStatsRoutes:
                 "actual_reps": 5,
                 "actual_weight": 200,
                 "executed": True,
-            },  # noqa: E501
+            },
         )
         client.post(
             f"/api/workouts/{wid}/sets",
@@ -371,7 +370,7 @@ class TestAdvancedStatsRoutes:
                 "actual_reps": 5,
                 "actual_weight": 100,
                 "executed": True,
-            },  # noqa: E501
+            },
         )
 
         r = client.post(

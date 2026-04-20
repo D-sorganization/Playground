@@ -128,7 +128,7 @@ class TestSuggestAliasResolver:
             return None
 
         out = suggest("bp", self.catalog, alias_resolver=resolver)
-        # "bp" normalized is "bp"; alias resolver returns bench press -> should be ranked first  # noqa: E501
+        # "bp" alias resolves to bench press and should rank first.
         assert out and out[0].id == self.bp.id
 
     def test_no_alias_resolver_works_normally(self) -> None:
