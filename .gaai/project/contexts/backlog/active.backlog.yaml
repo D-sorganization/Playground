@@ -45,7 +45,8 @@ items:
   - id: GH300
     title: "Workout Tracker: Search, filters, and exercise aliases"
     priority: medium
-    status: refined
+    status: in_progress
+    started_at: "2026-04-20T10:40:17Z"
     github_issue: 300
     artefact: .gaai/project/contexts/artefacts/stories/GH300.story.md
     dependencies: []
