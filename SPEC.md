@@ -28,7 +28,7 @@
 | **License**             | MIT                                             |
 | **Current Version**     | 1.0.1                                           |
 | **Spec Version**        | 1.1.0                                           |
-| **Last Spec Update**    | 2026-04-19                                      |
+| **Last Spec Update**    | 2026-04-20                                      |
 
 ## 2. Purpose & Mission
 
@@ -71,6 +71,7 @@ Playground/
 │   │   ├── parser.py           # Free-text notes -> structured sets
 │   │   ├── autocomplete.py     # Fuzzy suggest (trigram + Damerau-Levenshtein)
 │   │   ├── stats.py            # Volume / 1RM / PRs / timeseries / frequency
+│   │   ├── planning.py         # Planned-workout templates and schedule helpers
 │   │   └── app.py              # Flask app factory + /api routes
 │   └── Project_GROOT/          # Simulation, evaluation, training framework
 │       ├── sim/                # Simulation engine
@@ -100,6 +101,7 @@ Playground/
 | WT Parser                | `src/workout_tracker/parser.py`    | Parse notes like `Bench 3x5 @ 135` into structured sets                 |
 | WT Autocomplete          | `src/workout_tracker/autocomplete.py` | Trigram + Damerau-Levenshtein fuzzy ranking for exercise names       |
 | WT Stats                 | `src/workout_tracker/stats.py`     | Epley/Brzycki 1RM, PRs, per-exercise summary, timeseries, frequency     |
+| WT Planning              | `src/workout_tracker/planning.py`  | Planned-workout templates, schedule helpers, and workout search          |
 | WT App                   | `src/workout_tracker/app.py`       | Flask factory, `/api/*` JSON surface, PWA shell                         |
 | Project GROOT            | `src/Project_GROOT/`               | Integrated simulation, training, evaluation, and data framework         |
 | GROOT Simulation         | `src/Project_GROOT/sim/`           | Core simulation engine for environment and agent interactions           |
