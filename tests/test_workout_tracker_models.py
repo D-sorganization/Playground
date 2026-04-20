@@ -99,6 +99,7 @@ class TestWorkout:
 class TestWorkoutSetProtocol:
     def test_valid_protocols(self) -> None:
         from workout_tracker.models import VALID_PROTOCOLS
+
         for p in VALID_PROTOCOLS:
             s = WorkoutSet(workout_id=1, exercise_id=1, position=0, protocol=p)
             assert s.protocol == p

@@ -297,8 +297,14 @@ class TestSessionMetrics:
     def test_multiple_workouts(self) -> None:
         sets = [
             _s(workout_id=1, reps=5, weight=100, completed_at="2024-05-01T08:00:00"),
-            _s(workout_id=2, reps=5, weight=200, completed_at="2024-05-02T08:00:00",
-               ex_id=2, ex_name="Deadlift"),
+            _s(
+                workout_id=2,
+                reps=5,
+                weight=200,
+                completed_at="2024-05-02T08:00:00",
+                ex_id=2,
+                ex_name="Deadlift",
+            ),
         ]
         result = session_metrics(sets)
         assert len(result) == 2
