@@ -236,6 +236,47 @@ input:focus, select:focus, textarea:focus {
 }
 .toast.danger { border-color: var(--danger); color: var(--danger); }
 
+/* Modal (plate calculator etc.) */
+.modal {
+  position: fixed; inset: 0; z-index: 50;
+  background: rgba(5, 7, 12, 0.72);
+  display: flex; align-items: center; justify-content: center;
+  padding: 14px;
+}
+.modal.hidden { display: none; }
+.modal-card {
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 18px;
+  width: 100%;
+  max-width: 480px;
+}
+.modal-card label { display: block; }
+.modal-card label .lbl { margin-bottom: 4px; }
+.modal-card .grow input,
+.modal-card .grow select { width: 100%; }
+.plate-result {
+  margin-top: 14px;
+  padding: 14px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 1rem;
+}
+.plate-result .headline {
+  font-size: 1.15rem; font-weight: 600; color: var(--accent); margin-bottom: 6px;
+}
+.plate-result .plates {
+  display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px;
+}
+.plate-result .chip {
+  background: var(--bg-3); border: 1px solid var(--border);
+  border-radius: 999px; padding: 4px 10px; font-size: .9rem;
+}
+.plate-result .warn { color: var(--warn); margin-top: 6px; font-size: .9rem; }
+
 /* Mobile */
 @media (max-width: 480px) {
   main { padding: 10px 10px 80px; }

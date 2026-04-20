@@ -68,6 +68,15 @@
                   min="0"
                   placeholder="weight"
                 />
+                <button
+                  id="plate-open"
+                  type="button"
+                  class="btn icon"
+                  aria-label="Plate calculator"
+                  title="Plate calculator"
+                >
+                  🧮
+                </button>
                 <select id="unit-input">
                   <option value="lbs">lbs</option>
                   <option value="kg">kg</option>
@@ -179,6 +188,35 @@
 
     <div id="toast" class="toast hidden"></div>
 
+    <!-- Plate calculator modal (#295) -->
+    <div id="plate-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="plate-modal-title">
+      <div class="modal-card">
+        <div class="row between">
+          <h2 id="plate-modal-title">Plate Calculator</h2>
+          <button id="plate-close" class="btn icon" aria-label="Close">✕</button>
+        </div>
+        <div class="row gap">
+          <label class="grow">
+            <span class="lbl">Target weight</span>
+            <input id="plate-target" type="number" inputmode="decimal" step="any" min="0" placeholder="225" />
+          </label>
+          <label>
+            <span class="lbl">Bar</span>
+            <input id="plate-bar" type="number" inputmode="decimal" step="any" min="0" value="45" />
+          </label>
+          <label>
+            <span class="lbl">Unit</span>
+            <select id="plate-unit">
+              <option value="lbs">lbs</option>
+              <option value="kg">kg</option>
+            </select>
+          </label>
+        </div>
+        <div id="plate-result" class="plate-result"></div>
+      </div>
+    </div>
+
+    <script src="/static/lib.js" defer></script>
     <script src="/static/app.js" defer></script>
   </body>
 </html>

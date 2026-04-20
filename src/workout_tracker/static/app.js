@@ -659,6 +659,91 @@
     return el("div", { class: "item" }, [meta, actions]);
   }
 
+  // ---------- Plate calculator modal (#295) ----------
+
+  function openPlateModal() {
+    const modal = $("#plate-modal");
+    if (!modal) return;
+    // Seed target with the current weight-input value and unit.
+    const w = $("#weight-input").value;
+    const unit = $("#unit-input").value || "lbs";
+    $("#plate-target").value = w || "";
+    $("#plate-unit").value = unit;
+    // Default bar: 45 lbs, 20 kg. Preserve user override via localStorage.
+    const savedBar = localStorage.getItem(`plate_bar_${unit}`);
+    $("#plate-bar").value = savedBar || (unit === "kg" ? 20 : 45);
+    modal.classList.remove("hidden");
+    renderPlateResult();
+    $("#plate-target").focus();
+  }
+
+  function closePlateModal() {
+    const modal = $("#plate-modal");
+    if (modal) modal.classList.add("hidden");
+  }
+
+  function renderPlateResult() {
+    const lib = window.WorkoutLib;
+    const out = $("#plate-result");
+    if (!lib || !out) return;
+    const target = Number($("#plate-target").value);
+    const bar = Number($("#plate-bar").value);
+    const unit = $("#plate-unit").value || "lbs";
+    localStorage.setItem(`plate_bar_${unit}`, String(bar));
+    if (!target) {
+      out.innerHTML = "";
+      return;
+    }
+    const plates = unit === "kg" ? lib.DEFAULT_PLATES_KG : lib.DEFAULT_PLATES_LBS;
+    const r = lib.platesFor(target, bar, plates);
+    out.innerHTML = "";
+    out.appendChild(
+      el("div", { class: "headline" }, lib.formatPlates(r))
+    );
+    if (r.perSide && r.perSide.length) {
+      const chips = el("div", { class: "plates" });
+      for (const p of r.perSide) {
+        chips.appendChild(
+          el("span", { class: "chip" }, `${p.count} × ${p.plate}${unit}`)
+        );
+      }
+      out.appendChild(chips);
+    }
+    if (r.warning === "below_bar") {
+      out.appendChild(
+        el("div", { class: "warn" }, `Target is below bar weight (${bar}${unit}).`)
+      );
+    } else if (r.leftover && r.leftover > 0) {
+      out.appendChild(
+        el(
+          "div",
+          { class: "warn" },
+          `Short by ${r.leftover}${unit} (achievable: ${r.achievable}${unit}).`
+        )
+      );
+    }
+  }
+
+  function bindPlateModal() {
+    const btn = $("#plate-open");
+    if (!btn) return;
+    btn.addEventListener("click", openPlateModal);
+    $("#plate-close").addEventListener("click", closePlateModal);
+    $("#plate-modal").addEventListener("click", (e) => {
+      if (e.target === $("#plate-modal")) closePlateModal();
+    });
+    ["input", "change"].forEach((evt) => {
+      $("#plate-target").addEventListener(evt, renderPlateResult);
+      $("#plate-bar").addEventListener(evt, renderPlateResult);
+      $("#plate-unit").addEventListener(evt, renderPlateResult);
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && !$("#plate-modal").classList.contains("hidden")) {
+        closePlateModal();
+      }
+    });
+  }
+
   // ---------- Init ----------
 
   function bindButtons() {
@@ -675,6 +760,7 @@
     bindTabs();
     bindAutocomplete();
     bindButtons();
+    bindPlateModal();
     tryResumeActive();
   }
 
