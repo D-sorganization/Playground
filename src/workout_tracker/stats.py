@@ -9,7 +9,8 @@ from __future__ import annotations
 from collections import defaultdict
 from collections.abc import Iterable
 from dataclasses import asdict, dataclass
-from datetime import datetime
+from datetime import date as date_t
+from datetime import datetime, timedelta
 from statistics import mean
 from typing import Any
 
@@ -274,3 +275,212 @@ def overview(sets: Iterable[WorkoutSet]) -> Overview:
         distinct_exercises=len(exercise_ids),
         last_workout_date=last[:10] if last else None,
     )
+
+
+# ---------------------------------------------------------------------------
+# Advanced stats — GH298
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class StreakResult:
+    current_streak: int
+    longest_streak: int
+    last_training_date: str | None
+
+
+def training_streak(
+    sets: Iterable[WorkoutSet], today: str | None = None
+) -> StreakResult:
+    """Compute current and longest consecutive training-day streaks.
+
+    A streak is a run of consecutive calendar days on which at least one
+    executed set was logged. today parameter is used to anchor 'current'
+    (defaults to datetime.utcnow().date()).
+    """
+    today_d: date_t = (
+        datetime.fromisoformat(today).date() if today else datetime.utcnow().date()
+    )
+    training_days = sorted(
+        {s.completed_at[:10] for s in sets if s.executed and s.completed_at}
+    )
+    if not training_days:
+        return StreakResult(current_streak=0, longest_streak=0, last_training_date=None)
+
+    # Convert to date objects
+    day_objs = [date_t.fromisoformat(d) for d in training_days]
+
+    # Compute longest streak via one pass
+    longest = 1
+    current_run = 1
+    for i in range(1, len(day_objs)):
+        if (day_objs[i] - day_objs[i - 1]).days == 1:
+            current_run += 1
+            longest = max(longest, current_run)
+        else:
+            current_run = 1
+
+    # Current streak: walk backwards from today
+    last_day = day_objs[-1]
+    # Streak is alive only if the last training day is today or yesterday
+    gap = (today_d - last_day).days
+    if gap > 1:
+        current = 0
+    else:
+        current = 1
+        idx = len(day_objs) - 2
+        while idx >= 0:
+            if (day_objs[idx + 1] - day_objs[idx]).days == 1:
+                current += 1
+                idx -= 1
+            else:
+                break
+
+    return StreakResult(
+        current_streak=current,
+        longest_streak=longest,
+        last_training_date=training_days[-1],
+    )
+
+
+@dataclass
+class SessionMetrics:
+    workout_id: int
+    date: str
+    tonnage: float
+    sets: int
+    exercises: int
+
+
+def session_metrics(sets: Iterable[WorkoutSet]) -> list[SessionMetrics]:
+    """Per-workout metrics: tonnage, set count, distinct exercises.
+
+    Tonnage = sum(actual_weight * actual_reps) for executed sets.
+    """
+    by_workout: dict[int, list[WorkoutSet]] = defaultdict(list)
+    for s in sets:
+        if s.executed:
+            by_workout[s.workout_id].append(s)
+
+    out: list[SessionMetrics] = []
+    for wid, ws in by_workout.items():
+        tonnage = sum(
+            (s.actual_weight or 0.0) * (s.actual_reps or 0) for s in ws
+        )
+        exercises = len({s.exercise_id for s in ws})
+        # Use the earliest completed_at date as the session date
+        dates = [s.completed_at[:10] for s in ws if s.completed_at]
+        date = min(dates) if dates else ""
+        out.append(
+            SessionMetrics(
+                workout_id=wid,
+                date=date,
+                tonnage=tonnage,
+                sets=len(ws),
+                exercises=exercises,
+            )
+        )
+    out.sort(key=lambda m: m.date, reverse=True)
+    return out
+
+
+@dataclass
+class HeatmapDay:
+    date: str
+    count: int
+
+
+def calendar_heatmap_data(
+    sets: Iterable[WorkoutSet], weeks: int = 26
+) -> list[HeatmapDay]:
+    """Return executed set counts per day for the last N weeks.
+
+    Only days with at least one set are included. Frontend fills zeros.
+    """
+    today = datetime.utcnow().date()
+    cutoff = today - timedelta(weeks=weeks)
+    counts: dict[str, int] = defaultdict(int)
+    for s in sets:
+        if not s.executed or not s.completed_at:
+            continue
+        d = date_t.fromisoformat(s.completed_at[:10])
+        if d >= cutoff:
+            counts[s.completed_at[:10]] += 1
+    return [
+        HeatmapDay(date=day, count=cnt)
+        for day, cnt in sorted(counts.items())
+    ]
+
+
+@dataclass
+class TrendPoint:
+    period_label: str
+    volume: float
+    sets: int
+
+
+def volume_trend(
+    sets: Iterable[WorkoutSet], period: str = "weekly"
+) -> list[TrendPoint]:
+    """Aggregate volume per week or month for a single exercise.
+
+    period: 'weekly' → ISO YYYY-WNN, 'monthly' → YYYY-MM.
+    Returns points sorted chronologically.
+    """
+    if period not in ("weekly", "monthly"):
+        raise ValueError("period must be 'weekly' or 'monthly'")
+
+    buckets: dict[str, list[WorkoutSet]] = defaultdict(list)
+    for s in sets:
+        if not s.executed or not s.completed_at:
+            continue
+        d = date_t.fromisoformat(s.completed_at[:10])
+        if period == "weekly":
+            iso = d.isocalendar()
+            label = f"{iso.year}-W{iso.week:02d}"
+        else:
+            label = s.completed_at[:7]  # YYYY-MM
+        buckets[label].append(s)
+
+    out: list[TrendPoint] = []
+    for label in sorted(buckets):
+        ws = buckets[label]
+        vol = sum(set_volume(s) for s in ws)
+        out.append(TrendPoint(period_label=label, volume=vol, sets=len(ws)))
+    return out
+
+
+@dataclass
+class StrengthRatio:
+    ratio: float | None
+    e1rm_a: float
+    e1rm_b: float
+
+
+def strength_ratio(
+    sets_a: Iterable[WorkoutSet],
+    sets_b: Iterable[WorkoutSet],
+) -> StrengthRatio:
+    """Compute strength ratio between two exercises (e1RM_a / e1RM_b).
+
+    Returns ratio=None if either exercise has no executed sets.
+    Pure math — no advice.
+    """
+    def _best(ss: list[WorkoutSet]) -> float:
+        executed = [
+            s for s in ss
+            if s.executed and s.actual_weight is not None and s.actual_reps
+        ]
+        if not executed:
+            return 0.0
+        return max(
+            best_1rm_estimate(s.actual_weight or 0.0, s.actual_reps or 0)
+            for s in executed
+        )
+
+    e1rm_a = _best(list(sets_a))
+    e1rm_b = _best(list(sets_b))
+    ratio: float | None = None
+    if e1rm_a > 0 and e1rm_b > 0:
+        ratio = e1rm_a / e1rm_b
+    return StrengthRatio(ratio=ratio, e1rm_a=e1rm_a, e1rm_b=e1rm_b)

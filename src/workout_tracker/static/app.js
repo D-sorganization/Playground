@@ -495,7 +495,10 @@
   // ---------- Stats ----------
 
   async function loadStats() {
-    const data = await api.get("/api/stats/overview");
+    const [data, adv] = await Promise.all([
+      api.get("/api/stats/overview"),
+      api.get("/api/stats/advanced"),
+    ]);
     const ov = data.overview;
     const tiles = $("#stats-overview");
     tiles.innerHTML = "";
@@ -509,6 +512,9 @@
     tiles.appendChild(stat(round(ov.total_volume), "Volume"));
     tiles.appendChild(stat(ov.distinct_exercises, "Exercises"));
     tiles.appendChild(stat(ov.last_workout_date || "—", "Last"));
+
+    renderStreak(adv.streak);
+    renderHeatmap(adv.heatmap);
 
     const prs = $("#stats-prs");
     prs.innerHTML = "";
@@ -534,20 +540,27 @@
 
     const sum = $("#stats-summary");
     sum.innerHTML = "";
+    // Close detail panel on re-load
+    $("#stats-exercise-detail").classList.add("hidden");
     for (const s of data.per_exercise) {
-      sum.appendChild(
-        el("div", { class: "item" }, [
-          el("div", { class: "meta" }, [
-            el("span", { class: "title" }, s.exercise_name),
-            el(
-              "span",
-              { class: "sub" },
-              `${s.total_sets} sets · ${s.total_reps} reps · vol ${round(s.total_volume)} · top ${s.max_weight}×${s.max_reps_at_max_weight} · e1RM ${round(s.best_e1rm)}`
-            ),
-          ]),
-        ])
+      const row = el("div", { class: "item" }, [
+        el("div", { class: "meta" }, [
+          el("span", { class: "title" }, s.exercise_name),
+          el(
+            "span",
+            { class: "sub" },
+            `${s.total_sets} sets · ${s.total_reps} reps · vol ${round(s.total_volume)} · top ${s.max_weight}×${s.max_reps_at_max_weight} · e1RM ${round(s.best_e1rm)}`
+          ),
+        ]),
+      ]);
+      row.style.cursor = "pointer";
+      row.addEventListener("click", () =>
+        loadExerciseDetail(s.exercise_id, s.exercise_name)
       );
+      sum.appendChild(row);
     }
+
+    renderSessions(adv.sessions);
 
     const fr = $("#stats-frequency");
     fr.innerHTML = "";
@@ -565,6 +578,291 @@
         ])
       );
     }
+
+    await populateRatioPicker();
+  }
+
+  // ---------- Streak ----------
+
+  function renderStreak(streak) {
+    const wrap = $("#stats-streak");
+    wrap.innerHTML = "";
+    const badge = (num, lbl) =>
+      el("div", { class: "streak-badge" }, [
+        el("div", { class: "streak-num" }, String(num)),
+        el("div", { class: "streak-lbl" }, lbl),
+      ]);
+    wrap.appendChild(badge(streak.current_streak, "Current streak (days)"));
+    wrap.appendChild(badge(streak.longest_streak, "Longest streak (days)"));
+    if (streak.last_training_date) {
+      wrap.appendChild(badge(streak.last_training_date, "Last trained"));
+    }
+  }
+
+  // ---------- Heatmap ----------
+
+  function renderHeatmap(heatmap) {
+    const wrap = $("#stats-heatmap");
+    wrap.innerHTML = "";
+    if (!heatmap.length) {
+      wrap.appendChild(
+        el("p", { class: "muted small" }, "No training days yet.")
+      );
+      return;
+    }
+
+    const counts = {};
+    let maxCount = 0;
+    for (const d of heatmap) {
+      counts[d.date] = d.count;
+      if (d.count > maxCount) maxCount = d.count;
+    }
+
+    const WEEKS = 26;
+    const today = new Date();
+    const startDate = new Date(today);
+    startDate.setDate(
+      startDate.getDate() - today.getDay() - (WEEKS - 1) * 7
+    );
+
+    const cellSize = 13;
+    const gap = 2;
+    const step = cellSize + gap;
+    const svgW = WEEKS * step;
+    const svgH = 7 * step;
+
+    const NS = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(NS, "svg");
+    svg.setAttribute("viewBox", `0 0 ${svgW} ${svgH}`);
+    svg.setAttribute("class", "heatmap-svg");
+    svg.style.width = "100%";
+    svg.style.maxWidth = `${svgW}px`;
+
+    const colors = [
+      "#1d2230", "#1a4a3a", "#1f6b53", "#25a27a", "#6ee7b7",
+    ];
+    const cur = new Date(startDate);
+    for (let col = 0; col < WEEKS; col++) {
+      for (let row = 0; row < 7; row++) {
+        const iso = cur.toISOString().slice(0, 10);
+        const cnt = counts[iso] || 0;
+        let colorIdx = 0;
+        if (cnt > 0 && maxCount > 0) {
+          colorIdx = Math.min(4, Math.ceil((cnt / maxCount) * 4));
+        }
+        const rect = document.createElementNS(NS, "rect");
+        rect.setAttribute("x", col * step);
+        rect.setAttribute("y", row * step);
+        rect.setAttribute("width", cellSize);
+        rect.setAttribute("height", cellSize);
+        rect.setAttribute("rx", 2);
+        rect.setAttribute("fill", colors[colorIdx]);
+        const title = document.createElementNS(NS, "title");
+        title.textContent = `${iso}: ${cnt} sets`;
+        rect.appendChild(title);
+        svg.appendChild(rect);
+        cur.setDate(cur.getDate() + 1);
+      }
+    }
+    wrap.appendChild(svg);
+  }
+
+  // ---------- Exercise detail (sparklines) ----------
+
+  async function loadExerciseDetail(exId, exName) {
+    const panel = $("#stats-exercise-detail");
+    const charts = $("#stats-detail-charts");
+    $("#stats-detail-name").textContent = exName;
+    charts.innerHTML = '<p class="muted small">Loading\u2026</p>';
+    panel.classList.remove("hidden");
+
+    const data = await api.get(
+      `/api/stats/exercise/${exId}/trend?period=weekly`
+    );
+    charts.innerHTML = "";
+
+    if (data.trend.length > 0) {
+      charts.appendChild(el("p", { class: "lbl" }, "Weekly Volume"));
+      charts.appendChild(
+        renderSparkline(
+          data.trend.map((p) => ({ x: p.period_label, y: p.volume })),
+          { color: "var(--accent)", prDates: [] }
+        )
+      );
+    }
+
+    if (data.timeseries.length > 0) {
+      const prDates = data.personal_records
+        .filter((p) => p.metric === "best_e1rm")
+        .map((p) => p.date);
+      charts.appendChild(el("p", { class: "lbl" }, "e1RM Progression"));
+      charts.appendChild(
+        renderSparkline(
+          data.timeseries.map((p) => ({ x: p.date, y: p.best_e1rm })),
+          { color: "var(--accent-2)", prDates }
+        )
+      );
+    }
+
+    if (!data.trend.length && !data.timeseries.length) {
+      charts.appendChild(
+        el("p", { class: "muted small" }, "No data yet.")
+      );
+    }
+  }
+
+  function renderSparkline(points, { color, prDates }) {
+    if (!points.length) return el("p", { class: "muted small" }, "No data.");
+
+    const W = 300,
+      H = 80,
+      PAD = { t: 8, r: 8, b: 20, l: 40 };
+    const iW = W - PAD.l - PAD.r;
+    const iH = H - PAD.t - PAD.b;
+
+    const ys = points.map((p) => p.y);
+    const minY = Math.min(...ys);
+    const maxY = Math.max(...ys);
+    const rangeY = maxY - minY || 1;
+    const n = points.length;
+
+    const px = (i) => PAD.l + (i / Math.max(n - 1, 1)) * iW;
+    const py = (v) => PAD.t + iH - ((v - minY) / rangeY) * iH;
+
+    const NS = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(NS, "svg");
+    svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+    svg.setAttribute("class", "sparkline-svg");
+
+    const makeL = (x1, y1, x2, y2) => {
+      const line = document.createElementNS(NS, "line");
+      line.setAttribute("x1", x1); line.setAttribute("y1", y1);
+      line.setAttribute("x2", x2); line.setAttribute("y2", y2);
+      line.setAttribute("class", "sparkline-axis");
+      return line;
+    };
+    svg.appendChild(makeL(PAD.l, PAD.t, PAD.l, PAD.t + iH));
+    svg.appendChild(makeL(PAD.l, PAD.t + iH, PAD.l + iW, PAD.t + iH));
+
+    const lblY = (v, y) => {
+      const t = document.createElementNS(NS, "text");
+      t.setAttribute("x", PAD.l - 4);
+      t.setAttribute("y", y + 4);
+      t.setAttribute("text-anchor", "end");
+      t.setAttribute("class", "sparkline-label");
+      t.textContent = Math.round(v);
+      return t;
+    };
+    svg.appendChild(lblY(minY, PAD.t + iH));
+    svg.appendChild(lblY(maxY, PAD.t));
+
+    const pts = points.map((p, i) => `${px(i)},${py(p.y)}`).join(" ");
+    const poly = document.createElementNS(NS, "polyline");
+    poly.setAttribute("points", pts);
+    poly.setAttribute("fill", "none");
+    poly.setAttribute("stroke", color);
+    poly.setAttribute("stroke-width", "2");
+    svg.appendChild(poly);
+
+    const prSet = new Set(prDates);
+    points.forEach((p, i) => {
+      if (prSet.has(p.x.slice(0, 10))) {
+        const c = document.createElementNS(NS, "circle");
+        c.setAttribute("cx", px(i));
+        c.setAttribute("cy", py(p.y));
+        c.setAttribute("r", 4);
+        c.setAttribute("fill", "var(--warn)");
+        const title = document.createElementNS(NS, "title");
+        title.textContent = `PR: ${Math.round(p.y)} on ${p.x}`;
+        c.appendChild(title);
+        svg.appendChild(c);
+      }
+    });
+
+    const xlbl = (text, x) => {
+      const t = document.createElementNS(NS, "text");
+      t.setAttribute("x", x);
+      t.setAttribute("y", H - 2);
+      t.setAttribute("text-anchor", "middle");
+      t.setAttribute("class", "sparkline-label");
+      t.textContent = text;
+      return t;
+    };
+    svg.appendChild(xlbl(points[0].x, px(0)));
+    if (n > 1) svg.appendChild(xlbl(points[n - 1].x, px(n - 1)));
+
+    return svg;
+  }
+
+  // ---------- Session metrics ----------
+
+  function renderSessions(sessions) {
+    const wrap = $("#stats-sessions");
+    wrap.innerHTML = "";
+    if (!sessions.length) {
+      wrap.appendChild(
+        el("p", { class: "muted small" }, "No sessions yet.")
+      );
+      return;
+    }
+    const rows = sessions
+      .slice(0, 10)
+      .map(
+        (s) =>
+          `<tr><td>${s.date}</td><td>${round(s.tonnage)}</td><td>${s.sets}</td><td>${s.exercises}</td></tr>`
+      )
+      .join("");
+    wrap.innerHTML = `<table class="sessions-table">
+      <thead><tr><th>Date</th><th>Tonnage</th><th>Sets</th><th>Exercises</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+  }
+
+  // ---------- Strength ratio picker ----------
+
+  async function populateRatioPicker() {
+    const exs = await api.get("/api/exercises");
+    const opts = exs
+      .map((e) => `<option value="${e.id}">${e.name}</option>`)
+      .join("");
+    const selA = $("#ratio-a");
+    const selB = $("#ratio-b");
+    selA.innerHTML = '<option value="">Exercise A</option>' + opts;
+    selB.innerHTML = '<option value="">Exercise B</option>' + opts;
+
+    const compute = async () => {
+      const aId = selA.value;
+      const bId = selB.value;
+      const disp = $("#stats-ratio");
+      if (!aId || !bId || aId === bId) {
+        disp.classList.add("hidden");
+        return;
+      }
+      try {
+        const r = await api.post("/api/stats/ratio", {
+          exercise_a_id: Number(aId),
+          exercise_b_id: Number(bId),
+        });
+        disp.classList.remove("hidden");
+        disp.innerHTML =
+          r.ratio != null
+            ? `<div class="ratio-num">${round(r.ratio)}</div>
+               <div class="ratio-sub">${r.name_a} (e1RM ${round(r.e1rm_a)}) &divide; ${r.name_b} (e1RM ${round(r.e1rm_b)})</div>`
+            : `<div class="ratio-sub">Not enough data for one or both exercises.</div>`;
+      } catch {
+        // ignore
+      }
+    };
+
+    // Avoid duplicate listeners on re-population by cloning
+    const newA = selA.cloneNode(true);
+    const newB = selB.cloneNode(true);
+    selA.parentNode.replaceChild(newA, selA);
+    selB.parentNode.replaceChild(newB, selB);
+    newA.innerHTML = '<option value="">Exercise A</option>' + opts;
+    newB.innerHTML = '<option value="">Exercise B</option>' + opts;
+    newA.addEventListener("change", compute);
+    newB.addEventListener("change", compute);
   }
 
   function round(n) {
@@ -669,6 +967,9 @@
     $("#preview-plan").addEventListener("click", previewPlan);
     $("#save-plan").addEventListener("click", savePlan);
     $("#plan-date").value = localDateISO();
+    $("#stats-detail-close").addEventListener("click", () => {
+      $("#stats-exercise-detail").classList.add("hidden");
+    });
   }
 
   function init() {

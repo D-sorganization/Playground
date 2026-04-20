@@ -150,6 +150,11 @@
         <div class="card">
           <h2>Overview</h2>
           <div id="stats-overview" class="grid-stats"></div>
+          <div id="stats-streak" class="streak-wrap"></div>
+        </div>
+        <div class="card">
+          <h2>Training Heatmap</h2>
+          <div id="stats-heatmap" class="heatmap-wrap"></div>
         </div>
         <div class="card">
           <h2>Personal Records</h2>
@@ -157,7 +162,29 @@
         </div>
         <div class="card">
           <h2>Per-Exercise Summary</h2>
+          <p class="muted small">Click an exercise to see its volume trend and e1RM chart.</p>
           <div id="stats-summary" class="list"></div>
+          <div id="stats-exercise-detail" class="hidden">
+            <div class="row between">
+              <h3 id="stats-detail-name"></h3>
+              <button id="stats-detail-close" class="btn icon">✕</button>
+            </div>
+            <div id="stats-detail-charts"></div>
+          </div>
+        </div>
+        <div class="card">
+          <h2>Strength Ratio</h2>
+          <p class="muted small">Compare two exercises by estimated 1RM — pure math, no advice.</p>
+          <div class="row gap">
+            <select id="ratio-a" class="grow"><option value="">Exercise A</option></select>
+            <span class="muted">÷</span>
+            <select id="ratio-b" class="grow"><option value="">Exercise B</option></select>
+          </div>
+          <div id="stats-ratio" class="ratio-display hidden"></div>
+        </div>
+        <div class="card">
+          <h2>Recent Sessions</h2>
+          <div id="stats-sessions" class="list"></div>
         </div>
         <div class="card">
           <h2>Frequency</h2>
