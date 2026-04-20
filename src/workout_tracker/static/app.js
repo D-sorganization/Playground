@@ -136,6 +136,7 @@
     $("#active-workout").classList.add("hidden");
     $("#today-date").textContent = new Date().toLocaleDateString();
     stopTimers();
+    releaseWakeLock();
   }
 
   async function refreshActiveWorkout() {
@@ -151,6 +152,7 @@
     $("#today-date").textContent = w.date;
     $("#today-title").textContent = w.title || "Today's Workout";
     startTimers();
+    acquireWakeLock();
 
     const list = $("#set-list");
     list.innerHTML = "";
@@ -666,6 +668,49 @@
     return el("div", { class: "item" }, [meta, actions]);
   }
 
+  // ---------- Screen Wake Lock (#295) ----------
+  // Progressive enhancement: no-op on browsers without navigator.wakeLock.
+  // Acquired when an active workout renders, released on finish / tab hide.
+  // Re-acquired automatically on visibilitychange (the Wake Lock API
+  // releases the sentinel when the tab is backgrounded).
+  const wake = { sentinel: null, wanted: false };
+
+  async function acquireWakeLock() {
+    wake.wanted = true;
+    if (!("wakeLock" in navigator)) return;
+    if (wake.sentinel) return;
+    try {
+      wake.sentinel = await navigator.wakeLock.request("screen");
+      wake.sentinel.addEventListener("release", () => {
+        wake.sentinel = null;
+      });
+    } catch (err) {
+      // Permission denied / not allowed — silently fall back.
+      console.debug("wakeLock.request failed:", err && err.message);
+    }
+  }
+
+  async function releaseWakeLock() {
+    wake.wanted = false;
+    if (wake.sentinel) {
+      try {
+        await wake.sentinel.release();
+      } catch {
+        /* ignore */
+      }
+      wake.sentinel = null;
+    }
+  }
+
+  function bindWakeLockLifecycle() {
+    if (!("wakeLock" in navigator)) return;
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible" && wake.wanted) {
+        acquireWakeLock();
+      }
+    });
+  }
+
   // ---------- Timers (#295) ----------
   // Session: counts UP from when active workout became visible.
   // Rest: counts UP from the last ✓ executed set (or manual reset).
@@ -909,6 +954,7 @@
     bindButtons();
     bindWeightSteppers();
     bindPlateModal();
+    bindWakeLockLifecycle();
     tryResumeActive();
   }
 
