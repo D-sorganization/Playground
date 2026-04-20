@@ -451,19 +451,19 @@ def register_routes(app: _FlaskApp) -> None:
         weekday_raw = data.get("weekday")
         target_date: str = data.get("target_date") or date_t.today().isoformat()
         if weekday_raw is None:
-            abort(400, "weekday required")
+            return abort(400, "weekday required")
         try:
-            weekday_int = int(weekday_raw)
+            weekday_int: int = int(weekday_raw)
         except (ValueError, TypeError):
-            abort(400, "weekday must be an integer 0-6")
+            return abort(400, "weekday must be an integer 0-6")
         try:
             w = planning.copy_last_weekday_session(
                 repo, weekday=weekday_int, target_date=target_date
             )
         except ValueError as e:
-            abort(400, str(e))
+            return abort(400, str(e))
         if w is None:
-            abort(404, "no prior session found for that weekday")
+            return abort(404, "no prior session found for that weekday")
         return jsonify(w.to_dict()), 201
 
     # ---------- weekly schedule ----------
@@ -475,18 +475,18 @@ def register_routes(app: _FlaskApp) -> None:
         schedule_raw = data.get("schedule")
         week_start_raw = data.get("week_start")
         if not schedule_raw or not week_start_raw:
-            abort(400, "schedule and week_start required")
+            return abort(400, "schedule and week_start required")
         week_start: str = str(week_start_raw)
         try:
             schedule: dict[int, Any] = {int(k): v for k, v in schedule_raw.items()}
         except (ValueError, AttributeError):
-            abort(400, "schedule keys must be integer weekdays 0-6")
+            return abort(400, "schedule keys must be integer weekdays 0-6")
         try:
             workouts = planning.apply_weekly_schedule(
                 repo, schedule, week_start=week_start
             )
         except ValueError as e:
-            abort(400, str(e))
+            return abort(400, str(e))
         return jsonify([w.to_dict() for w in workouts]), 201
 
     # ---------- stats ----------
