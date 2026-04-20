@@ -90,7 +90,7 @@ items:
   - id: GH297
     title: "Workout Tracker: Planning – templates, copy-last, weekly schedule, % sets"
     priority: medium
-    status: in_progress
+    status: done
     started_at: "2026-04-20T11:30:33Z"
     github_issue: 297
     artefact: .gaai/project/contexts/artefacts/stories/GH297.story.md
