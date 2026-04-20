@@ -8,8 +8,9 @@ CREATE TABLE IF NOT EXISTS exercises (
     normalized_name TEXT NOT NULL UNIQUE,
     use_count INTEGER NOT NULL DEFAULT 0,
     last_used_at TEXT,
-    created_at TEXT NOT NULL DEFAULT (datetime('now')),
-    deleted_at TEXT
+    muscle_tags TEXT,                             -- user-defined free text tags, comma-separated
+    deleted_at TEXT,                              -- soft-delete timestamp; NULL = active
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
 CREATE INDEX IF NOT EXISTS idx_exercises_normalized

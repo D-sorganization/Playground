@@ -47,6 +47,7 @@ def connect(db_path: str | Path) -> sqlite3.Connection:
 def _migrate(conn: sqlite3.Connection) -> None:
     """Add columns introduced after the initial schema deploy. SQLite-safe."""
     migrations = [
+        ("exercises", "muscle_tags", "TEXT"),
         ("exercises", "deleted_at", "TEXT"),
         ("workouts", "deleted_at", "TEXT"),
         ("sets", "deleted_at", "TEXT"),
@@ -144,6 +145,21 @@ class WorkoutRepository:
             cur.execute(
                 "UPDATE exercises SET name = ?, normalized_name = ? WHERE id = ?",
                 (clean, norm, exercise_id),
+            )
+        row = self.conn.execute(
+            "SELECT * FROM exercises WHERE id = ?", (exercise_id,)
+        ).fetchone()
+        if row is None:
+            raise KeyError(f"exercise {exercise_id} not found")
+        return self._row_to_exercise(row)
+
+    def update_exercise_tags(self, exercise_id: int, tags: str | None) -> Exercise:
+        """Set muscle_tags on an exercise. Pass None or '' to clear."""
+        value = tags.strip() if tags else None
+        with self._tx() as cur:
+            cur.execute(
+                "UPDATE exercises SET muscle_tags = ? WHERE id = ?",
+                (value or None, exercise_id),
             )
         row = self.conn.execute(
             "SELECT * FROM exercises WHERE id = ?", (exercise_id,)
@@ -663,12 +679,14 @@ class WorkoutRepository:
 
     @staticmethod
     def _row_to_exercise(row: sqlite3.Row) -> Exercise:
+        keys = row.keys()
         return Exercise(
             id=row["id"],
             name=row["name"],
             normalized_name=row["normalized_name"],
             use_count=row["use_count"],
             last_used_at=row["last_used_at"],
+            muscle_tags=row["muscle_tags"] if "muscle_tags" in keys else None,
             created_at=row["created_at"],
         )
 

@@ -54,6 +54,7 @@ class Exercise:
     id: int | None = None
     use_count: int = 0
     last_used_at: str | None = None
+    muscle_tags: str | None = None  # user-defined free text, comma-separated
     created_at: str | None = None
 
     def __post_init__(self) -> None:

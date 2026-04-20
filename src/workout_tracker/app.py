@@ -76,7 +76,7 @@ def create_app(db_path: str | None = None) -> _FlaskApp:
         g.conn = connect(app.config["DB_PATH"])
         g.repo = WorkoutRepository(g.conn)
 
-    @app.teardown_appcontext
+    @app.teardown_request
     def _close_conn(exc: BaseException | None) -> None:
         conn = g.pop("conn", None)
         if conn is not None:
@@ -84,6 +84,25 @@ def create_app(db_path: str | None = None) -> _FlaskApp:
 
     register_routes(app)
     return app
+
+
+def _parse_int(value: Any, message: str) -> int:
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        raise ValueError(message) from None
+
+
+def _require_mapping(value: Any, message: str) -> dict[Any, Any]:
+    if not isinstance(value, dict):
+        raise ValueError(message)
+    return value
+
+
+def _require_str(value: Any, message: str) -> str:
+    if not isinstance(value, str):
+        raise ValueError(message)
+    return value
 
 
 # --------------------------------------------------------------------- routes
@@ -171,6 +190,25 @@ def register_routes(app: _FlaskApp) -> None:
         repo.delete_alias(alias_id)
         return jsonify({"ok": True})
 
+    @app.put("/api/exercises/<int:ex_id>/tags")
+    def update_exercise_tags(ex_id: int) -> Any:
+        repo: WorkoutRepository = g.repo
+        data = request.get_json(force=True) or {}
+        tags = data.get("tags")
+        if tags is not None and not isinstance(tags, str):
+            abort(400, "tags must be a string or null")
+        try:
+            ex = repo.update_exercise_tags(ex_id, tags)
+        except KeyError:
+            abort(404)
+        return jsonify(ex.to_dict())
+
+    @app.post("/api/exercises/<int:ex_id>/restore")
+    def restore_exercise(ex_id: int) -> Any:
+        repo: WorkoutRepository = g.repo
+        repo.restore_exercise(ex_id)
+        return jsonify({"ok": True})
+
     @app.post("/api/exercises/bulk")
     def bulk_edit_exercises() -> Any:
         repo: WorkoutRepository = g.repo
@@ -192,7 +230,10 @@ def register_routes(app: _FlaskApp) -> None:
             if not source_ids or target_id is None:
                 abort(400, "source_ids and target_id required")
             try:
-                repo.bulk_merge_exercises(source_ids, int(target_id))
+                target_id_int = _parse_int(
+                    target_id, "source_ids and target_id required"
+                )
+                repo.bulk_merge_exercises(source_ids, target_id_int)
             except (ValueError, KeyError) as e:
                 abort(400, str(e))
             return jsonify({"ok": True, "merged": len(source_ids)})
@@ -305,6 +346,12 @@ def register_routes(app: _FlaskApp) -> None:
         repo.delete_workout(w_id)
         return jsonify({"ok": True})
 
+    @app.post("/api/workouts/<int:w_id>/restore")
+    def restore_workout(w_id: int) -> Any:
+        repo: WorkoutRepository = g.repo
+        repo.restore_workout(w_id)
+        return jsonify({"ok": True})
+
     # ---------- sets ----------
 
     @app.post("/api/workouts/<int:w_id>/sets")
@@ -358,6 +405,12 @@ def register_routes(app: _FlaskApp) -> None:
     def delete_set(set_id: int) -> Any:
         repo: WorkoutRepository = g.repo
         repo.delete_set(set_id)
+        return jsonify({"ok": True})
+
+    @app.post("/api/sets/<int:set_id>/restore")
+    def restore_set(set_id: int) -> Any:
+        repo: WorkoutRepository = g.repo
+        repo.restore_set(set_id)
         return jsonify({"ok": True})
 
     # ---------- parser ----------
@@ -480,21 +533,22 @@ def register_routes(app: _FlaskApp) -> None:
         repo: WorkoutRepository = g.repo
         data = request.get_json(force=True) or {}
         weekday_raw = data.get("weekday")
-        target_date: str = data.get("target_date") or date_t.today().isoformat()
+        target_date = data.get("target_date") or date_t.today().isoformat()
         if weekday_raw is None:
-            return abort(400, "weekday required")
+            abort(400, "weekday required")
         try:
-            weekday_int: int = int(weekday_raw)
-        except (ValueError, TypeError):
-            return abort(400, "weekday must be an integer 0-6")
+            weekday = _parse_int(weekday_raw, "weekday must be an integer 0-6")
+        except ValueError as e:
+            abort(400, str(e))
         try:
             w = planning.copy_last_weekday_session(
-                repo, weekday=weekday_int, target_date=target_date
+                repo, weekday=weekday, target_date=target_date
             )
         except ValueError as e:
-            return abort(400, str(e))
+            abort(400, str(e))
         if w is None:
-            return abort(404, "no prior session found for that weekday")
+            abort(404, "no prior session found for that weekday")
+        assert w is not None
         return jsonify(w.to_dict()), 201
 
     # ---------- weekly schedule ----------
@@ -506,18 +560,27 @@ def register_routes(app: _FlaskApp) -> None:
         schedule_raw = data.get("schedule")
         week_start_raw = data.get("week_start")
         if not schedule_raw or not week_start_raw:
-            return abort(400, "schedule and week_start required")
-        week_start: str = str(week_start_raw)
+            abort(400, "schedule and week_start required")
         try:
-            schedule: dict[int, Any] = {int(k): v for k, v in schedule_raw.items()}
-        except (ValueError, AttributeError):
-            return abort(400, "schedule keys must be integer weekdays 0-6")
+            schedule_data = _require_mapping(
+                schedule_raw, "schedule keys must be integer weekdays 0-6"
+            )
+            schedule = {
+                _parse_int(k, "schedule keys must be integer weekdays 0-6"): v
+                for k, v in schedule_data.items()
+            }
+            week_start = str(week_start_raw)
+        except ValueError as e:
+            abort(400, str(e))
+        if any(not isinstance(v, str) for v in schedule.values()):
+            abort(400, "schedule keys must be integer weekdays 0-6")
         try:
             workouts = planning.apply_weekly_schedule(
                 repo, schedule, week_start=week_start
             )
         except ValueError as e:
-            return abort(400, str(e))
+            abort(400, str(e))
+        assert all(isinstance(v, str) for v in schedule.values())
         return jsonify([w.to_dict() for w in workouts]), 201
 
     # ---------- stats ----------
@@ -590,22 +653,22 @@ def register_routes(app: _FlaskApp) -> None:
     @app.post("/api/stats/ratio")
     def stats_ratio() -> Any:
         repo: WorkoutRepository = g.repo
-        data = cast(dict[str, Any], request.get_json(force=True) or {})
-        ex_a_id = data.get("exercise_a_id")
-        ex_b_id = data.get("exercise_b_id")
-        if not ex_a_id or not ex_b_id:
+        data = request.get_json(force=True) or {}
+        ex_a_id_raw = data.get("exercise_a_id")
+        ex_b_id_raw = data.get("exercise_b_id")
+        if not ex_a_id_raw or not ex_b_id_raw:
             abort(400, "exercise_a_id and exercise_b_id required")
-        ex_a_int = int(cast(int | str, ex_a_id))
-        ex_b_int = int(cast(int | str, ex_b_id))
         exercises = {e.id: e for e in repo.list_exercises()}
-        ex_a = exercises.get(ex_a_int)
-        ex_b = exercises.get(ex_b_int)
+        ex_a_id = _parse_int(ex_a_id_raw, "exercise_a_id and exercise_b_id required")
+        ex_b_id = _parse_int(ex_b_id_raw, "exercise_a_id and exercise_b_id required")
+        ex_a = exercises.get(ex_a_id)
+        ex_b = exercises.get(ex_b_id)
         if not ex_a or not ex_b:
             abort(404)
         assert ex_a is not None
         assert ex_b is not None
-        sets_a = repo.list_sets_for_exercise(ex_a_int, executed_only=True)
-        sets_b = repo.list_sets_for_exercise(ex_b_int, executed_only=True)
+        sets_a = repo.list_sets_for_exercise(ex_a_id, executed_only=True)
+        sets_b = repo.list_sets_for_exercise(ex_b_id, executed_only=True)
         ratio = stats.strength_ratio(sets_a, sets_b)
         return jsonify(
             {
@@ -628,13 +691,13 @@ def register_routes(app: _FlaskApp) -> None:
     def import_json_route() -> Any:
         repo: WorkoutRepository = g.repo
         payload = request.get_json(force=True) or {}
-        mode = payload.get("mode")
-        snapshot = payload.get("data")
-        if not mode:
-            abort(400, "mode required (restore or merge)")
-        if snapshot is None:
-            abort(400, "data required")
+        mode_raw = payload.get("mode")
+        snapshot_raw = payload.get("data")
         try:
+            mode = _require_str(mode_raw, "mode required (restore or merge)")
+            snapshot = cast(
+                dict[str, Any], _require_mapping(snapshot_raw, "data required")
+            )
             result = data_mgmt.import_db(repo, snapshot, mode=mode)
         except ValueError as e:
             abort(400, str(e))
@@ -712,12 +775,13 @@ def register_routes(app: _FlaskApp) -> None:
         if not item_type or item_id is None:
             abort(400, "type and id required")
         try:
+            item_id_int = _parse_int(item_id, "type and id required")
             if item_type == "workout":
-                repo.restore_workout(int(item_id))
+                repo.restore_workout(item_id_int)
             elif item_type == "exercise":
-                repo.restore_exercise(int(item_id))
+                repo.restore_exercise(item_id_int)
             elif item_type == "set":
-                repo.restore_set(int(item_id))
+                repo.restore_set(item_id_int)
             else:
                 abort(
                     400, f"unknown type {item_type!r}. Must be: workout, exercise, set"
