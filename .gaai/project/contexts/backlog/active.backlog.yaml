@@ -60,7 +60,8 @@ items:
   - id: GH299
     title: "Workout Tracker: Data management – export/import/CSV/trash/bulk-edit"
     priority: medium
-    status: refined
+    status: in_progress
+    started_at: "2026-04-20T10:57:23Z"
     github_issue: 299
     artefact: .gaai/project/contexts/artefacts/stories/GH299.story.md
     dependencies: []
