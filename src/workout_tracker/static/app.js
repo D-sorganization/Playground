@@ -661,6 +661,39 @@
 
   // ---------- Init ----------
 
+  // Adjust the weight input by a delta (quick ± buttons). Treats an empty
+  // input as 0. Rounds to 2 decimals to avoid float-noise like 137.50000001.
+  function adjustWeight(delta) {
+    const inp = $("#weight-input");
+    const cur = inp.value === "" ? 0 : Number(inp.value);
+    if (!Number.isFinite(cur)) return;
+    let next = cur + Number(delta);
+    if (next < 0) next = 0;
+    inp.value = String(Math.round(next * 100) / 100);
+  }
+
+  // Repeat the most recent logged (executed) set in the active workout.
+  // Clones exercise/reps/weight/unit/rpe into a new executed set so the
+  // user can keep logging at-pace between work sets.
+  async function repeatLastSet() {
+    if (!state.activeWorkoutId) return toast("Start a workout first", "danger");
+    const w = await api.get(`/api/workouts/${state.activeWorkoutId}`);
+    const executed = (w.sets || []).filter((s) => s.executed);
+    if (!executed.length) return toast("No logged sets to repeat", "danger");
+    const last = executed[executed.length - 1];
+    const body = {
+      exercise_name: last.exercise_name,
+      unit: last.unit || "lbs",
+      executed: true,
+      actual_reps: last.actual_reps ?? null,
+      actual_weight: last.actual_weight ?? null,
+      rpe: last.rpe ?? null,
+    };
+    await api.post(`/api/workouts/${state.activeWorkoutId}/sets`, body);
+    toast("Set repeated ✓");
+    refreshActiveWorkout();
+  }
+
   function bindButtons() {
     $("#start-workout").addEventListener("click", startWorkout);
     $("#add-set").addEventListener("click", () => addSet(true));
@@ -669,6 +702,11 @@
     $("#preview-plan").addEventListener("click", previewPlan);
     $("#save-plan").addEventListener("click", savePlan);
     $("#plan-date").value = localDateISO();
+    const repeatBtn = $("#repeat-last-set");
+    if (repeatBtn) repeatBtn.addEventListener("click", repeatLastSet);
+    $$(".weight-quick .wq").forEach((b) =>
+      b.addEventListener("click", () => adjustWeight(b.dataset.delta))
+    );
   }
 
   function init() {

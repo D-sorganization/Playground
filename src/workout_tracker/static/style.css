@@ -144,6 +144,15 @@ input:focus, select:focus, textarea:focus {
   padding: 6px 10px; min-height: 32px; font-size: .9rem;
 }
 
+/* Quick weight ± row: compact chip-style tap targets */
+.weight-quick { gap: 6px; margin: 4px 0 0; }
+.weight-quick .wq {
+  flex: 1; min-width: 56px; min-height: var(--tap);
+  padding: 8px 6px; font-size: .95rem; font-weight: 600;
+  background: var(--bg-2); color: var(--fg);
+}
+.weight-quick .wq:hover { background: var(--bg-3); }
+
 /* Empty state */
 .empty {
   text-align: center; padding: 30px 10px;

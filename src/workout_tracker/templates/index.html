@@ -82,8 +82,18 @@
                   placeholder="rpe"
                 />
               </div>
+              <div class="row gap weight-quick" aria-label="Quick weight adjust">
+                <button type="button" class="btn icon wq" data-delta="-5">−5</button>
+                <button type="button" class="btn icon wq" data-delta="-2.5">−2.5</button>
+                <button type="button" class="btn icon wq" data-delta="2.5">+2.5</button>
+                <button type="button" class="btn icon wq" data-delta="5">+5</button>
+                <button type="button" class="btn icon wq" data-delta="10">+10</button>
+              </div>
               <div class="row gap">
                 <button id="add-set" class="btn primary grow">+ Log Set</button>
+                <button id="repeat-last-set" class="btn" title="Clone last logged set">
+                  ↻ Repeat Last
+                </button>
                 <button id="add-planned" class="btn">+ Plan Set</button>
               </div>
             </div>
