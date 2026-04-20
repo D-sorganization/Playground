@@ -89,6 +89,13 @@
     catalog: [],          // [Exercise]
     pendingExercise: null,
     suggestFocus: -1,
+    // Timers (GH295)
+    sessionStart: null,     // Date — when current workout started
+    sessionTimerHandle: null,
+    restStart: null,        // Date — when last rest started
+    restTimerHandle: null,
+    // Wake lock (GH295)
+    wakeLock: null,
   };
 
   // ---------- Tabs ----------
@@ -126,6 +133,8 @@
     });
     state.activeWorkoutId = w.id;
     localStorage.setItem("active_workout_id", String(w.id));
+    startSessionTimer();
+    await acquireWakeLock();
     await refreshActiveWorkout();
   }
 
@@ -139,6 +148,8 @@
         return showEmpty();
       }
       state.activeWorkoutId = w.id;
+      startSessionTimer();
+      await acquireWakeLock();
       renderActive(w);
     } catch {
       localStorage.removeItem("active_workout_id");
@@ -211,6 +222,7 @@
                 actual_reps: s.actual_reps ?? s.planned_reps,
                 actual_weight: s.actual_weight ?? s.planned_weight,
               });
+              startRestTimer();
               refreshActiveWorkout();
             },
           },
@@ -218,6 +230,29 @@
         )
       );
     }
+    // Repeat last set button (GH295) — clone this set's reps/weight into the form
+    actions.appendChild(
+      el(
+        "button",
+        {
+          class: "btn icon repeat-set",
+          title: "Repeat this set",
+          onclick: () => {
+            const reps = s.actual_reps ?? s.planned_reps;
+            const weight = s.actual_weight ?? s.planned_weight;
+            if (reps != null) $("#reps-input").value = reps;
+            if (weight != null) $("#weight-input").value = weight;
+            const exName = s.exercise_name;
+            if (exName) {
+              $("#ex-input").value = exName;
+              refreshLastSession(exName);
+            }
+            toast("Set pre-filled ⟳");
+          },
+        },
+        "⟳"
+      )
+    );
     actions.appendChild(
       el(
         "button",
@@ -307,6 +342,7 @@
   function pickSuggestion(name) {
     $("#ex-input").value = name;
     $("#ex-suggest").classList.add("hidden");
+    refreshLastSession(name);
     $("#reps-input").focus();
   }
 
@@ -382,6 +418,7 @@
     await api.post(`/api/workouts/${wid}/sets`, body);
     $("#reps-input").value = "";
     // Keep weight + exercise to make repeated sets fast
+    if (executed) startRestTimer();
     toast(executed ? "Set logged ✓" : "Set planned");
     refreshActiveWorkout();
   }
@@ -394,8 +431,301 @@
     });
     localStorage.removeItem("active_workout_id");
     state.activeWorkoutId = null;
+    stopSessionTimer();
+    stopRestTimer();
+    releaseWakeLock();
     showEmpty();
     toast("Workout saved ✓");
+  }
+
+  // ---------- Session timer (GH295) ----------
+
+  function startSessionTimer() {
+    state.sessionStart = Date.now();
+    clearInterval(state.sessionTimerHandle);
+    state.sessionTimerHandle = setInterval(tickSessionTimer, 1000);
+    tickSessionTimer();
+  }
+
+  function stopSessionTimer() {
+    clearInterval(state.sessionTimerHandle);
+    state.sessionTimerHandle = null;
+    state.sessionStart = null;
+    const el = $("#session-timer");
+    if (el) el.textContent = "0:00";
+  }
+
+  function tickSessionTimer() {
+    if (!state.sessionStart) return;
+    const el = $("#session-timer");
+    if (!el) return;
+    const secs = Math.floor((Date.now() - state.sessionStart) / 1000);
+    el.textContent = fmtDuration(secs);
+  }
+
+  // ---------- Rest timer (GH295) ----------
+
+  function startRestTimer() {
+    state.restStart = Date.now();
+    clearInterval(state.restTimerHandle);
+    state.restTimerHandle = setInterval(tickRestTimer, 1000);
+    tickRestTimer();
+  }
+
+  function stopRestTimer() {
+    clearInterval(state.restTimerHandle);
+    state.restTimerHandle = null;
+    state.restStart = null;
+    const el = $("#rest-timer");
+    if (el) {
+      el.textContent = "—";
+      el.className = "timer-val rest-idle";
+    }
+  }
+
+  function tickRestTimer() {
+    if (!state.restStart) return;
+    const el = $("#rest-timer");
+    if (!el) return;
+    const secs = Math.floor((Date.now() - state.restStart) / 1000);
+    el.textContent = fmtDuration(secs);
+    el.className = "timer-val rest-active";
+  }
+
+  function fmtDuration(secs) {
+    const m = Math.floor(secs / 60);
+    const s = secs % 60;
+    return `${m}:${String(s).padStart(2, "0")}`;
+  }
+
+  // ---------- Screen Wake Lock (GH295) ----------
+
+  async function acquireWakeLock() {
+    if (!("wakeLock" in navigator)) return;
+    try {
+      state.wakeLock = await navigator.wakeLock.request("screen");
+      state.wakeLock.addEventListener("release", () => {
+        state.wakeLock = null;
+      });
+    } catch {
+      // Wake lock not available — silently ignore
+    }
+  }
+
+  function releaseWakeLock() {
+    if (state.wakeLock) {
+      state.wakeLock.release().catch(() => {});
+      state.wakeLock = null;
+    }
+  }
+
+  // Re-acquire wake lock when page becomes visible again (browser may revoke on hide)
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible" && state.activeWorkoutId && !state.wakeLock) {
+      acquireWakeLock();
+    }
+  });
+
+  // ---------- Last-session recall (GH295) ----------
+
+  async function refreshLastSession(exerciseName) {
+    const strip = $("#last-session-strip");
+    if (!strip) return;
+    strip.classList.add("hidden");
+    strip.innerHTML = "";
+    if (!exerciseName || !exerciseName.trim()) return;
+    try {
+      const sets = await api.get(
+        `/api/last_session_sets?exercise_name=${encodeURIComponent(exerciseName)}&limit=10`
+      );
+      if (!sets.length) return;
+      const lbl = el("span", { class: "lss-label" }, "Last:");
+      strip.appendChild(lbl);
+      sets.forEach((s) => {
+        const txt = fmtSet(s);
+        const chip = el("span", {
+          class: "lss-set",
+          title: "Click to fill weight/reps",
+          onclick: () => {
+            const reps = s.actual_reps ?? s.planned_reps;
+            const weight = s.actual_weight ?? s.planned_weight;
+            if (reps != null) $("#reps-input").value = reps;
+            if (weight != null) $("#weight-input").value = weight;
+          },
+        }, txt);
+        strip.appendChild(chip);
+      });
+      strip.classList.remove("hidden");
+    } catch {
+      // silently ignore
+    }
+  }
+
+  // ---------- Quick weight ± (GH295) ----------
+
+  function bindWeightAdj() {
+    $$(".adj-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const delta = parseFloat(btn.dataset.delta);
+        const input = $("#weight-input");
+        const cur = parseFloat(input.value) || 0;
+        const next = Math.max(0, Math.round((cur + delta) * 100) / 100);
+        input.value = next;
+      });
+    });
+  }
+
+  // ---------- Plate calculator modal (GH295) ----------
+
+  const PLATE_SIZES_LBS = [45, 35, 25, 10, 5, 2.5];
+  const PLATE_SIZES_KG = [20, 15, 10, 5, 2.5, 1.25];
+
+  function calcPlates(targetWeight, barWeight, unit) {
+    const sizes = unit === "kg" ? PLATE_SIZES_KG : PLATE_SIZES_LBS;
+    const perSide = (targetWeight - barWeight) / 2;
+    if (perSide < 0) return null; // impossible
+    let remaining = perSide;
+    const result = [];
+    for (const size of sizes) {
+      const count = Math.floor(remaining / size + 1e-9);
+      if (count > 0) {
+        result.push({ size, count });
+        remaining -= count * size;
+      }
+    }
+    if (remaining > 0.01) return null; // can't make it exactly
+    return result;
+  }
+
+  function renderPlateResult() {
+    const target = parseFloat($("#plate-target").value) || 0;
+    const bar = parseFloat($("#plate-bar").value) || 45;
+    const unit = $("#plate-unit").value;
+    const div = $("#plate-result");
+    if (!target) { div.innerHTML = ""; return; }
+    const plates = calcPlates(target, bar, unit);
+    if (plates === null) {
+      div.innerHTML = `<span class="plate-err">Cannot make ${target}${unit} with standard plates + ${bar}${unit} bar.</span>`;
+      return;
+    }
+    if (plates.length === 0) {
+      div.innerHTML = `<span style="color:var(--fg-muted)">Just the bar (${bar}${unit})</span>`;
+      return;
+    }
+    div.innerHTML = plates
+      .map(
+        (p) =>
+          `<div class="plate-each">
+            <span class="plate-weight">${p.size}${unit}</span>
+            <span class="plate-count">× ${p.count} per side</span>
+           </div>`
+      )
+      .join("");
+  }
+
+  function bindPlateCalc() {
+    const btn = $("#plate-calc-btn");
+    const modal = $("#plate-modal");
+    const close = $("#plate-modal-close");
+    if (!btn || !modal) return;
+
+    btn.addEventListener("click", () => {
+      // Pre-fill from current weight input
+      const w = parseFloat($("#weight-input").value);
+      if (w > 0) $("#plate-target").value = w;
+      $("#plate-unit").value = $("#unit-input").value;
+      modal.classList.remove("hidden");
+      renderPlateResult();
+      $("#plate-target").focus();
+    });
+    close.addEventListener("click", () => modal.classList.add("hidden"));
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) modal.classList.add("hidden");
+    });
+    ["plate-target", "plate-bar", "plate-unit"].forEach((id) =>
+      $(`#${id}`).addEventListener("input", renderPlateResult)
+    );
+  }
+
+  // ---------- Voice input (GH295) ----------
+
+  function bindVoiceInput() {
+    const btn = $("#voice-btn");
+    const status = $("#voice-status");
+    if (!btn) return;
+
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      btn.title = "Voice input not supported in this browser";
+      btn.disabled = true;
+      return;
+    }
+
+    let recognition = null;
+
+    btn.addEventListener("click", () => {
+      if (recognition) {
+        recognition.stop();
+        return;
+      }
+      recognition = new SpeechRecognition();
+      recognition.lang = "en-US";
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+
+      recognition.onstart = () => {
+        btn.classList.add("active");
+        status.classList.remove("hidden");
+      };
+
+      recognition.onresult = (e) => {
+        const transcript = e.results[0][0].transcript.toLowerCase().trim();
+        parseVoiceInput(transcript);
+      };
+
+      recognition.onerror = () => {
+        toast("Voice input failed", "danger");
+      };
+
+      recognition.onend = () => {
+        recognition = null;
+        btn.classList.remove("active");
+        status.classList.add("hidden");
+      };
+
+      recognition.start();
+    });
+  }
+
+  /**
+   * Parse voice transcript like "bench press 5 by 135" or "squat 3 reps 225".
+   * Fills exercise name, reps, weight fields.
+   */
+  function parseVoiceInput(transcript) {
+    // Patterns: "exercise N by W", "exercise N x W", "exercise N reps W"
+    const match = transcript.match(
+      /^(.+?)\s+(\d+)\s+(?:by|x|reps?|×)\s+([\d.]+)/i
+    );
+    if (match) {
+      const exName = match[1].trim();
+      const reps = match[2];
+      const weight = match[3];
+      if (exName) $("#ex-input").value = toTitleCase(exName);
+      if (reps) $("#reps-input").value = reps;
+      if (weight) $("#weight-input").value = weight;
+      refreshLastSession(toTitleCase(exName));
+      toast(`Voice: "${transcript}"`);
+      return;
+    }
+    // Fallback: just set exercise name
+    $("#ex-input").value = toTitleCase(transcript);
+    refreshLastSession(toTitleCase(transcript));
+    toast(`Voice: "${transcript}"`);
+  }
+
+  function toTitleCase(str) {
+    return str.replace(/\b\w/g, (c) => c.toUpperCase());
   }
 
   // ---------- Plans ----------
@@ -1001,6 +1331,9 @@
     bindTabs();
     bindAutocomplete();
     bindButtons();
+    bindWeightAdj();
+    bindPlateCalc();
+    bindVoiceInput();
     tryResumeActive();
   }
 

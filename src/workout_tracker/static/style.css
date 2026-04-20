@@ -304,6 +304,76 @@ input:focus, select:focus, textarea:focus {
 }
 #stats-detail-charts { margin-top: 12px; }
 
+/* GH295 — Ergonomic logging */
+
+/* Timer strip */
+.timer-strip {
+  display: flex; align-items: center; gap: 16px;
+  background: var(--bg-2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 8px 14px;
+  margin-bottom: 12px; flex-wrap: wrap;
+}
+.timer-item { display: flex; flex-direction: column; align-items: center; min-width: 64px; }
+.timer-lbl { font-size: .7rem; text-transform: uppercase; letter-spacing: .07em; color: var(--fg-muted); }
+.timer-val { font-size: 1.1rem; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--accent); }
+.timer-val.rest-idle { color: var(--fg-muted); font-weight: 400; }
+.timer-val.rest-active { color: var(--warn); }
+
+/* Quick weight ± */
+.weight-wrap { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 90px; }
+.weight-adj { display: flex; gap: 3px; flex-wrap: wrap; }
+.adj-btn {
+  flex: 1; min-width: 40px; padding: 4px 6px !important;
+  min-height: 28px !important; font-size: .75rem !important;
+  background: var(--bg-3); color: var(--fg-muted);
+}
+.adj-btn:hover { color: var(--fg); }
+
+/* Last-session recall strip */
+.last-session-strip {
+  background: var(--bg-3); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 6px 10px;
+  font-size: .82rem; color: var(--fg-muted); margin-bottom: 6px;
+  display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+}
+.last-session-strip .lss-label { color: var(--accent-2); font-weight: 600; margin-right: 4px; }
+.last-session-strip .lss-set {
+  background: var(--bg-1); border: 1px solid var(--border);
+  border-radius: 999px; padding: 2px 8px; font-size: .78rem;
+  cursor: pointer;
+}
+.last-session-strip .lss-set:hover { border-color: var(--accent); color: var(--fg); }
+
+/* Voice input */
+#voice-btn { font-size: 1.1rem; }
+#voice-btn.active { color: var(--warn); border-color: var(--warn); }
+
+/* Plate calculator modal */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.55);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 50; padding: 16px;
+}
+.modal-box {
+  background: var(--bg-1); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 18px;
+  width: 100%; max-width: 480px; box-shadow: var(--shadow);
+}
+.plate-result {
+  margin-top: 12px; font-size: .95rem; min-height: 40px;
+}
+.plate-result .plate-each {
+  display: flex; gap: 8px; align-items: center;
+  padding: 6px 0; border-bottom: 1px solid var(--border);
+}
+.plate-result .plate-each:last-child { border-bottom: none; }
+.plate-result .plate-weight { font-weight: 700; color: var(--accent); min-width: 52px; }
+.plate-result .plate-count { color: var(--fg-muted); }
+.plate-result .plate-err { color: var(--danger); }
+
+/* Repeat-last-set button on set rows */
+.btn.repeat-set { font-size: .85rem; }
+
 /* Mobile */
 @media (max-width: 480px) {
   main { padding: 10px 10px 80px; }

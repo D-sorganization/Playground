@@ -406,6 +406,27 @@ def register_routes(app: _FlaskApp) -> None:
             abort(400, str(e))
         return jsonify(w.to_dict()), 201
 
+    # ---------- last session sets (GH295 — ergonomic logging) ----------
+
+    @app.get("/api/last_session_sets")
+    def last_session_sets() -> Any:
+        """Return the most-recent executed sets for a given exercise name.
+
+        Query params:
+            exercise_name (str, required)
+            limit (int, default 10) — max sets to return
+        """
+        repo: WorkoutRepository = g.repo
+        exercise_name = (request.args.get("exercise_name") or "").strip()
+        if not exercise_name:
+            abort(400, "exercise_name required")
+        limit = min(int(request.args.get("limit", 10)), 50)
+        ex = repo.resolve_exercise_by_name(exercise_name)
+        if ex is None:
+            return jsonify([])
+        sets = repo.last_session_sets(ex.id or 0, limit=limit)
+        return jsonify([s.to_dict() for s in sets])
+
     # ---------- copy last weekday ----------
 
     @app.post("/api/workouts/copy_last_weekday")
