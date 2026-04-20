@@ -8,7 +8,8 @@ CREATE TABLE IF NOT EXISTS exercises (
     normalized_name TEXT NOT NULL UNIQUE,
     use_count INTEGER NOT NULL DEFAULT 0,
     last_used_at TEXT,
-    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    deleted_at TEXT
 );
 
 CREATE INDEX IF NOT EXISTS idx_exercises_normalized
@@ -21,7 +22,8 @@ CREATE TABLE IF NOT EXISTS workouts (
     notes TEXT,
     status TEXT NOT NULL DEFAULT 'planned',      -- planned|in_progress|completed
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
-    updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+    updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+    deleted_at TEXT
 );
 
 CREATE INDEX IF NOT EXISTS idx_workouts_date ON workouts(date DESC);
@@ -41,6 +43,7 @@ CREATE TABLE IF NOT EXISTS sets (
     executed INTEGER NOT NULL DEFAULT 0,
     notes TEXT,
     completed_at TEXT,
+    deleted_at TEXT,
     FOREIGN KEY (workout_id) REFERENCES workouts(id) ON DELETE CASCADE,
     FOREIGN KEY (exercise_id) REFERENCES exercises(id)
 );

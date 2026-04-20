@@ -26,6 +26,9 @@ from workout_tracker.models import (
 
 logger = logging.getLogger(__name__)
 
+_LBS_PER_KG = 2.20462
+_KG_PER_LB = 0.453592
+
 
 def _row_to_dict(row: sqlite3.Row) -> dict[str, Any]:
     return {k: row[k] for k in row.keys()}
@@ -39,11 +42,28 @@ def connect(db_path: str | Path) -> sqlite3.Connection:
     return conn
 
 
+def _migrate(conn: sqlite3.Connection) -> None:
+    """Add new columns to existing tables (idempotent ALTER TABLE migrations)."""
+    migrations = [
+        ("exercises", "deleted_at", "TEXT"),
+        ("workouts", "deleted_at", "TEXT"),
+        ("sets", "deleted_at", "TEXT"),
+    ]
+    for table, column, col_type in migrations:
+        existing = {
+            row[1] for row in conn.execute(f"PRAGMA table_info({table})").fetchall()
+        }
+        if column not in existing:
+            conn.execute(f"ALTER TABLE {table} ADD COLUMN {column} {col_type}")
+    conn.commit()
+
+
 def init_db(conn: sqlite3.Connection) -> None:
-    """Create tables if missing. Idempotent."""
+    """Create tables if missing, then apply column migrations. Idempotent."""
     schema = resources.files("workout_tracker").joinpath("schema.sql").read_text()
     conn.executescript(schema)
     conn.commit()
+    _migrate(conn)
 
 
 class WorkoutRepository:
@@ -64,7 +84,7 @@ class WorkoutRepository:
         finally:
             cur.close()
 
-    # ---- Exercises -----------------------------------------------------
+    # ---- Exercises ---------------------------------------------------------
 
     def get_or_create_exercise(self, name: str) -> Exercise:
         """Return existing exercise (matched by normalized name) or insert."""
@@ -73,7 +93,7 @@ class WorkoutRepository:
             raise ValueError("Exercise name cannot be empty")
         norm = normalize_name(clean)
         row = self.conn.execute(
-            "SELECT * FROM exercises WHERE normalized_name = ?",
+            "SELECT * FROM exercises WHERE normalized_name = ? AND deleted_at IS NULL",
             (norm,),
         ).fetchone()
         if row is not None:
@@ -89,9 +109,20 @@ class WorkoutRepository:
         ).fetchone()
         return self._row_to_exercise(row)
 
+    def _find_exercise_by_normalized(self, normalized: str) -> Exercise | None:
+        """Find exercise by normalized name including soft-deleted. Used by import."""
+        if not normalized:
+            return None
+        row = self.conn.execute(
+            "SELECT * FROM exercises WHERE normalized_name = ?",
+            (normalized,),
+        ).fetchone()
+        return self._row_to_exercise(row) if row is not None else None
+
     def list_exercises(self) -> list[Exercise]:
         rows = self.conn.execute(
-            "SELECT * FROM exercises ORDER BY use_count DESC, name ASC"
+            "SELECT * FROM exercises WHERE deleted_at IS NULL "
+            "ORDER BY use_count DESC, name ASC"
         ).fetchall()
         return [self._row_to_exercise(r) for r in rows]
 
@@ -113,7 +144,7 @@ class WorkoutRepository:
         return self._row_to_exercise(row)
 
     def merge_exercise(self, source_id: int, target_id: int) -> None:
-        """Reassign sets from source -> target, delete source. Typo fix helper."""
+        """Reassign sets from source -> target, hard-delete source."""
         if source_id == target_id:
             return
         with self._tx() as cur:
@@ -129,9 +160,83 @@ class WorkoutRepository:
             cur.execute("DELETE FROM exercises WHERE id = ?", (source_id,))
 
     def delete_exercise(self, exercise_id: int) -> None:
+        """Soft-delete exercise and all its sets."""
+        now = datetime.utcnow().isoformat(timespec="seconds")
         with self._tx() as cur:
-            cur.execute("DELETE FROM sets WHERE exercise_id = ?", (exercise_id,))
-            cur.execute("DELETE FROM exercises WHERE id = ?", (exercise_id,))
+            cur.execute(
+                "UPDATE sets SET deleted_at = ?"
+                " WHERE exercise_id = ? AND deleted_at IS NULL",
+                (now, exercise_id),
+            )
+            cur.execute(
+                "UPDATE exercises SET deleted_at = ? WHERE id = ?",
+                (now, exercise_id),
+            )
+
+    def restore_exercise(self, exercise_id: int) -> None:
+        """Restore a soft-deleted exercise and its sets."""
+        with self._tx() as cur:
+            cur.execute(
+                "UPDATE exercises SET deleted_at = NULL WHERE id = ?",
+                (exercise_id,),
+            )
+            cur.execute(
+                "UPDATE sets SET deleted_at = NULL WHERE exercise_id = ?",
+                (exercise_id,),
+            )
+
+    def bulk_rename_exercises(self, renames: dict[int, str]) -> None:
+        """Rename multiple exercises atomically. renames = {exercise_id: new_name}."""
+        if not renames:
+            return
+        with self._tx() as cur:
+            for ex_id, new_name in renames.items():
+                clean = new_name.strip()
+                if not clean:
+                    raise ValueError(f"New name for exercise {ex_id} cannot be empty")
+                norm = normalize_name(clean)
+                cur.execute(
+                    "UPDATE exercises SET name = ?, normalized_name = ? WHERE id = ?",
+                    (clean, norm, ex_id),
+                )
+
+    def bulk_merge_exercises(self, source_ids: list[int], target_id: int) -> None:
+        """Merge multiple source exercises into target (hard-delete sources)."""
+        for src_id in source_ids:
+            self.merge_exercise(src_id, target_id)
+
+    def convert_sets_unit(
+        self, set_ids: list[int], from_unit: str, to_unit: str
+    ) -> None:
+        """Convert weight values for the given sets from one unit to another.
+
+        Only sets that currently have unit == from_unit are modified.
+        Raises ValueError for same-unit or unsupported units.
+        """
+        if from_unit == to_unit:
+            raise ValueError("from_unit and to_unit must differ")
+        if from_unit not in ("lbs", "kg") or to_unit not in ("lbs", "kg"):
+            raise ValueError("units must be 'lbs' or 'kg'")
+
+        factor = _KG_PER_LB if from_unit == "lbs" else _LBS_PER_KG
+
+        with self._tx() as cur:
+            for sid in set_ids:
+                row = self.conn.execute(
+                    "SELECT unit, planned_weight, actual_weight FROM sets WHERE id = ?",
+                    (sid,),
+                ).fetchone()
+                if row is None or row["unit"] != from_unit:
+                    continue
+                pw = row["planned_weight"]
+                aw = row["actual_weight"]
+                new_pw = round(pw * factor, 3) if pw is not None else None
+                new_aw = round(aw * factor, 3) if aw is not None else None
+                cur.execute(
+                    "UPDATE sets SET unit = ?,"
+                    " planned_weight = ?, actual_weight = ? WHERE id = ?",
+                    (to_unit, new_pw, new_aw, sid),
+                )
 
     # ---- Aliases -------------------------------------------------------
 
@@ -189,7 +294,7 @@ class WorkoutRepository:
             (datetime.utcnow().isoformat(timespec="seconds"), exercise_id),
         )
 
-    # ---- Workouts ------------------------------------------------------
+    # ---- Workouts ----------------------------------------------------------
 
     def create_workout(
         self,
@@ -209,7 +314,8 @@ class WorkoutRepository:
 
     def get_workout(self, workout_id: int) -> Workout:
         row = self.conn.execute(
-            "SELECT * FROM workouts WHERE id = ?", (workout_id,)
+            "SELECT * FROM workouts WHERE id = ? AND deleted_at IS NULL",
+            (workout_id,),
         ).fetchone()
         if row is None:
             raise KeyError(f"workout {workout_id} not found")
@@ -220,7 +326,8 @@ class WorkoutRepository:
 
     def list_workouts(self, limit: int = 50) -> list[Workout]:
         rows = self.conn.execute(
-            "SELECT * FROM workouts ORDER BY date DESC, id DESC LIMIT ?",
+            "SELECT * FROM workouts WHERE deleted_at IS NULL "
+            "ORDER BY date DESC, id DESC LIMIT ?",
             (limit,),
         ).fetchall()
         result: list[Workout] = []
@@ -253,8 +360,18 @@ class WorkoutRepository:
         return self.get_workout(workout_id)
 
     def delete_workout(self, workout_id: int) -> None:
+        """Soft-delete workout and all its sets."""
+        now = datetime.utcnow().isoformat(timespec="seconds")
         with self._tx() as cur:
-            cur.execute("DELETE FROM workouts WHERE id = ?", (workout_id,))
+            cur.execute(
+                "UPDATE sets SET deleted_at = ?"
+                " WHERE workout_id = ? AND deleted_at IS NULL",
+                (now, workout_id),
+            )
+            cur.execute(
+                "UPDATE workouts SET deleted_at = ? WHERE id = ?",
+                (now, workout_id),
+            )
 
     def search_workouts(
         self,
@@ -284,8 +401,7 @@ class WorkoutRepository:
             params.append(date_to)
         if min_weight is not None:
             conditions.append(
-                "w.id IN (SELECT s.workout_id FROM sets s "
-                "WHERE s.actual_weight >= ?)"
+                "w.id IN (SELECT s.workout_id FROM sets s WHERE s.actual_weight >= ?)"
             )
             params.append(min_weight)
         if status is not None:
@@ -306,13 +422,25 @@ class WorkoutRepository:
             result.append(w)
         return result
 
-    # ---- Sets ----------------------------------------------------------
+    def restore_workout(self, workout_id: int) -> None:
+        """Restore a soft-deleted workout and its sets."""
+        with self._tx() as cur:
+            cur.execute(
+                "UPDATE workouts SET deleted_at = NULL WHERE id = ?",
+                (workout_id,),
+            )
+            cur.execute(
+                "UPDATE sets SET deleted_at = NULL WHERE workout_id = ?",
+                (workout_id,),
+            )
+
+    # ---- Sets --------------------------------------------------------------
 
     def add_set(self, s: WorkoutSet) -> WorkoutSet:
         if s.position is None or s.position < 0:
             row = self.conn.execute(
                 "SELECT COALESCE(MAX(position), -1) + 1 AS next "
-                "FROM sets WHERE workout_id = ?",
+                "FROM sets WHERE workout_id = ? AND deleted_at IS NULL",
                 (s.workout_id,),
             ).fetchone()
             s.position = row["next"]
@@ -348,7 +476,8 @@ class WorkoutRepository:
     def get_set(self, set_id: int) -> WorkoutSet:
         row = self.conn.execute(
             "SELECT s.*, e.name AS exercise_name FROM sets s "
-            "JOIN exercises e ON e.id = s.exercise_id WHERE s.id = ?",
+            "JOIN exercises e ON e.id = s.exercise_id "
+            "WHERE s.id = ? AND s.deleted_at IS NULL",
             (set_id,),
         ).fetchone()
         if row is None:
@@ -396,8 +525,21 @@ class WorkoutRepository:
         return self.get_set(set_id)
 
     def delete_set(self, set_id: int) -> None:
+        """Soft-delete a single set."""
+        now = datetime.utcnow().isoformat(timespec="seconds")
         with self._tx() as cur:
-            cur.execute("DELETE FROM sets WHERE id = ?", (set_id,))
+            cur.execute(
+                "UPDATE sets SET deleted_at = ? WHERE id = ?",
+                (now, set_id),
+            )
+
+    def restore_set(self, set_id: int) -> None:
+        """Restore a soft-deleted set."""
+        with self._tx() as cur:
+            cur.execute(
+                "UPDATE sets SET deleted_at = NULL WHERE id = ?",
+                (set_id,),
+            )
 
     def list_sets_for_exercise(
         self, exercise_id: int, executed_only: bool = True
@@ -407,7 +549,7 @@ class WorkoutRepository:
             "FROM sets s "
             "JOIN exercises e ON e.id = s.exercise_id "
             "JOIN workouts w ON w.id = s.workout_id "
-            "WHERE s.exercise_id = ?"
+            "WHERE s.exercise_id = ? AND s.deleted_at IS NULL"
         )
         params: tuple[Any, ...] = (exercise_id,)
         if executed_only:
@@ -420,17 +562,51 @@ class WorkoutRepository:
         rows = self.conn.execute(
             "SELECT s.*, e.name AS exercise_name FROM sets s "
             "JOIN exercises e ON e.id = s.exercise_id "
-            "WHERE s.executed = 1"
+            "WHERE s.executed = 1 AND s.deleted_at IS NULL"
         ).fetchall()
         return [self._row_to_set(r) for r in rows]
 
-    # ---- Mappers -------------------------------------------------------
+    # ---- Trash -------------------------------------------------------------
+
+    def list_trash(self) -> dict[str, list[dict[str, Any]]]:
+        """Return all soft-deleted items within the 30-day recovery window."""
+        exercises = [
+            _row_to_dict(r)
+            for r in self.conn.execute(
+                "SELECT * FROM exercises WHERE deleted_at IS NOT NULL "
+                "AND deleted_at >= datetime('now', '-30 days')"
+            ).fetchall()
+        ]
+        workouts = [
+            _row_to_dict(r)
+            for r in self.conn.execute(
+                "SELECT * FROM workouts WHERE deleted_at IS NOT NULL "
+                "AND deleted_at >= datetime('now', '-30 days')"
+            ).fetchall()
+        ]
+        sets = [
+            _row_to_dict(r)
+            for r in self.conn.execute(
+                "SELECT * FROM sets WHERE deleted_at IS NOT NULL "
+                "AND deleted_at >= datetime('now', '-30 days')"
+            ).fetchall()
+        ]
+        return {"exercises": exercises, "workouts": workouts, "sets": sets}
+
+    def purge_trash(self) -> None:
+        """Hard-delete all soft-deleted items (regardless of age)."""
+        with self._tx() as cur:
+            cur.execute("DELETE FROM sets WHERE deleted_at IS NOT NULL")
+            cur.execute("DELETE FROM workouts WHERE deleted_at IS NOT NULL")
+            cur.execute("DELETE FROM exercises WHERE deleted_at IS NOT NULL")
+
+    # ---- Mappers -----------------------------------------------------------
 
     def _workout_sets(self, workout_id: int) -> list[WorkoutSet]:
         rows = self.conn.execute(
             "SELECT s.*, e.name AS exercise_name FROM sets s "
             "JOIN exercises e ON e.id = s.exercise_id "
-            "WHERE s.workout_id = ? ORDER BY s.position ASC",
+            "WHERE s.workout_id = ? AND s.deleted_at IS NULL ORDER BY s.position ASC",
             (workout_id,),
         ).fetchall()
         return [self._row_to_set(r) for r in rows]

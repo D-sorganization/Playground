@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 
 from workout_tracker.db import WorkoutRepository, connect, init_db
-from workout_tracker.models import ExerciseAlias, WorkoutSet
+from workout_tracker.models import WorkoutSet
 
 
 @pytest.fixture()
