@@ -61,11 +61,12 @@ items:
     title: "Workout Tracker: Data management – export/import/CSV/trash/bulk-edit"
     priority: medium
     status: done
-    started_at: "2026-04-20T10:57:23Z"
-    completed_at: "2026-04-20T11:12:38Z"
+    started_at: "2026-04-20T03:57:23-07:00"
+    completed_at: "2026-04-20T04:12:39-07:00"
     pr_url: "https://github.com/D-sorganization/Playground/pull/318"
     pr_number: 318
     pr_status: "open"
+    cost_usd: 3.7197
     github_issue: 299
     artefact: .gaai/project/contexts/artefacts/stories/GH299.story.md
     dependencies: []
