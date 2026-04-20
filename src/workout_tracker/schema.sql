@@ -59,3 +59,24 @@ CREATE TABLE IF NOT EXISTS exercise_aliases (
 );
 CREATE INDEX IF NOT EXISTS idx_aliases_exercise ON exercise_aliases(exercise_id);
 CREATE INDEX IF NOT EXISTS idx_aliases_normalized ON exercise_aliases(normalized_alias);
+
+CREATE TABLE IF NOT EXISTS workout_templates (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    source_workout_id INTEGER,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS template_sets (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    template_id INTEGER NOT NULL,
+    exercise_id INTEGER NOT NULL,
+    position INTEGER NOT NULL DEFAULT 0,
+    planned_reps INTEGER,
+    planned_weight REAL,
+    unit TEXT NOT NULL DEFAULT 'lbs',
+    FOREIGN KEY (template_id) REFERENCES workout_templates(id) ON DELETE CASCADE,
+    FOREIGN KEY (exercise_id) REFERENCES exercises(id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_template_sets_template ON template_sets(template_id, position);

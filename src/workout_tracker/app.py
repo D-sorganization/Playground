@@ -22,7 +22,7 @@ from typing import Any, ParamSpec, Protocol, TypeVar, cast
 
 from flask import Flask, abort, g, jsonify, render_template, request
 
-from workout_tracker import autocomplete, parser, stats
+from workout_tracker import autocomplete, parser, planning, stats
 from workout_tracker.db import WorkoutRepository, connect, init_db
 from workout_tracker.models import WorkoutSet
 
@@ -343,8 +343,9 @@ def register_routes(app: _FlaskApp) -> None:
         data = request.get_json(force=True) or {}
         text = data.get("text", "")
         executed = bool(data.get("executed", False))
+        entries = planning.resolve_percentage_sets(repo, parser.parse_notes(text))
         created: list[dict[str, Any]] = []
-        for entry in parser.parse_notes(text):
+        for entry in entries:
             ex = repo.get_or_create_exercise(entry.exercise_name)
             for ps in entry.sets:
                 s = WorkoutSet(
@@ -361,6 +362,88 @@ def register_routes(app: _FlaskApp) -> None:
                 )
                 created.append(repo.add_set(s).to_dict())
         return jsonify(created), 201
+
+    # ---------- templates ----------
+
+    @app.post("/api/workouts/<int:w_id>/save_as_template")
+    def save_as_template(w_id: int) -> Any:
+        repo: WorkoutRepository = g.repo
+        data = request.get_json(force=True) or {}
+        name = (data.get("name") or "").strip()
+        if not name:
+            abort(400, "name required")
+        try:
+            tmpl = planning.save_as_template(repo, w_id, name=name)
+        except KeyError:
+            abort(404)
+        return jsonify(tmpl), 201
+
+    @app.get("/api/templates")
+    def list_templates() -> Any:
+        repo: WorkoutRepository = g.repo
+        return jsonify(planning.list_templates(repo))
+
+    @app.post("/api/templates/<int:tmpl_id>/create_workout")
+    def create_workout_from_template(tmpl_id: int) -> Any:
+        repo: WorkoutRepository = g.repo
+        data = request.get_json(force=True) or {}
+        date = data.get("date") or date_t.today().isoformat()
+        title = data.get("title")
+        try:
+            w = planning.create_workout_from_template(
+                repo, tmpl_id, date=date, title=title
+            )
+        except KeyError:
+            abort(404)
+        except ValueError as e:
+            abort(400, str(e))
+        return jsonify(w.to_dict()), 201
+
+    # ---------- copy last weekday ----------
+
+    @app.post("/api/workouts/copy_last_weekday")
+    def copy_last_weekday() -> Any:
+        repo: WorkoutRepository = g.repo
+        data = request.get_json(force=True) or {}
+        weekday = data.get("weekday")
+        target_date = data.get("target_date") or date_t.today().isoformat()
+        if weekday is None:
+            abort(400, "weekday required")
+        try:
+            weekday = int(weekday)
+        except (ValueError, TypeError):
+            abort(400, "weekday must be an integer 0-6")
+        try:
+            w = planning.copy_last_weekday_session(
+                repo, weekday=weekday, target_date=target_date
+            )
+        except ValueError as e:
+            abort(400, str(e))
+        if w is None:
+            abort(404, "no prior session found for that weekday")
+        return jsonify(w.to_dict()), 201
+
+    # ---------- weekly schedule ----------
+
+    @app.post("/api/schedule/apply")
+    def apply_weekly_schedule() -> Any:
+        repo: WorkoutRepository = g.repo
+        data = request.get_json(force=True) or {}
+        schedule_raw = data.get("schedule")
+        week_start = data.get("week_start")
+        if not schedule_raw or not week_start:
+            abort(400, "schedule and week_start required")
+        try:
+            schedule = {int(k): v for k, v in schedule_raw.items()}
+        except (ValueError, AttributeError):
+            abort(400, "schedule keys must be integer weekdays 0-6")
+        try:
+            workouts = planning.apply_weekly_schedule(
+                repo, schedule, week_start=week_start
+            )
+        except ValueError as e:
+            abort(400, str(e))
+        return jsonify([w.to_dict() for w in workouts]), 201
 
     # ---------- stats ----------
 
