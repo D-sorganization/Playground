@@ -20,7 +20,8 @@ items:
   - id: GH302
     title: "Workout Tracker: Offline-first PWA with background sync"
     priority: medium
-    status: refined
+    status: in_progress
+    started_at: "2026-04-20T10:14:06Z"
     github_issue: 302
     artefact: .gaai/project/contexts/artefacts/stories/GH302.story.md
     dependencies: []
