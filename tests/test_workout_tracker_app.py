@@ -20,6 +20,29 @@ def client():
             yield c
 
 
+def _create_workout(client, *, date: str = "2024-05-01", **overrides):
+    payload = {"date": date, **overrides}
+    response = client.post("/api/workouts", json=payload)
+    assert response.status_code == 201
+    return response.json
+
+
+def _create_exercise(client, name: str):
+    response = client.post("/api/exercises", json={"name": name})
+    assert response.status_code == 201
+    return response.json
+
+
+class TestFactory:
+    def test_releases_startup_schema_connection(self, tmp_path) -> None:
+        db_path = tmp_path / "bootstrap.db"
+        create_app(db_path=str(db_path))
+
+        db_path.unlink()
+
+        assert not db_path.exists()
+
+
 class TestIndex:
     def test_renders(self, client) -> None:
         r = client.get("/")
@@ -50,6 +73,35 @@ class TestExerciseRoutes:
 
     def test_create_rejects_empty(self, client) -> None:
         r = client.post("/api/exercises", json={"name": "   "})
+        assert r.status_code == 400
+
+    def test_rename_merge_and_delete(self, client) -> None:
+        target = _create_exercise(client, "Bench Press")
+        source = _create_exercise(client, "Bench Presh")
+
+        r = client.put(
+            f"/api/exercises/{source['id']}",
+            json={"name": "Incline Bench Press"},
+        )
+        assert r.status_code == 200
+        assert r.json["name"] == "Incline Bench Press"
+
+        r = client.post(
+            f"/api/exercises/{source['id']}/merge_into/{target['id']}",
+        )
+        assert r.status_code == 200
+        assert r.json == {"ok": True}
+
+        r = client.delete(f"/api/exercises/{target['id']}")
+        assert r.status_code == 200
+        assert r.json == {"ok": True}
+        assert client.get("/api/exercises").json == []
+
+    def test_rename_rejects_empty_name(self, client) -> None:
+        exercise = _create_exercise(client, "Squat")
+
+        r = client.put(f"/api/exercises/{exercise['id']}", json={"name": " "})
+
         assert r.status_code == 400
 
 
@@ -89,6 +141,53 @@ class TestWorkoutRoutes:
         r = client.get("/api/workouts/99999")
         assert r.status_code == 404
 
+    def test_list_limit_update_missing_and_delete(self, client) -> None:
+        first = _create_workout(client, date="2024-05-01")
+        _create_workout(client, date="2024-05-02")
+
+        r = client.get("/api/workouts?limit=1")
+        assert r.status_code == 200
+        assert len(r.json) == 1
+        assert r.json[0]["date"] == "2024-05-02"
+
+        r = client.put("/api/workouts/99999", json={"status": "completed"})
+        assert r.status_code == 404
+
+        r = client.delete(f"/api/workouts/{first['id']}")
+        assert r.status_code == 200
+        assert r.json == {"ok": True}
+        assert client.get(f"/api/workouts/{first['id']}").status_code == 404
+
+
+class TestSetRoutes:
+    def test_add_set_requires_exercise_reference(self, client) -> None:
+        workout = _create_workout(client)
+
+        r = client.post(f"/api/workouts/{workout['id']}/sets", json={})
+
+        assert r.status_code == 400
+
+    def test_update_missing_unknown_field_and_delete(self, client) -> None:
+        workout = _create_workout(client)
+        exercise = _create_exercise(client, "Deadlift")
+        r = client.post(
+            f"/api/workouts/{workout['id']}/sets",
+            json={"exercise_id": exercise["id"], "planned_reps": 5},
+        )
+        assert r.status_code == 201
+        set_id = r.json["id"]
+
+        r = client.put("/api/sets/99999", json={"planned_reps": 3})
+        assert r.status_code == 404
+
+        r = client.put(f"/api/sets/{set_id}", json={"not_a_field": True})
+        assert r.status_code == 400
+
+        r = client.delete(f"/api/sets/{set_id}")
+        assert r.status_code == 200
+        assert r.json == {"ok": True}
+        assert client.get(f"/api/workouts/{workout['id']}").json["sets"] == []
+
 
 class TestParseRoute:
     def test_parse_and_import(self, client) -> None:
@@ -115,6 +214,21 @@ class TestParseRoute:
         w = client.get(f"/api/workouts/{wid}").json
         assert len(w["sets"]) == 1
         assert w["sets"][0]["planned_reps"] == 5
+
+    def test_import_executed_sets_populates_actual_fields(self, client) -> None:
+        workout = _create_workout(client, status="in_progress")
+
+        r = client.post(
+            f"/api/workouts/{workout['id']}/import",
+            json={"text": "Bench Press 2x8 @ 95", "executed": True},
+        )
+
+        assert r.status_code == 201
+        created = r.json
+        assert len(created) == 2
+        assert created[0]["planned_reps"] is None
+        assert created[0]["actual_reps"] == 8
+        assert created[0]["actual_weight"] == 95
 
 
 class TestValidation:
@@ -181,4 +295,35 @@ class TestStatsRoutes:
         assert any(
             p["metric"] == "max_weight" and p["weight"] == 120
             for p in data["personal_records"]
+        )
+
+    def test_exercise_timeseries_and_records(self, client) -> None:
+        workout = _create_workout(client, date="2024-05-04", status="in_progress")
+        first = client.post(
+            f"/api/workouts/{workout['id']}/sets",
+            json={
+                "exercise_name": "Squat",
+                "actual_reps": 3,
+                "actual_weight": 225,
+                "executed": True,
+            },
+        ).json
+        client.post(
+            f"/api/workouts/{workout['id']}/sets",
+            json={
+                "exercise_id": first["exercise_id"],
+                "actual_reps": 2,
+                "actual_weight": 245,
+                "executed": True,
+            },
+        )
+
+        r = client.get(f"/api/stats/exercise/{first['exercise_id']}")
+
+        assert r.status_code == 200
+        assert r.json["timeseries"][0]["sets"] == 2
+        assert r.json["timeseries"][0]["volume"] == 3 * 225 + 2 * 245
+        assert any(
+            record["metric"] == "max_weight" and record["weight"] == 245
+            for record in r.json["personal_records"]
         )

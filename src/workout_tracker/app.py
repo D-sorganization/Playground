@@ -16,6 +16,7 @@ from __future__ import annotations
 import logging
 import os
 from collections.abc import Callable
+from contextlib import closing
 from datetime import date as date_t
 from pathlib import Path
 from typing import Any, ParamSpec, Protocol, TypeVar, cast
@@ -65,7 +66,7 @@ def create_app(db_path: str | None = None) -> _FlaskApp:
     app.config["JSON_SORT_KEYS"] = False
 
     # Initialize the schema once at startup
-    with connect(app.config["DB_PATH"]) as conn:
+    with closing(connect(app.config["DB_PATH"])) as conn:
         init_db(conn)
 
     @app.before_request
