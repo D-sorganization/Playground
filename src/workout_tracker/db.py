@@ -16,7 +16,9 @@ from pathlib import Path
 from typing import Any
 
 from workout_tracker.models import (
+    VALID_STATUSES,
     Exercise,
+    ExerciseAlias,
     Workout,
     WorkoutSet,
     normalize_name,
@@ -131,6 +133,55 @@ class WorkoutRepository:
             cur.execute("DELETE FROM sets WHERE exercise_id = ?", (exercise_id,))
             cur.execute("DELETE FROM exercises WHERE id = ?", (exercise_id,))
 
+    # ---- Aliases -------------------------------------------------------
+
+    def add_alias(self, exercise_id: int, alias: str) -> ExerciseAlias:
+        norm = normalize_name(alias)
+        with self._tx() as cur:
+            cur.execute(
+                "INSERT INTO exercise_aliases (exercise_id, alias, normalized_alias) "
+                "VALUES (?, ?, ?)",
+                (exercise_id, alias, norm),
+            )
+            alias_id = cur.lastrowid
+        row = self.conn.execute(
+            "SELECT * FROM exercise_aliases WHERE id = ?", (alias_id,)
+        ).fetchone()
+        return self._row_to_alias(row)
+
+    def delete_alias(self, alias_id: int) -> None:
+        with self._tx() as cur:
+            cur.execute("DELETE FROM exercise_aliases WHERE id = ?", (alias_id,))
+
+    def list_aliases(self, exercise_id: int) -> list[ExerciseAlias]:
+        rows = self.conn.execute(
+            "SELECT * FROM exercise_aliases WHERE exercise_id = ? ORDER BY alias ASC",
+            (exercise_id,),
+        ).fetchall()
+        return [self._row_to_alias(r) for r in rows]
+
+    def resolve_alias(self, alias: str) -> Exercise | None:
+        norm = normalize_name(alias)
+        row = self.conn.execute(
+            "SELECT e.* FROM exercises e "
+            "JOIN exercise_aliases a ON a.exercise_id = e.id "
+            "WHERE a.normalized_alias = ?",
+            (norm,),
+        ).fetchone()
+        if row is None:
+            return None
+        return self._row_to_exercise(row)
+
+    @staticmethod
+    def _row_to_alias(row: sqlite3.Row) -> ExerciseAlias:
+        return ExerciseAlias(
+            id=row["id"],
+            exercise_id=row["exercise_id"],
+            alias=row["alias"],
+            normalized_alias=row["normalized_alias"],
+            created_at=row["created_at"],
+        )
+
     def _bump_exercise(self, cur: sqlite3.Cursor, exercise_id: int) -> None:
         cur.execute(
             "UPDATE exercises SET use_count = use_count + 1, "
@@ -204,6 +255,56 @@ class WorkoutRepository:
     def delete_workout(self, workout_id: int) -> None:
         with self._tx() as cur:
             cur.execute("DELETE FROM workouts WHERE id = ?", (workout_id,))
+
+    def search_workouts(
+        self,
+        exercise_name: str | None = None,
+        date_from: str | None = None,
+        date_to: str | None = None,
+        min_weight: float | None = None,
+        status: str | None = None,
+    ) -> list[Workout]:
+        if status is not None and status not in VALID_STATUSES:
+            raise ValueError(f"status must be one of {VALID_STATUSES}")
+        conditions: list[str] = []
+        params: list[Any] = []
+        if exercise_name is not None:
+            norm = "%" + normalize_name(exercise_name) + "%"
+            conditions.append(
+                "w.id IN (SELECT s.workout_id FROM sets s "
+                "JOIN exercises e ON e.id = s.exercise_id "
+                "WHERE e.normalized_name LIKE ?)"
+            )
+            params.append(norm)
+        if date_from is not None:
+            conditions.append("w.date >= ?")
+            params.append(date_from)
+        if date_to is not None:
+            conditions.append("w.date <= ?")
+            params.append(date_to)
+        if min_weight is not None:
+            conditions.append(
+                "w.id IN (SELECT s.workout_id FROM sets s "
+                "WHERE s.actual_weight >= ?)"
+            )
+            params.append(min_weight)
+        if status is not None:
+            conditions.append("w.status = ?")
+            params.append(status)
+        where = ""
+        if conditions:
+            where = "WHERE " + " AND ".join(conditions)
+        sql = (  # noqa: S608
+            f"SELECT w.* FROM workouts w {where} "
+            "ORDER BY w.date DESC, w.id DESC LIMIT 200"
+        )
+        rows = self.conn.execute(sql, params).fetchall()
+        result: list[Workout] = []
+        for r in rows:
+            w = self._row_to_workout(r)
+            w.sets = self._workout_sets(w.id or 0)
+            result.append(w)
+        return result
 
     # ---- Sets ----------------------------------------------------------
 

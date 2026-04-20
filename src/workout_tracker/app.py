@@ -104,7 +104,9 @@ def register_routes(app: _FlaskApp) -> None:
         q = request.args.get("q", "")
         limit = int(request.args.get("limit", 8))
         catalog = repo.list_exercises()
-        results = autocomplete.suggest(q, catalog, limit=limit)
+        results = autocomplete.suggest(
+            q, catalog, limit=limit, alias_resolver=repo.resolve_alias
+        )
         return jsonify([e.to_dict() for e in results])
 
     @app.post("/api/exercises")
@@ -139,6 +141,33 @@ def register_routes(app: _FlaskApp) -> None:
         repo.delete_exercise(ex_id)
         return jsonify({"ok": True})
 
+    # ---------- aliases ----------
+
+    @app.post("/api/exercises/<int:ex_id>/aliases")
+    def add_alias(ex_id: int) -> Any:
+        repo: WorkoutRepository = g.repo
+        data = request.get_json(force=True) or {}
+        alias_text = (data.get("alias") or "").strip()
+        if not alias_text:
+            abort(400, "alias required")
+        try:
+            alias = repo.add_alias(ex_id, alias_text)
+        except ValueError as e:
+            abort(400, str(e))
+        return jsonify(alias.to_dict()), 201
+
+    @app.get("/api/exercises/<int:ex_id>/aliases")
+    def list_aliases(ex_id: int) -> Any:
+        repo: WorkoutRepository = g.repo
+        aliases = repo.list_aliases(ex_id)
+        return jsonify([a.to_dict() for a in aliases])
+
+    @app.delete("/api/aliases/<int:alias_id>")
+    def delete_alias(alias_id: int) -> Any:
+        repo: WorkoutRepository = g.repo
+        repo.delete_alias(alias_id)
+        return jsonify({"ok": True})
+
     # ---------- workouts ----------
 
     @app.get("/api/workouts")
@@ -161,6 +190,42 @@ def register_routes(app: _FlaskApp) -> None:
         except ValueError as e:
             abort(400, str(e))
         return jsonify(w.to_dict()), 201
+
+    @app.get("/api/workouts/search")
+    def search_workouts() -> Any:
+        repo: WorkoutRepository = g.repo
+        exercise_name = request.args.get("exercise_name") or None
+        date_from = request.args.get("date_from") or None
+        date_to = request.args.get("date_to") or None
+        min_weight_raw = request.args.get("min_weight") or None
+        status = request.args.get("status") or None
+        min_weight: float | None = None
+        if min_weight_raw is not None:
+            try:
+                min_weight = float(min_weight_raw)
+            except ValueError:
+                abort(400, "min_weight must be a number")
+        if date_from is not None:
+            try:
+                date_t.fromisoformat(date_from)
+            except ValueError:
+                abort(400, f"date_from is not a valid ISO date: {date_from}")
+        if date_to is not None:
+            try:
+                date_t.fromisoformat(date_to)
+            except ValueError:
+                abort(400, f"date_to is not a valid ISO date: {date_to}")
+        try:
+            results = repo.search_workouts(
+                exercise_name=exercise_name,
+                date_from=date_from,
+                date_to=date_to,
+                min_weight=min_weight,
+                status=status,
+            )
+        except ValueError as e:
+            abort(400, str(e))
+        return jsonify([w.to_dict() for w in results])
 
     @app.get("/api/workouts/<int:w_id>")
     def get_workout(w_id: int) -> Any:

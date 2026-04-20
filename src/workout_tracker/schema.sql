@@ -48,3 +48,14 @@ CREATE TABLE IF NOT EXISTS sets (
 CREATE INDEX IF NOT EXISTS idx_sets_workout ON sets(workout_id, position);
 CREATE INDEX IF NOT EXISTS idx_sets_exercise ON sets(exercise_id);
 CREATE INDEX IF NOT EXISTS idx_sets_executed ON sets(executed);
+
+CREATE TABLE IF NOT EXISTS exercise_aliases (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    exercise_id INTEGER NOT NULL,
+    alias TEXT NOT NULL UNIQUE,
+    normalized_alias TEXT NOT NULL UNIQUE,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    FOREIGN KEY (exercise_id) REFERENCES exercises(id) ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS idx_aliases_exercise ON exercise_aliases(exercise_id);
+CREATE INDEX IF NOT EXISTS idx_aliases_normalized ON exercise_aliases(normalized_alias);

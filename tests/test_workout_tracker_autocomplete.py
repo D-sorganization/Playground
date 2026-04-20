@@ -85,3 +85,59 @@ class TestSuggest:
         ]
         out = suggest("lu", cat)
         assert out[0].name == "Lunge Reverse" or out[0].use_count == 100
+
+
+class TestSuggestMultiword:
+    def setup_method(self) -> None:
+        self.catalog = [
+            _ex("Bench Press", use_count=50, id_=1),
+            _ex("Incline Bench Press", use_count=10, id_=2),
+            _ex("Barbell Squat", use_count=30, id_=3),
+            _ex("Deadlift", use_count=20, id_=4),
+        ]
+
+    def test_multiword_requires_all_tokens(self) -> None:
+        out = suggest("bench press", self.catalog)
+        names = [e.name for e in out]
+        assert "Bench Press" in names
+        assert "Incline Bench Press" in names
+        assert "Deadlift" not in names
+
+    def test_multiword_partial_no_match(self) -> None:
+        out = suggest("bench deadlift", self.catalog)
+        # No exercise has both 'bench' and 'deadlift' in its name
+        assert out == []
+
+    def test_single_word_not_affected(self) -> None:
+        out = suggest("bench", self.catalog)
+        # Should still work normally
+        assert len(out) > 0
+        assert out[0].name in ("Bench Press", "Incline Bench Press")
+
+
+class TestSuggestAliasResolver:
+    def setup_method(self) -> None:
+        self.bp = _ex("Bench Press", use_count=50, id_=1)
+        self.squat = _ex("Barbell Squat", use_count=30, id_=2)
+        self.catalog = [self.bp, self.squat]
+
+    def test_alias_boost_promotes_exercise(self) -> None:
+        def resolver(q: str):
+            if q == "bp":
+                return self.bp
+            return None
+
+        out = suggest("bp", self.catalog, alias_resolver=resolver)
+        # "bp" normalized is "bp"; alias resolver returns bench press -> should be ranked first
+        assert out and out[0].id == self.bp.id
+
+    def test_no_alias_resolver_works_normally(self) -> None:
+        out = suggest("bench", self.catalog)
+        assert out and out[0].name == "Bench Press"
+
+    def test_alias_resolver_none_query_no_crash(self) -> None:
+        def resolver(q: str):
+            return None
+
+        out = suggest("bench", self.catalog, alias_resolver=resolver)
+        assert out and out[0].name == "Bench Press"
