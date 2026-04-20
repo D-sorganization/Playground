@@ -30,8 +30,12 @@ items:
   - id: GH301
     title: "Workout Tracker: UX polish – tags, theme, undo, shortcuts"
     priority: medium
-    status: in_progress
+    status: done
     started_at: "2026-04-20T10:25:11Z"
+    completed_at: "2026-04-20T10:38:56Z"
+    pr_url: "https://github.com/D-sorganization/Playground/pull/315"
+    pr_number: 315
+    pr_status: "open"
     github_issue: 301
     artefact: .gaai/project/contexts/artefacts/stories/GH301.story.md
     dependencies: []
