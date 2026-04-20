@@ -28,7 +28,7 @@ jobs:
     needs: pick-runner
     runs-on: ${{ needs.pick-runner.outputs.runner }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
         with: { fetch-depth: 2 }
 
       - name: Identify New/Modified Files
