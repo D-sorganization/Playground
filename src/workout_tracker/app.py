@@ -147,15 +147,15 @@ def register_routes(app: _FlaskApp) -> None:
         if not by_workout:
             return jsonify({"date": None, "exercise_name": ex.name, "sets": []})
         # Pick the workout whose sets are most recent by workout date.
-        workouts = {w.id: w for w in repo.list_workouts(limit=500)}
+        workouts = {wid: repo.get_workout(wid) for wid in by_workout}
         best_wid = max(
             by_workout.keys(),
-            key=lambda wid: workouts[wid].date if wid in workouts else "",
+            key=lambda wid: workouts[wid].date,
         )
         last_sets = by_workout[best_wid]
         return jsonify(
             {
-                "date": workouts[best_wid].date if best_wid in workouts else None,
+                "date": workouts[best_wid].date,
                 "exercise_name": ex.name,
                 "sets": [
                     {
