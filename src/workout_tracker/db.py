@@ -600,7 +600,34 @@ class WorkoutRepository:
             )
 
     def restore_set(self, set_id: int) -> None:
-        """Restore a soft-deleted set."""
+        """Restore a soft-deleted set.
+
+        Raises ``ValueError`` if the set's parent workout or exercise is still
+        soft-deleted, to prevent inconsistent state where a set is active but
+        its parent is in the trash.
+        """
+        row = self.conn.execute(
+            "SELECT s.workout_id, s.exercise_id, "
+            "w.deleted_at AS workout_deleted_at, "
+            "e.deleted_at AS exercise_deleted_at "
+            "FROM sets s "
+            "JOIN workouts w ON w.id = s.workout_id "
+            "JOIN exercises e ON e.id = s.exercise_id "
+            "WHERE s.id = ?",
+            (set_id,),
+        ).fetchone()
+        if row is None:
+            raise KeyError(f"set {set_id} not found")
+        if row["workout_deleted_at"] is not None:
+            raise ValueError(
+                f"Cannot restore set {set_id}: parent workout {row['workout_id']} "
+                "is still deleted. Restore the workout first."
+            )
+        if row["exercise_deleted_at"] is not None:
+            raise ValueError(
+                f"Cannot restore set {set_id}: parent exercise {row['exercise_id']} "
+                "is still deleted. Restore the exercise first."
+            )
         with self._tx() as cur:
             cur.execute(
                 "UPDATE sets SET deleted_at = NULL WHERE id = ?",

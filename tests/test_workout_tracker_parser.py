@@ -146,6 +146,28 @@ class TestBodyweightPlusAdded:
         for s in entries[0].sets:
             assert s.is_bodyweight is False
 
+    def test_bw_plus_weight_x_reps_single_line(self) -> None:
+        """'Dips BW+45x10' must parse correctly as bodyweight entry (issue #331)."""
+        entries = parse_notes("Dips BW+45x10")
+        assert len(entries) == 1
+        assert entries[0].exercise_name == "Dips"
+        sets = entries[0].sets
+        assert len(sets) == 1
+        assert sets[0].is_bodyweight is True
+        assert sets[0].weight == 45.0
+        assert sets[0].reps == 10
+
+    def test_bw_x_reps_single_line_no_added(self) -> None:
+        """'Pull-ups BWx8' must parse as bodyweight single-line entry (issue #331)."""
+        entries = parse_notes("Pull-ups BWx8")
+        assert len(entries) == 1
+        assert entries[0].exercise_name == "Pull-ups"
+        sets = entries[0].sets
+        assert len(sets) == 1
+        assert sets[0].is_bodyweight is True
+        assert sets[0].weight is None
+        assert sets[0].reps == 8
+
 
 class TestProtocolParsing:
     def test_amrap_suffix(self) -> None:

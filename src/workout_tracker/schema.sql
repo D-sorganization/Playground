@@ -83,7 +83,7 @@ CREATE TABLE IF NOT EXISTS template_sets (
     planned_weight REAL,
     unit TEXT NOT NULL DEFAULT 'lbs',
     FOREIGN KEY (template_id) REFERENCES workout_templates(id) ON DELETE CASCADE,
-    FOREIGN KEY (exercise_id) REFERENCES exercises(id)
+    FOREIGN KEY (exercise_id) REFERENCES exercises(id) ON DELETE CASCADE
 );
 
 CREATE INDEX IF NOT EXISTS idx_template_sets_template ON template_sets(template_id, position);

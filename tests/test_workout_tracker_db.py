@@ -450,3 +450,47 @@ class TestSoftDelete:
         assert all(x.id != s.id for x in repo.get_workout(w.id or 0).sets)
         repo.restore_set(s.id or 0)
         assert any(x.id == s.id for x in repo.get_workout(w.id or 0).sets)
+
+    def test_restore_set_blocked_when_workout_deleted(
+        self, repo: WorkoutRepository
+    ) -> None:
+        """restore_set raises ValueError when parent workout is deleted (issue #339)."""
+        ex = repo.get_or_create_exercise("Deadlift")
+        w = repo.create_workout(date="2024-06-01", status="in_progress")
+        s = repo.add_set(
+            WorkoutSet(
+                workout_id=w.id or 0,
+                exercise_id=ex.id or 0,
+                position=0,
+                actual_reps=3,
+                actual_weight=200,
+                executed=True,
+            )
+        )
+        repo.delete_set(s.id or 0)
+        # Soft-delete the parent workout (sets remain but workout is trashed)
+        repo.delete_workout(w.id or 0)
+        with pytest.raises(ValueError, match="workout"):
+            repo.restore_set(s.id or 0)
+
+    def test_restore_set_blocked_when_exercise_deleted(
+        self, repo: WorkoutRepository
+    ) -> None:
+        """restore_set raises ValueError when parent exercise deleted (issue #339)."""
+        ex = repo.get_or_create_exercise("Overhead Press")
+        w = repo.create_workout(date="2024-06-02", status="in_progress")
+        s = repo.add_set(
+            WorkoutSet(
+                workout_id=w.id or 0,
+                exercise_id=ex.id or 0,
+                position=0,
+                actual_reps=5,
+                actual_weight=95,
+                executed=True,
+            )
+        )
+        repo.delete_set(s.id or 0)
+        # Soft-delete the parent exercise
+        repo.delete_exercise(ex.id or 0)
+        with pytest.raises(ValueError, match="exercise"):
+            repo.restore_set(s.id or 0)
