@@ -598,14 +598,14 @@ GraphQL and REST have **separate** quotas. Exhausting GraphQL blocks PR creation
 ### Checking Rate Limit Status
 
 ```bash
-gh api rate_limit | python3 -c "
+gh api rate_limit | python3 -c '
 import json, sys, datetime
-d = json.load(sys.stdin)['resources']
-for k in ['core', 'graphql']:
+d = json.load(sys.stdin)["resources"]
+for k in ["core", "graphql"]:
     r = d[k]
-    reset = datetime.datetime.fromtimestamp(r['reset']).strftime('%H:%M:%S')
-    print(f'{k}: {r["remaining"]}/{r["limit"]} remaining — resets {reset}')
-"
+    reset = datetime.datetime.fromtimestamp(r["reset"]).strftime("%H:%M:%S")
+    print("{}: {}/{} remaining — resets {}".format(k, r["remaining"], r["limit"], reset))
+'
 ```
 
 <!-- END FLEET-MANAGED: network-api-hygiene -->
