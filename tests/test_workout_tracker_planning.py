@@ -144,6 +144,86 @@ class TestCreateFromTemplate:
 
 
 # ---------------------------------------------------------------------------
+# Template FK cascade (issue #333)
+# ---------------------------------------------------------------------------
+
+
+class TestTemplateFKCascade:
+    def test_purge_exercise_cascades_to_template_sets(
+        self, repo: WorkoutRepository
+    ) -> None:
+        """Purging an exercise must cascade to template_sets (issue #333).
+
+        The schema must have ON DELETE CASCADE on template_sets.exercise_id so that
+        a hard DELETE of an exercise row automatically removes its template_set rows
+        rather than raising sqlite3.IntegrityError and returning HTTP 500.
+
+        The real trigger is purge_trash(), which hard-deletes soft-deleted exercises.
+        """
+        import sqlite3
+
+        ex = repo.get_or_create_exercise("Romanian Deadlift")
+        w = repo.create_workout(date="2024-05-01", title="Leg Day", status="completed")
+        repo.add_set(
+            WorkoutSet(
+                workout_id=w.id or 0,
+                exercise_id=ex.id or 0,
+                position=0,
+                planned_reps=8,
+                planned_weight=185.0,
+                executed=True,
+                actual_reps=8,
+                actual_weight=185.0,
+            )
+        )
+        tmpl = save_as_template(repo, w.id or 0, name="Leg Template")
+        # Verify template_sets row exists
+        ts_count = repo.conn.execute(
+            "SELECT COUNT(*) FROM template_sets WHERE template_id = ?", (tmpl["id"],)
+        ).fetchone()[0]
+        assert ts_count == 1
+
+        # Soft-delete the exercise first (simulates DELETE /api/exercises/<id>)
+        repo.delete_exercise(ex.id or 0)
+
+        # purge_trash does the real hard DELETE — this must not raise IntegrityError
+        try:
+            repo.purge_trash()
+        except sqlite3.IntegrityError as exc:  # pragma: no cover
+            pytest.fail(
+                f"purge_trash() raised IntegrityError when exercises table had "
+                f"template_sets rows — template_sets FK is missing ON DELETE CASCADE "
+                f"(issue #333): {exc}"
+            )
+
+        # The template_sets row should have been cascaded away by the hard DELETE
+        ts_after = repo.conn.execute(
+            "SELECT COUNT(*) FROM template_sets WHERE template_id = ?", (tmpl["id"],)
+        ).fetchone()[0]
+        assert ts_after == 0, (
+            "template_sets row was not cascade-deleted when exercise was hard-deleted; "
+            "ON DELETE CASCADE is required on template_sets.exercise_id (issue #333)"
+        )
+
+    def test_schema_template_sets_exercise_fk_has_cascade(
+        self, repo: WorkoutRepository
+    ) -> None:
+        """template_sets.exercise_id FK must have ON DELETE CASCADE (issue #333)."""
+        fk_rows = repo.conn.execute(
+            "PRAGMA foreign_key_list('template_sets')"
+        ).fetchall()
+        exercise_fk = next(
+            (r for r in fk_rows if r["table"] == "exercises"),
+            None,
+        )
+        assert exercise_fk is not None, "template_sets has no FK to exercises"
+        assert exercise_fk["on_delete"] == "CASCADE", (
+            f"template_sets.exercise_id FK has on_delete={exercise_fk['on_delete']!r}; "
+            "expected CASCADE (issue #333)"
+        )
+
+
+# ---------------------------------------------------------------------------
 # Copy last weekday session
 # ---------------------------------------------------------------------------
 

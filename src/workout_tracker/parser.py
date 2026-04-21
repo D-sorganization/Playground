@@ -68,6 +68,15 @@ _RE_BW_X_REPS = re.compile(
     re.IGNORECASE,
 )
 
+# Pattern B-BW-inline: search variant of B-BW for full-line parsing
+# Matches "BW[+N]x<reps>" anywhere in a line (to find exercise name prefix)
+_RE_BW_X_REPS_INLINE = re.compile(
+    rf"(?:bw|bodyweight)(?:\s*\+\s*(?P<bw_added>{_NUM}))?\s*[x\u00d7]\s*(?P<reps>\d+)"
+    rf"(?:\s*(?:{_UNIT}))?"
+    rf"(?:\s*(?:rpe|@rpe)\s*(?P<rpe>{_NUM}))?",
+    re.IGNORECASE,
+)
+
 # Pattern C:  "<reps> @ <weight>[unit]"  (e.g. 5 @ 135)
 _RE_REPS_AT_WEIGHT = re.compile(
     rf"^(?P<reps>\d+)\s*@\s*(?P<weight>{_NUM})\s*(?P<unit>{_UNIT})?"
@@ -247,7 +256,7 @@ def _try_parse_full_line(line: str) -> ParsedEntry | None:
     s = line.strip()
     s, protocol = _extract_protocol(s)
 
-    # Try BW @ weight pattern first
+    # Try BW @ weight pattern first (e.g. "Pull-ups 3x5 @ BW+25")
     m = _RE_SETS_REPS_AT_BW.search(s)
     if m:
         name = s[: m.start()].strip(" :\t-")
@@ -268,6 +277,29 @@ def _try_parse_full_line(line: str) -> ParsedEntry | None:
                 for _ in range(n_sets)
             ]
             return ParsedEntry(exercise_name=name, sets=sets)
+
+    # Try BWx<reps> inline pattern before generic NxM
+    # (e.g. "Dips BW+45x10" must not be misread as exercise "Dips BW+" with 45 sets)
+    m = _RE_BW_X_REPS_INLINE.search(s)
+    if m:
+        name = s[: m.start()].strip(" :\t-")
+        if name:
+            bw_added = float(m["bw_added"]) if m["bw_added"] else None
+            reps = int(m["reps"])
+            rpe = float(m["rpe"]) if m["rpe"] else None
+            return ParsedEntry(
+                exercise_name=name,
+                sets=[
+                    ParsedSet(
+                        reps=reps,
+                        weight=bw_added,
+                        rpe=rpe,
+                        unit="lbs",
+                        is_bodyweight=True,
+                        protocol=protocol,
+                    )
+                ],
+            )
 
     m = _RE_SETS_REPS_WEIGHT.search(s)
     if not m:
