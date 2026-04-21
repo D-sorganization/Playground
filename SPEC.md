@@ -27,7 +27,7 @@
 | **Primary Language(s)** | Python 3.11+                                    |
 | **License**             | MIT                                             |
 | **Current Version**     | 1.0.1                                           |
-| **Spec Version**        | 1.1.1                                           |
+| **Spec Version**        | 1.1.2                                           |
 | **Last Spec Update**    | 2026-04-21                                      |
 
 ## 2. Purpose & Mission
@@ -133,6 +133,7 @@ Workout Tracker exposes a local HTTP JSON API (in-process, not an external servi
 | `GET /`                                                   | SPA shell (HTML)                          |
 | `GET /api/exercises`                                      | List exercises (catalog)                  |
 | `GET /api/exercises/suggest?q=...`                        | Fuzzy autocomplete suggestions            |
+| `GET /api/exercises/last_session?q=...&exclude=...`       | Previous-session recall excluding current workout |
 | `POST /api/exercises`                                     | Get-or-create an exercise by name         |
 | `PUT /api/exercises/{id}`                                 | Rename (fix typos)                        |
 | `POST /api/exercises/{src}/merge_into/{target}`           | Merge duplicates, move all sets           |
@@ -336,6 +337,7 @@ Active development with focus on Project GROOT implementation. Demos (Asteroid F
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | ---------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-04-21 | 1.0.25  | Fix(#343): key Workout Tracker previous-session recall cache entries by active workout context as well as exercise name, so recall results fetched while editing one workout are not reused after switching to another workout.                                                                                                                                                |
 | 2026-04-21 | 1.0.24  | Fix(#342): make Workout Tracker previous-session recall select from all candidate workouts instead of the 500 most recent workouts; add a route regression for older exercise history hidden behind newer unrelated workouts.                                                                                                                                                                                               |
 | 2026-04-20 | 1.0.23  | Test coverage(#nightly): close Workout Tracker startup schema connection after initialization; add route regressions for exercise rename/merge/delete, workout deletion, set validation/delete, executed imports, per-exercise stats, and Windows SQLite file-handle cleanup; set pytest `pythonpath` to `src` for targeted package tests.                                                                                  |
 | 2026-04-14 | 1.0.22  | docs(#256): document independent-experiments convention in README; add project maturity table; clarify per-project quality scope.                                                                                                                                                                                                                                                                                          |
