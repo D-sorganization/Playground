@@ -147,15 +147,22 @@ def register_routes(app: _FlaskApp) -> None:
         if not by_workout:
             return jsonify({"date": None, "exercise_name": ex.name, "sets": []})
         # Pick the workout whose sets are most recent by workout date.
-        workouts = {w.id: w for w in repo.list_workouts(limit=500)}
-        best_wid = max(
-            by_workout.keys(),
-            key=lambda wid: workouts[wid].date if wid in workouts else "",
-        )
+        # Fetch only the specific workouts we need — no arbitrary 500-row cap
+        # (issue #330: large datasets could miss the correct prior workout).
+        workout_dates: dict[int, str] = {}
+        for wid in by_workout:
+            try:
+                w = repo.get_workout(wid)
+                workout_dates[wid] = w.date
+            except KeyError:
+                pass
+        if not workout_dates:
+            return jsonify({"date": None, "exercise_name": ex.name, "sets": []})
+        best_wid = max(workout_dates.keys(), key=lambda wid: workout_dates[wid])
         last_sets = by_workout[best_wid]
         return jsonify(
             {
-                "date": workouts[best_wid].date if best_wid in workouts else None,
+                "date": workout_dates[best_wid],
                 "exercise_name": ex.name,
                 "sets": [
                     {

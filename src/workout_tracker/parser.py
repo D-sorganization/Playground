@@ -24,6 +24,12 @@ from dataclasses import dataclass, field
 _NUM = r"\d+(?:\.\d+)?"
 _UNIT = r"(?:lbs?|kg)"
 
+# Protocol suffixes that may appear after set specs (e.g. "DROP SET", "AMRAP").
+_PROTOCOL_RE = re.compile(
+    r"\s+(?:drop\s+set|amrap|failure|rest.pause|mechanical\s+drop|cluster)\s*$",
+    re.IGNORECASE,
+)
+
 # Pattern A:  "<sets>x<reps> @ <weight>[unit]"  (e.g. 3x5 @ 135 lbs)
 _RE_SETS_REPS_WEIGHT = re.compile(
     rf"(?P<sets>\d+)\s*[x\u00d7]\s*(?P<reps>\d+)"
@@ -75,6 +81,9 @@ def _normalize_unit(u: str | None) -> str:
 def _try_parse_set_line(line: str) -> list[ParsedSet] | None:
     """Try to parse a line that consists ONLY of set spec(s)."""
     s = line.strip().rstrip(",")
+    # Strip a trailing protocol keyword before splitting on commas so that
+    # "135x10, 115x12 DROP SET" still comma-splits correctly (issue #332).
+    s = _PROTOCOL_RE.sub("", s).rstrip(",").strip()
     # Multiple set specs separated by commas
     pieces = [p.strip() for p in s.split(",") if p.strip()]
     if len(pieces) > 1:
