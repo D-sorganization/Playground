@@ -107,6 +107,17 @@ class TestLastSessionSets:
         weights = {s.actual_weight for s in sets}
         assert weights == {185.0, 190.0}
 
+    def test_same_day_sessions_only_return_newest_workout(self, repo) -> None:
+        self._add_workout_with_sets(repo, "2024-01-08", "Squat", [(5, 135)])
+        self._add_workout_with_sets(repo, "2024-01-08", "Squat", [(3, 185)])
+
+        ex = repo.resolve_exercise_by_name("Squat")
+        assert ex is not None
+        sets = repo.last_session_sets(ex.id or 0)
+
+        assert len(sets) == 1
+        assert sets[0].actual_weight == 185.0
+
     def test_limit_is_respected(self, repo) -> None:
         self._add_workout_with_sets(
             repo,
