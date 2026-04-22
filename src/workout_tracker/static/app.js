@@ -784,7 +784,12 @@
   // ---------- Last-session recall strip (#295) ----------
 
   let _recallTimer = null;
-  const _recallCache = new Map(); // normalized-name → payload
+  const _recallCache = new Map(); // active-workout-id::normalized-name → payload
+
+  function recallCacheKey(name) {
+    const workoutKey = state.activeWorkoutId ? String(state.activeWorkoutId) : "none";
+    return `${workoutKey}::${name.trim().toLowerCase()}`;
+  }
 
   function daysAgo(iso) {
     if (!iso) return null;
@@ -831,7 +836,8 @@
       strip.innerHTML = "";
       return;
     }
-    const key = name.toLowerCase();
+    const key = recallCacheKey(name);
+    const normalizedName = name.toLowerCase();
     if (_recallCache.has(key)) {
       renderRecall(_recallCache.get(key));
       return;
@@ -846,7 +852,7 @@
       );
       _recallCache.set(key, payload);
       // Only render if the user hasn't typed ahead.
-      if ($("#ex-input").value.trim().toLowerCase() === key) {
+      if ($("#ex-input").value.trim().toLowerCase() === normalizedName) {
         renderRecall(payload);
       }
     } catch {
@@ -860,7 +866,11 @@
   }
 
   function invalidateRecallFor(name) {
-    if (name) _recallCache.delete(name.trim().toLowerCase());
+    if (!name) return;
+    const suffix = `::${name.trim().toLowerCase()}`;
+    for (const key of _recallCache.keys()) {
+      if (key.endsWith(suffix)) _recallCache.delete(key);
+    }
   }
 
   // ---------- Screen Wake Lock (#295) ----------

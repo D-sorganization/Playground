@@ -27,8 +27,8 @@
 | **Primary Language(s)** | Python 3.11+                                    |
 | **License**             | MIT                                             |
 | **Current Version**     | 1.0.1                                           |
-| **Spec Version**        | 1.1.0                                           |
-| **Last Spec Update**    | 2026-04-20                                      |
+| **Spec Version**        | 1.1.2                                           |
+| **Last Spec Update**    | 2026-04-21                                      |
 
 ## 2. Purpose & Mission
 
@@ -94,7 +94,7 @@ Playground/
 | AJ Camera                | `src/asteroid_jumper/camera.py`    | Viewport, pan, zoom, and world↔screen coordinate transforms            |
 | AJ Draw                  | `src/asteroid_jumper/draw.py`      | Sprite and primitive drawing helpers (background, asteroids, jumper)    |
 | AJ Particles             | `src/asteroid_jumper/particles.py` | TrailBuffer particle/trail system for position history management       |
-| Workout Tracker          | `src/workout_tracker/`             | Notes-based gym tracking PWA: plan, execute, and analyze workouts       |
+| Workout Tracker          | `src/workout_tracker/`             | Notes-based gym tracking PWA: plan, execute, recall, and analyze workouts |
 | WT Models                | `src/workout_tracker/models.py`    | Exercise/Workout/WorkoutSet dataclasses with DbC-style validators       |
 | WT Repository            | `src/workout_tracker/db.py`        | SQLite repository (LoD): CRUD, merge, rename, cascade deletes           |
 | WT Parser                | `src/workout_tracker/parser.py`    | Parse notes like `Bench 3x5 @ 135` into structured sets                 |
@@ -120,7 +120,7 @@ Playground/
 | F3  | Project GROOT Simulation       | 🔄     | Core simulation engine with environment and agent interactions                              |
 | F4  | Fleet CI Compliance Template   | ✅     | Reference CI/CD configuration enforcing fleet standards                                     |
 | F5  | Assessment aggregation tooling | ✅     | Builds per-category assessments and compiles `docs/assessments/Comprehensive_Assessment.md` |
-| F6  | Workout Tracker (PWA)          | ✅     | Mobile-first Flask/SQLite app: fuzzy exercise autocomplete, notes-based plans, set-by-set execution, auto 1RM/PR/volume/frequency analytics, typo rename+merge |
+| F6  | Workout Tracker (PWA)          | ✅     | Mobile-first Flask/SQLite app: fuzzy exercise autocomplete, notes-based plans, set-by-set execution, previous-session recall, auto 1RM/PR/volume/frequency analytics, typo rename+merge |
 
 ### API / Interface Contract
 
@@ -133,6 +133,7 @@ Workout Tracker exposes a local HTTP JSON API (in-process, not an external servi
 | `GET /`                                                   | SPA shell (HTML)                          |
 | `GET /api/exercises`                                      | List exercises (catalog)                  |
 | `GET /api/exercises/suggest?q=...`                        | Fuzzy autocomplete suggestions            |
+| `GET /api/exercises/last_session?q=...&exclude=...`       | Previous-session recall excluding current workout |
 | `POST /api/exercises`                                     | Get-or-create an exercise by name         |
 | `PUT /api/exercises/{id}`                                 | Rename (fix typos)                        |
 | `POST /api/exercises/{src}/merge_into/{target}`           | Merge duplicates, move all sets           |
@@ -206,7 +207,7 @@ Test pyramid approach with emphasis on unit tests covering individual components
 - [ ] Archived snapshots remain excluded from normal lint/test collection unless explicitly restored
 - [ ] Live simulation markers correctly skip in fast CI runs
 - [ ] All 20 test files execute without errors on Python 3.11+3.12
-- [ ] Workout Tracker: 91 tests across models, parser, autocomplete, stats, db, routes pass
+- [ ] Workout Tracker: 92 tests across models, parser, autocomplete, stats, db, routes pass
 - [ ] Workout Tracker: fuzzy autocomplete recovers from typos (e.g. `bnech` → `Bench Press`)
 - [ ] Workout Tracker: parser handles `3x5 @ 135`, `135x5`, header-then-sets, comma-separated, bodyweight
 - [ ] Workout Tracker: Flask startup and request-scoped SQLite connections release file handles on Windows before temporary database cleanup
@@ -336,6 +337,8 @@ Active development with focus on Project GROOT implementation. Demos (Asteroid F
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | ---------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-04-21 | 1.0.25  | Fix(#343): key Workout Tracker previous-session recall cache entries by active workout context as well as exercise name, so recall results fetched while editing one workout are not reused after switching to another workout.                                                                                                                                                |
+| 2026-04-21 | 1.0.24  | Fix(#342): make Workout Tracker previous-session recall select from all candidate workouts instead of the 500 most recent workouts; add a route regression for older exercise history hidden behind newer unrelated workouts.                                                                                                                                                                                               |
 | 2026-04-20 | 1.0.23  | Test coverage(#nightly): close Workout Tracker startup schema connection after initialization; add route regressions for exercise rename/merge/delete, workout deletion, set validation/delete, executed imports, per-exercise stats, and Windows SQLite file-handle cleanup; set pytest `pythonpath` to `src` for targeted package tests.                                                                                  |
 | 2026-04-14 | 1.0.22  | docs(#256): document independent-experiments convention in README; add project maturity table; clarify per-project quality scope.                                                                                                                                                                                                                                                                                          |
 | 2026-04-14 | 1.0.21  | Refactor(#246): decompose `asteroid_jumper/renderer.py` into `camera.py` (Camera viewport class), `draw.py` (sprite/primitive drawing helpers), and `particles.py` (TrailBuffer particle system); `draw_helpers.py` retained as backward-compat re-export shim; 18 camera tests + 9 draw tests + 17 particle tests added.                                                                                                  |
