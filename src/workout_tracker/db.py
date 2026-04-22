@@ -197,9 +197,9 @@ class WorkoutRepository:
 
     def last_session_sets(self, exercise_id: int, limit: int = 10) -> list[WorkoutSet]:
         """Return most-recent executed sets for an exercise (last session only)."""
-        # Find the most recent workout date that has executed sets for this exercise
+        # Find the most recent workout that has executed sets for this exercise
         row = self.conn.execute(
-            "SELECT w.date FROM workouts w "
+            "SELECT w.id FROM workouts w "
             "JOIN sets s ON s.workout_id = w.id "
             "WHERE s.exercise_id = ? AND s.executed = 1 "
             "ORDER BY w.date DESC, w.id DESC LIMIT 1",
@@ -207,14 +207,14 @@ class WorkoutRepository:
         ).fetchone()
         if row is None:
             return []
-        last_date = row["date"]
+        last_workout_id = row["id"]
         rows = self.conn.execute(
             "SELECT s.*, e.name AS exercise_name FROM sets s "
             "JOIN exercises e ON e.id = s.exercise_id "
             "JOIN workouts w ON w.id = s.workout_id "
-            "WHERE s.exercise_id = ? AND s.executed = 1 AND w.date = ? "
+            "WHERE s.exercise_id = ? AND s.executed = 1 AND w.id = ? "
             "ORDER BY w.id DESC, s.position ASC LIMIT ?",
-            (exercise_id, last_date, limit),
+            (exercise_id, last_workout_id, limit),
         ).fetchall()
         return [self._row_to_set(r) for r in rows]
 
