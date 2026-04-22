@@ -196,3 +196,14 @@ class TestProtocolParsing:
         entries = parse_notes("Bench Press 3x5 @ 135")
         for s in entries[0].sets:
             assert s.protocol is None
+
+    def test_comma_separated_sets_keep_protocol_suffix(self) -> None:
+        entries = parse_notes("Bench Press\n135x10, 115x12 DROP SET")
+
+        assert len(entries) == 1
+        assert entries[0].exercise_name == "Bench Press"
+        sets = entries[0].sets
+        assert [(s.weight, s.reps, s.protocol) for s in sets] == [
+            (135.0, 10, "drop_set"),
+            (115.0, 12, "drop_set"),
+        ]
