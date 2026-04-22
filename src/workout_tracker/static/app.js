@@ -1160,7 +1160,15 @@
     const w = await api.get(`/api/workouts/${state.activeWorkoutId}`);
     const executed = (w.sets || []).filter((s) => s.executed);
     if (!executed.length) return toast("No logged sets to repeat", "danger");
-    const last = executed[executed.length - 1];
+    // Sort by completed_at descending so we pick the most recently *executed*
+    // set, not just the highest-position one (issue #336: sets checked out of
+    // order would otherwise repeat the wrong set).
+    executed.sort((a, b) => {
+      const ta = a.completed_at || "";
+      const tb = b.completed_at || "";
+      return tb < ta ? -1 : tb > ta ? 1 : b.position - a.position;
+    });
+    const last = executed[0];
     const body = {
       exercise_name: last.exercise_name,
       unit: last.unit || "lbs",
