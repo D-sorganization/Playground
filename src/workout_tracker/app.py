@@ -410,7 +410,12 @@ def register_routes(app: _FlaskApp) -> None:
     @app.post("/api/sets/<int:set_id>/restore")
     def restore_set(set_id: int) -> Any:
         repo: WorkoutRepository = g.repo
-        repo.restore_set(set_id)
+        try:
+            repo.restore_set(set_id)
+        except KeyError:
+            abort(404)
+        except ValueError as e:
+            abort(400, str(e))
         return jsonify({"ok": True})
 
     # ---------- parser ----------
@@ -788,6 +793,8 @@ def register_routes(app: _FlaskApp) -> None:
                 )
         except KeyError:
             abort(404)
+        except ValueError as e:
+            abort(400, str(e))
         return jsonify({"ok": True})
 
     @app.delete("/api/trash")

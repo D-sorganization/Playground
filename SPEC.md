@@ -27,8 +27,8 @@
 | **Primary Language(s)** | Python 3.11+                                    |
 | **License**             | MIT                                             |
 | **Current Version**     | 1.0.1                                           |
-| **Spec Version**        | 1.1.3                                           |
-| **Last Spec Update**    | 2026-04-21                                      |
+| **Spec Version**        | 1.1.4                                           |
+| **Last Spec Update**    | 2026-04-22                                      |
 
 ## 2. Purpose & Mission
 
@@ -339,6 +339,7 @@ Active development with focus on Project GROOT implementation. Demos (Asteroid F
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | ---------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-04-22 | 1.1.4   | Fix(#355): translate Workout Tracker set-restore parent-deleted validation errors into JSON 400 responses on both direct set restore and trash restore routes instead of surfacing internal server errors.                                                                                                                                                                                                                 |
 | 2026-04-21 | 1.1.3   | Fix(#330): restrict Workout Tracker last-session recall to the single newest workout id instead of all workouts on the newest date.                                                                                                                                                                                                                                                                                         |
 | 2026-04-21 | 1.1.2   | Fix(#334,#335): remove 500-workout history caps from Workout Tracker weekly planning helpers so historical copy-last-weekday and schedule de-duplication consider the full relevant date range.                                                                                                                                                                                                                            |
 | 2026-04-21 | 1.1.1   | Fix(#332): preserve trailing protocol suffixes when parsing comma-separated Workout Tracker set lines, so entries like `135x10, 115x12 DROP SET` produce multiple structured sets with `drop_set` metadata.                                                                                                                                                                                                                |

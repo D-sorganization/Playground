@@ -333,6 +333,50 @@ class TestSoftDeleteRestoreRoutes:
         w = client.get(f"/api/workouts/{wid}").json
         assert any(s["id"] == sid for s in w["sets"])
 
+    def test_restore_set_with_deleted_workout_returns_400(self, client) -> None:
+        r = client.post(
+            "/api/workouts", json={"date": "2024-06-01", "status": "in_progress"}
+        )
+        wid = r.json["id"]
+        r = client.post(
+            f"/api/workouts/{wid}/sets",
+            json={
+                "exercise_name": "Deadlift",
+                "actual_reps": 3,
+                "actual_weight": 300,
+                "executed": True,
+            },
+        )
+        sid = r.json["id"]
+
+        client.delete(f"/api/workouts/{wid}")
+        response = client.post(f"/api/sets/{sid}/restore")
+
+        assert response.status_code == 400
+        assert "Restore the workout first" in response.json["error"]
+
+    def test_trash_restore_set_with_deleted_workout_returns_400(self, client) -> None:
+        r = client.post(
+            "/api/workouts", json={"date": "2024-06-01", "status": "in_progress"}
+        )
+        wid = r.json["id"]
+        r = client.post(
+            f"/api/workouts/{wid}/sets",
+            json={
+                "exercise_name": "Deadlift",
+                "actual_reps": 3,
+                "actual_weight": 300,
+                "executed": True,
+            },
+        )
+        sid = r.json["id"]
+
+        client.delete(f"/api/workouts/{wid}")
+        response = client.post("/api/trash/restore", json={"type": "set", "id": sid})
+
+        assert response.status_code == 400
+        assert "Restore the workout first" in response.json["error"]
+
 
 class TestStatsRoutes:
     def test_overview_after_logging(self, client) -> None:
