@@ -145,16 +145,18 @@ def _try_parse_set_line(line: str) -> list[ParsedSet] | None:
     s, protocol = _extract_protocol(s)
 
     # Multiple set specs separated by commas
-    if not protocol:
-        pieces = [p.strip() for p in s.split(",") if p.strip()]
-        if len(pieces) > 1:
-            out: list[ParsedSet] = []
-            for p in pieces:
-                sub = _try_parse_set_line(p)
-                if sub is None:
-                    return None
-                out.extend(sub)
-            return out
+    pieces = [p.strip() for p in s.split(",") if p.strip()]
+    if len(pieces) > 1:
+        out: list[ParsedSet] = []
+        for p in pieces:
+            sub = _try_parse_set_line(p)
+            if sub is None:
+                return None
+            for parsed_set in sub:
+                if parsed_set.protocol is None:
+                    parsed_set.protocol = protocol
+            out.extend(sub)
+        return out
 
     # BW+N x reps
     m = _RE_BW_X_REPS.match(s)
