@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+from datetime import date as date_t
+from datetime import timedelta
+
 import pytest
 
 from workout_tracker.db import WorkoutRepository, connect, init_db
@@ -22,6 +25,21 @@ def repo() -> WorkoutRepository:
     conn = connect(":memory:")
     init_db(conn)
     return WorkoutRepository(conn)
+
+
+def _create_newer_history(
+    repo: WorkoutRepository,
+    *,
+    start_date: str = "2024-02-01",
+    count: int = 500,
+) -> None:
+    start = date_t.fromisoformat(start_date)
+    for day_offset in range(count):
+        repo.create_workout(
+            date=(start + timedelta(days=day_offset)).isoformat(),
+            title=f"History {day_offset}",
+            status="completed",
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -317,6 +335,35 @@ class TestCopyLastWeekdaySession:
         result = copy_last_weekday_session(repo, weekday=0, target_date="2024-05-13")
         assert result is None
 
+    def test_finds_prior_weekday_beyond_latest_500_workouts(
+        self, repo: WorkoutRepository
+    ) -> None:
+        ex = repo.get_or_create_exercise("Bench")
+        w = repo.create_workout(
+            date="2024-01-01",
+            title="Historical Monday",
+            status="completed",
+        )
+        repo.add_set(
+            WorkoutSet(
+                workout_id=w.id or 0,
+                exercise_id=ex.id or 0,
+                position=0,
+                planned_reps=5,
+                planned_weight=135.0,
+                executed=True,
+                actual_reps=5,
+                actual_weight=135.0,
+            )
+        )
+        _create_newer_history(repo)
+
+        new_w = copy_last_weekday_session(repo, weekday=0, target_date="2024-01-08")
+
+        assert new_w is not None
+        assert new_w.title == "Historical Monday"
+        assert new_w.sets[0].planned_weight == 135.0
+
 
 # ---------------------------------------------------------------------------
 # Weekly schedule
@@ -361,6 +408,21 @@ class TestWeeklySchedule:
     def test_week_start_not_monday_raises(self, repo: WorkoutRepository) -> None:
         with pytest.raises(ValueError):
             apply_weekly_schedule(repo, {0: "Push"}, week_start="2024-05-07")
+
+    def test_skips_existing_workout_beyond_latest_500_workouts(
+        self, repo: WorkoutRepository
+    ) -> None:
+        existing = repo.create_workout(date="2024-01-01", title="Existing Monday")
+        _create_newer_history(repo)
+
+        workouts = apply_weekly_schedule(repo, {0: "Push"}, week_start="2024-01-01")
+
+        same_date_count = repo.conn.execute(
+            "SELECT COUNT(*) FROM workouts WHERE date = ? AND deleted_at IS NULL",
+            (existing.date,),
+        ).fetchone()[0]
+        assert workouts == []
+        assert same_date_count == 1
 
 
 # ---------------------------------------------------------------------------
