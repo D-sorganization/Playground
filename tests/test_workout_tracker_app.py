@@ -333,9 +333,9 @@ class TestSoftDeleteRestoreRoutes:
         w = client.get(f"/api/workouts/{wid}").json
         assert any(s["id"] == sid for s in w["sets"])
 
-    def test_restore_set_with_deleted_workout_returns_400(self, client) -> None:
+    def test_restore_set_returns_400_when_workout_is_deleted(self, client) -> None:
         r = client.post(
-            "/api/workouts", json={"date": "2024-06-01", "status": "in_progress"}
+            "/api/workouts", json={"date": "2024-06-02", "status": "in_progress"}
         )
         wid = r.json["id"]
         r = client.post(
@@ -348,12 +348,11 @@ class TestSoftDeleteRestoreRoutes:
             },
         )
         sid = r.json["id"]
-
         client.delete(f"/api/workouts/{wid}")
-        response = client.post(f"/api/sets/{sid}/restore")
 
-        assert response.status_code == 400
-        assert "Restore the workout first" in response.json["error"]
+        r = client.post(f"/api/sets/{sid}/restore")
+        assert r.status_code == 400
+        assert "workout" in r.json["error"]
 
     def test_trash_restore_set_with_deleted_workout_returns_400(self, client) -> None:
         r = client.post(
@@ -370,12 +369,36 @@ class TestSoftDeleteRestoreRoutes:
             },
         )
         sid = r.json["id"]
-
         client.delete(f"/api/workouts/{wid}")
-        response = client.post("/api/trash/restore", json={"type": "set", "id": sid})
 
-        assert response.status_code == 400
-        assert "Restore the workout first" in response.json["error"]
+        r = client.post("/api/trash/restore", json={"type": "set", "id": sid})
+        assert r.status_code == 400
+        assert "workout" in r.json["error"]
+
+    def test_trash_restore_set_returns_400_when_exercise_is_deleted(
+        self, client
+    ) -> None:
+        r = client.post("/api/exercises", json={"name": "Overhead Press"})
+        ex_id = r.json["id"]
+        r = client.post(
+            "/api/workouts", json={"date": "2024-06-03", "status": "in_progress"}
+        )
+        wid = r.json["id"]
+        r = client.post(
+            f"/api/workouts/{wid}/sets",
+            json={
+                "exercise_id": ex_id,
+                "actual_reps": 5,
+                "actual_weight": 95,
+                "executed": True,
+            },
+        )
+        sid = r.json["id"]
+        client.delete(f"/api/exercises/{ex_id}")
+
+        r = client.post("/api/trash/restore", json={"type": "set", "id": sid})
+        assert r.status_code == 400
+        assert "exercise" in r.json["error"]
 
 
 class TestStatsRoutes:

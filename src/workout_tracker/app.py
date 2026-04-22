@@ -786,7 +786,10 @@ def register_routes(app: _FlaskApp) -> None:
             elif item_type == "exercise":
                 repo.restore_exercise(item_id_int)
             elif item_type == "set":
-                repo.restore_set(item_id_int)
+                try:
+                    repo.restore_set(item_id_int)
+                except ValueError as e:
+                    abort(400, str(e))
             else:
                 abort(
                     400, f"unknown type {item_type!r}. Must be: workout, exercise, set"
