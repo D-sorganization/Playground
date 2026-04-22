@@ -159,16 +159,24 @@ def copy_last_weekday_session(
     if weekday < 0 or weekday > 6:
         raise ValueError(f"weekday must be 0-6, got {weekday}")
 
-    all_workouts = repo.list_workouts(limit=500)
-    candidates = [
-        w
-        for w in all_workouts
-        if date_t.fromisoformat(w.date).weekday() == weekday and w.date < target_date
-    ]
-    if not candidates:
+    rows = repo.conn.execute(
+        "SELECT id, date FROM workouts "
+        "WHERE deleted_at IS NULL AND date < ? "
+        "ORDER BY date DESC, id DESC",
+        (target_date,),
+    ).fetchall()
+    source_id = next(
+        (
+            int(row["id"])
+            for row in rows
+            if date_t.fromisoformat(row["date"]).weekday() == weekday
+        ),
+        None,
+    )
+    if source_id is None:
         return None
 
-    source = max(candidates, key=lambda w: w.date)
+    source = repo.get_workout(source_id)
     new_w = repo.create_workout(
         date=target_date,
         title=source.title,
@@ -203,7 +211,15 @@ def apply_weekly_schedule(
         if day < 0 or day > 6:
             raise ValueError(f"weekday must be 0-6, got {day}")
 
-    existing_dates = {w.date for w in repo.list_workouts(limit=500)}
+    week_end = (start + timedelta(days=6)).isoformat()
+    existing_dates = {
+        row["date"]
+        for row in repo.conn.execute(
+            "SELECT DISTINCT date FROM workouts "
+            "WHERE deleted_at IS NULL AND date BETWEEN ? AND ?",
+            (week_start, week_end),
+        ).fetchall()
+    }
 
     created: list[Workout] = []
     for day_offset, title in sorted(schedule.items()):

@@ -27,7 +27,7 @@
 | **Primary Language(s)** | Python 3.11+                                    |
 | **License**             | MIT                                             |
 | **Current Version**     | 1.0.1                                           |
-| **Spec Version**        | 1.1.1                                           |
+| **Spec Version**        | 1.1.2                                           |
 | **Last Spec Update**    | 2026-04-21                                      |
 
 ## 2. Purpose & Mission
@@ -211,6 +211,7 @@ Test pyramid approach with emphasis on unit tests covering individual components
 - [ ] Workout Tracker: 78 tests across models, parser, autocomplete, stats, db, routes pass
 - [ ] Workout Tracker: fuzzy autocomplete recovers from typos (e.g. `bnech` → `Bench Press`)
 - [ ] Workout Tracker: parser handles `3x5 @ 135`, `135x5`, header-then-sets, comma-separated, bodyweight, and protocol suffixes on comma-separated sets
+- [ ] Workout Tracker: weekly planning helpers search the full relevant workout history instead of only the latest 500 workouts
 
 ## 8. Quality Standards
 
@@ -337,6 +338,8 @@ Active development with focus on Project GROOT implementation. Demos (Asteroid F
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | ---------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-04-21 | 1.1.1   | Fix(#332): preserve trailing protocol suffixes when parsing comma-separated Workout Tracker set lines, so entries like `135x10, 115x12 DROP SET` produce multiple structured sets with `drop_set` metadata.                                                                                                                                                                                                                |
+| 2026-04-21 | 1.1.2   | Fix(#334,#335): remove 500-workout history caps from Workout Tracker weekly planning helpers so historical copy-last-weekday and schedule de-duplication consider the full relevant date range.                                                                                                                                                                                                                            |
 | 2026-04-21 | 1.1.1   | Fix(#332): preserve trailing protocol suffixes when parsing comma-separated Workout Tracker set lines, so entries like `135x10, 115x12 DROP SET` produce multiple structured sets with `drop_set` metadata.                                                                                                                                                                                                                |
 | 2026-04-14 | 1.0.22  | docs(#256): document independent-experiments convention in README; add project maturity table; clarify per-project quality scope.                                                                                                                                                                                                                                                                                          |
 | 2026-04-14 | 1.0.21  | Refactor(#246): decompose `asteroid_jumper/renderer.py` into `camera.py` (Camera viewport class), `draw.py` (sprite/primitive drawing helpers), and `particles.py` (TrailBuffer particle system); `draw_helpers.py` retained as backward-compat re-export shim; 18 camera tests + 9 draw tests + 17 particle tests added.                                                                                                  |
