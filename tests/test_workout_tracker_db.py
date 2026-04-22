@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import sqlite3
+
 import pytest
 
 from workout_tracker.db import WorkoutRepository, connect, init_db
@@ -13,6 +15,52 @@ def repo() -> WorkoutRepository:
     conn = connect(":memory:")
     init_db(conn)
     return WorkoutRepository(conn)
+
+
+def _init_legacy_schema(conn: sqlite3.Connection) -> None:
+    conn.executescript(
+        """
+        PRAGMA foreign_keys = ON;
+
+        CREATE TABLE IF NOT EXISTS exercises (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL UNIQUE,
+            normalized_name TEXT NOT NULL UNIQUE,
+            use_count INTEGER NOT NULL DEFAULT 0,
+            last_used_at TEXT,
+            created_at TEXT NOT NULL DEFAULT (datetime('now'))
+        );
+
+        CREATE TABLE IF NOT EXISTS workouts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            date TEXT NOT NULL,
+            title TEXT,
+            notes TEXT,
+            status TEXT NOT NULL DEFAULT 'planned',
+            created_at TEXT NOT NULL DEFAULT (datetime('now')),
+            updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+        );
+
+        CREATE TABLE IF NOT EXISTS sets (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            workout_id INTEGER NOT NULL,
+            exercise_id INTEGER NOT NULL,
+            position INTEGER NOT NULL,
+            planned_reps INTEGER,
+            planned_weight REAL,
+            actual_reps INTEGER,
+            actual_weight REAL,
+            rpe REAL,
+            unit TEXT NOT NULL DEFAULT 'lbs',
+            executed INTEGER NOT NULL DEFAULT 0,
+            notes TEXT,
+            completed_at TEXT,
+            FOREIGN KEY (workout_id) REFERENCES workouts(id) ON DELETE CASCADE,
+            FOREIGN KEY (exercise_id) REFERENCES exercises(id)
+        );
+        """
+    )
+    conn.commit()
 
 
 class TestExerciseRepo:
@@ -75,6 +123,47 @@ class TestExerciseRepo:
         # source exercise gone
         names = [e.name for e in repo.list_exercises()]
         assert "Bench" not in names
+
+    def test_init_db_migrates_legacy_sets_fk_to_cascade(self) -> None:
+        conn = connect(":memory:")
+        _init_legacy_schema(conn)
+        conn.execute(
+            "INSERT INTO exercises (name, normalized_name) VALUES (?, ?)",
+            ("Squat", "squat"),
+        )
+        ex_id = conn.execute("SELECT id FROM exercises").fetchone()[0]
+        conn.execute(
+            "INSERT INTO workouts (date, status) VALUES (?, ?)",
+            ("2024-05-01", "in_progress"),
+        )
+        w_id = conn.execute("SELECT id FROM workouts").fetchone()[0]
+        conn.execute(
+            """
+            INSERT INTO sets (
+                workout_id,
+                exercise_id,
+                position,
+                actual_reps,
+                actual_weight,
+                executed
+            ) VALUES (?, ?, ?, ?, ?, ?)
+            """,
+            (w_id, ex_id, 0, 5, 100, 1),
+        )
+        conn.commit()
+
+        init_db(conn)
+
+        fk_rows = conn.execute("PRAGMA foreign_key_list(sets)").fetchall()
+        exercise_fk = next(row for row in fk_rows if row[3] == "exercise_id")
+        assert exercise_fk[6] == "CASCADE"
+
+        repo = WorkoutRepository(conn)
+        repo.delete_exercise(ex_id)
+        remaining = conn.execute(
+            "SELECT COUNT(*) FROM sets WHERE exercise_id = ?", (ex_id,)
+        ).fetchone()[0]
+        assert remaining == 0
 
 
 class TestWorkoutRepo:

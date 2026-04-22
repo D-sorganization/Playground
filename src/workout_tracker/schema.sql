@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS sets (
     notes TEXT,
     completed_at TEXT,
     FOREIGN KEY (workout_id) REFERENCES workouts(id) ON DELETE CASCADE,
-    FOREIGN KEY (exercise_id) REFERENCES exercises(id)
+    FOREIGN KEY (exercise_id) REFERENCES exercises(id) ON DELETE CASCADE
 );
 
 CREATE INDEX IF NOT EXISTS idx_sets_workout ON sets(workout_id, position);
