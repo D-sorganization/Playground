@@ -102,15 +102,16 @@ jobs:
       - name: Analyze Comment
         id: analyze
         if: steps.filter.outputs.is_bot != 'true' && steps.pr_state.outputs.should_skip != 'true'
+        env:
+          COMMENT_BODY: ${{ github.event.comment.body }}
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+          COMMENT_PATH: ${{ github.event.comment.path }}
+          COMMENT_LINE: ${{ github.event.comment.line }}
         run: |
           # Get comment body
-          if [ "${{ github.event_name }}" = "pull_request_review_comment" ]; then
-            COMMENT_BODY="${{ github.event.comment.body }}"
-            COMMENT_PATH="${{ github.event.comment.path }}"
-            COMMENT_LINE="${{ github.event.comment.line }}"
+          if [ "$GITHUB_EVENT_NAME" = "pull_request_review_comment" ]; then
             COMMENT_TYPE="review"
           else
-            COMMENT_BODY="${{ github.event.comment.body }}"
             COMMENT_PATH=""
             COMMENT_LINE=""
             COMMENT_TYPE="pr"
@@ -145,6 +146,14 @@ jobs:
           steps.analyze.outputs.is_actionable == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COMMENT_BODY_JSON: ${{ toJson(github.event.comment.body) }}
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+          COMMENT_ID: ${{ github.event.comment.id }}
+          COMMENT_PATH: ${{ github.event.comment.path }}
+          COMMENT_LINE: ${{ github.event.comment.line }}
+          COMMENT_AUTHOR: ${{ github.event.comment.user.login }}
+          PR_NUMBER: ${{ steps.pr_state.outputs.pr_number }}
+          REPOSITORY: ${{ github.repository }}
         run: |
           mkdir -p .jules/pending
           QUEUE_FILE=".jules/pending/pr_comments.json"
@@ -156,23 +165,17 @@ jobs:
 
           # Create comment entry
           TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-          PR_NUMBER="${{ steps.pr_state.outputs.pr_number }}"
+          PR_NUMBER="$PR_NUMBER"
 
-          if [ "${{ github.event_name }}" = "pull_request_review_comment" ]; then
-            COMMENT_ID="${{ github.event.comment.id }}"
-            COMMENT_BODY=$(echo '${{ toJson(github.event.comment.body) }}')
-            COMMENT_PATH="${{ github.event.comment.path }}"
-            COMMENT_LINE="${{ github.event.comment.line }}"
+          if [ "$GITHUB_EVENT_NAME" = "pull_request_review_comment" ]; then
             COMMENT_TYPE="review"
-            COMMENT_AUTHOR="${{ github.event.comment.user.login }}"
           else
-            COMMENT_ID="${{ github.event.comment.id }}"
-            COMMENT_BODY=$(echo '${{ toJson(github.event.comment.body) }}')
             COMMENT_PATH=""
             COMMENT_LINE=""
             COMMENT_TYPE="pr"
-            COMMENT_AUTHOR="${{ github.event.comment.user.login }}"
           fi
+
+          COMMENT_BODY="$COMMENT_BODY_JSON"
 
           # Use Python for safe JSON manipulation
           python3 << PYEOF
@@ -205,7 +208,7 @@ jobs:
                   "path": "$COMMENT_PATH" if "$COMMENT_PATH" else None,
                   "line": int("$COMMENT_LINE") if "$COMMENT_LINE" else None,
                   "queued_at": "$TIMESTAMP",
-                  "repository": "${{ github.repository }}"
+                  "repository": "$REPOSITORY"
               }
 
               queue["comments"].append(new_comment)
