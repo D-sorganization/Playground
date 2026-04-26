@@ -1,0 +1,141 @@
+{
+  "repo": "Playground",
+  "owner": "D-Sorganization",
+  "branch": "feat/workout-ux-quick-wins-295",
+  "head_sha": "c4f1caa7953b606db28df1a4668b68bee5f0917b",
+  "date": "2026-04-26",
+  "working_tree_clean": true,
+  "scores": {
+    "A": {
+      "score": 7,
+      "weight": 5,
+      "findings": [
+        {
+          "priority": "P1",
+          "text": "Archive/ and temp files in root; cleanup needed"
+        }
+      ]
+    },
+    "B": {
+      "score": 5,
+      "weight": 8,
+      "findings": [
+        {
+          "priority": "P1",
+          "text": "559-word README; minimal architecture docs"
+        }
+      ]
+    },
+    "C": {
+      "score": 4,
+      "weight": 12,
+      "findings": [
+        {
+          "priority": "P0",
+          "text": "36 test files for 108 Python files; coverage unknown"
+        }
+      ]
+    },
+    "D": {
+      "score": 8,
+      "weight": 10,
+      "findings": []
+    },
+    "E": {
+      "score": 3,
+      "weight": 7,
+      "findings": [
+        {
+          "priority": "P2",
+          "text": "No benchmark files"
+        }
+      ]
+    },
+    "F": {
+      "score": 9,
+      "weight": 10,
+      "findings": []
+    },
+    "G": {
+      "score": 6,
+      "weight": 8,
+      "findings": [
+        {
+          "priority": "P1",
+          "text": "requirements-lock.txt present but no audit step in CI"
+        }
+      ]
+    },
+    "H": {
+      "score": 7,
+      "weight": 10,
+      "findings": [
+        {
+          "priority": "P2",
+          "text": "0 secret hits but no SAST in CI"
+        }
+      ]
+    },
+    "I": {
+      "score": 5,
+      "weight": 6,
+      "findings": [
+        {
+          "priority": "P1",
+          "text": ".env.example present but no Dockerfile"
+        }
+      ]
+    },
+    "J": {
+      "score": 7,
+      "weight": 7,
+      "findings": [
+        {
+          "priority": "P2",
+          "text": "0 print() calls, 144 logging refs"
+        }
+      ]
+    },
+    "K": {
+      "score": 8,
+      "weight": 7,
+      "findings": []
+    },
+    "L": {
+      "score": 5,
+      "weight": 8,
+      "findings": [
+        {
+          "priority": "P2",
+          "text": "42 workflow files but no CodeQL or security scanning"
+        }
+      ]
+    },
+    "M": {
+      "score": 3,
+      "weight": 5,
+      "findings": [
+        {
+          "priority": "P1",
+          "text": "No CHANGELOG.md or SECURITY.md"
+        }
+      ]
+    },
+    "N": {
+      "score": 10,
+      "weight": 4,
+      "findings": []
+    },
+    "O": {
+      "score": 6,
+      "weight": 3,
+      "findings": [
+        {
+          "priority": "P1",
+          "text": "AGENTS.md present but no CLAUDE.md"
+        }
+      ]
+    }
+  },
+  "overall_score": 68.0
+}
