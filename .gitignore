@@ -123,3 +123,10 @@ pnpm-lock.yaml
 *.asv
 *.m~
 *.autosave
+
+# CI / scratch artifacts (issue #376)
+checks*.txt
+errors.txt
+log_*.txt
+mypy_out.txt
+pytest_errors.txt
