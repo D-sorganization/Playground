@@ -1,1 +1,2 @@
-def test_bench(): pass
+def test_bench():
+    pass
