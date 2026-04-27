@@ -27,8 +27,8 @@
 | **Primary Language(s)** | Python 3.11+                                    |
 | **License**             | MIT                                             |
 | **Current Version**     | 1.0.1                                           |
-| **Spec Version**        | 1.1.0                                           |
-| **Last Spec Update**    | 2026-04-19                                      |
+| **Spec Version**        | 1.1.4                                           |
+| **Last Spec Update**    | 2026-04-22                                      |
 
 ## 2. Purpose & Mission
 
@@ -88,39 +88,39 @@ Playground/
 
 ### Key Components
 
-| Component                | Location                           | Purpose                                                                 |
-| ------------------------ | ---------------------------------- | ----------------------------------------------------------------------- |
-| Asteroid Field Navigator | `src/asteroid_jumper/`             | Demo project: navigate through asteroid fields with collision detection |
-| AJ Camera                | `src/asteroid_jumper/camera.py`    | Viewport, pan, zoom, and world↔screen coordinate transforms            |
-| AJ Draw                  | `src/asteroid_jumper/draw.py`      | Sprite and primitive drawing helpers (background, asteroids, jumper)    |
-| AJ Particles             | `src/asteroid_jumper/particles.py` | TrailBuffer particle/trail system for position history management       |
-| Workout Tracker          | `src/workout_tracker/`             | Notes-based gym tracking PWA: plan, execute, and analyze workouts       |
-| WT Models                | `src/workout_tracker/models.py`    | Exercise/Workout/WorkoutSet dataclasses with DbC-style validators       |
-| WT Repository            | `src/workout_tracker/db.py`        | SQLite repository (LoD): CRUD, merge, rename, cascade deletes           |
-| WT Parser                | `src/workout_tracker/parser.py`    | Parse notes like `Bench 3x5 @ 135` into structured sets                 |
-| WT Autocomplete          | `src/workout_tracker/autocomplete.py` | Trigram + Damerau-Levenshtein fuzzy ranking for exercise names       |
-| WT Stats                 | `src/workout_tracker/stats.py`     | Epley/Brzycki 1RM, PRs, per-exercise summary, timeseries, frequency     |
-| WT App                   | `src/workout_tracker/app.py`       | Flask factory, `/api/*` JSON surface, PWA shell                         |
-| Project GROOT            | `src/Project_GROOT/`               | Integrated simulation, training, evaluation, and data framework         |
-| GROOT Simulation         | `src/Project_GROOT/sim/`           | Core simulation engine for environment and agent interactions           |
-| GROOT Training           | `src/Project_GROOT/train/`         | Training pipelines and model optimization                               |
-| GROOT Evaluation         | `src/Project_GROOT/eval/`          | Evaluation and benchmarking framework                                   |
-| GROOT Data               | `src/Project_GROOT/data/`          | Dataset management and preprocessing                                    |
-| MATLAB Tools             | `tools/`                           | MATLAB utilities for analysis and visualization                         |
-| Archive Snapshots        | `archive/`                         | Historical references retained outside the maintained source surface    |
+| Component                | Location                              | Purpose                                                                            |
+| ------------------------ | ------------------------------------- | ---------------------------------------------------------------------------------- |
+| Asteroid Field Navigator | `src/asteroid_jumper/`                | Demo project: navigate through asteroid fields with collision detection            |
+| AJ Camera                | `src/asteroid_jumper/camera.py`       | Viewport, pan, zoom, and world↔screen coordinate transforms                       |
+| AJ Draw                  | `src/asteroid_jumper/draw.py`         | Sprite and primitive drawing helpers (background, asteroids, jumper)               |
+| AJ Particles             | `src/asteroid_jumper/particles.py`    | TrailBuffer particle/trail system for position history management                  |
+| Workout Tracker          | `src/workout_tracker/`                | Notes-based gym tracking PWA: plan, execute, recall, and analyze workouts          |
+| WT Models                | `src/workout_tracker/models.py`       | Exercise/Workout/WorkoutSet dataclasses with DbC-style validators                  |
+| WT Repository            | `src/workout_tracker/db.py`           | SQLite repository (LoD): CRUD, merge, rename, cascade deletes, legacy FK migration |
+| WT Parser                | `src/workout_tracker/parser.py`       | Parse notes like `Bench 3x5 @ 135` into structured sets                            |
+| WT Autocomplete          | `src/workout_tracker/autocomplete.py` | Trigram + Damerau-Levenshtein fuzzy ranking for exercise names                     |
+| WT Stats                 | `src/workout_tracker/stats.py`        | Epley/Brzycki 1RM, PRs, per-exercise summary, timeseries, frequency                |
+| WT App                   | `src/workout_tracker/app.py`          | Flask factory, `/api/*` JSON surface, PWA shell                                    |
+| Project GROOT            | `src/Project_GROOT/`                  | Integrated simulation, training, evaluation, and data framework                    |
+| GROOT Simulation         | `src/Project_GROOT/sim/`              | Core simulation engine for environment and agent interactions                      |
+| GROOT Training           | `src/Project_GROOT/train/`            | Training pipelines and model optimization                                          |
+| GROOT Evaluation         | `src/Project_GROOT/eval/`             | Evaluation and benchmarking framework                                              |
+| GROOT Data               | `src/Project_GROOT/data/`             | Dataset management and preprocessing                                               |
+| MATLAB Tools             | `tools/`                              | MATLAB utilities for analysis and visualization                                    |
+| Archive Snapshots        | `archive/`                            | Historical references retained outside the maintained source surface               |
 
 ## 5. Desired Functionality
 
 ### Core Features
 
-| #   | Feature                        | Status | Description                                                                                 |
-| --- | ------------------------------ | ------ | ------------------------------------------------------------------------------------------- |
-| F1  | Asteroid Field Navigator       | ✅     | Demo project with collision detection and navigation mechanics                              |
-| F2  | Archived experiment quarantine | ✅     | Keeps historical snapshots available for reference without treating them as maintained code |
-| F3  | Project GROOT Simulation       | 🔄     | Core simulation engine with environment and agent interactions                              |
-| F4  | Fleet CI Compliance Template   | ✅     | Reference CI/CD configuration enforcing fleet standards                                     |
-| F5  | Assessment aggregation tooling | ✅     | Builds per-category assessments and compiles `docs/assessments/Comprehensive_Assessment.md` |
-| F6  | Workout Tracker (PWA)          | ✅     | Mobile-first Flask/SQLite app: fuzzy exercise autocomplete, notes-based plans, set-by-set execution, auto 1RM/PR/volume/frequency analytics, typo rename+merge |
+| #   | Feature                        | Status | Description                                                                                                                                                                             |
+| --- | ------------------------------ | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| F1  | Asteroid Field Navigator       | ✅     | Demo project with collision detection and navigation mechanics                                                                                                                          |
+| F2  | Archived experiment quarantine | ✅     | Keeps historical snapshots available for reference without treating them as maintained code                                                                                             |
+| F3  | Project GROOT Simulation       | 🔄     | Core simulation engine with environment and agent interactions                                                                                                                          |
+| F4  | Fleet CI Compliance Template   | ✅     | Reference CI/CD configuration enforcing fleet standards                                                                                                                                 |
+| F5  | Assessment aggregation tooling | ✅     | Builds per-category assessments and compiles `docs/assessments/Comprehensive_Assessment.md`                                                                                             |
+| F6  | Workout Tracker (PWA)          | ✅     | Mobile-first Flask/SQLite app: fuzzy exercise autocomplete, notes-based plans, set-by-set execution, previous-session recall, auto 1RM/PR/volume/frequency analytics, typo rename+merge |
 
 ### API / Interface Contract
 
@@ -128,45 +128,46 @@ The Playground does not expose a public API or library interface. Maintained pro
 
 Workout Tracker exposes a local HTTP JSON API (in-process, not an external service) when run via `python -m workout_tracker`:
 
-| Method + Path                                             | Purpose                                   |
-| --------------------------------------------------------- | ----------------------------------------- |
-| `GET /`                                                   | SPA shell (HTML)                          |
-| `GET /api/exercises`                                      | List exercises (catalog)                  |
-| `GET /api/exercises/suggest?q=...`                        | Fuzzy autocomplete suggestions            |
-| `POST /api/exercises`                                     | Get-or-create an exercise by name         |
-| `PUT /api/exercises/{id}`                                 | Rename (fix typos)                        |
-| `POST /api/exercises/{src}/merge_into/{target}`           | Merge duplicates, move all sets           |
-| `DELETE /api/exercises/{id}`                              | Delete exercise and its set history       |
-| `GET/POST /api/workouts`, `GET/PUT/DELETE /api/workouts/{id}` | Workout CRUD (date, title, status, notes) |
-| `POST /api/workouts/{id}/sets`                            | Add a planned or executed set             |
-| `PUT/DELETE /api/sets/{id}`                               | Update/execute/delete a set               |
-| `POST /api/parse`                                         | Parse notes text into structured sets     |
-| `POST /api/workouts/{id}/import`                          | Parse + append sets to a workout          |
-| `GET /api/stats/overview`                                 | Totals, PRs, per-exercise summary, freq.  |
-| `GET /api/stats/exercise/{id}`                            | Per-exercise timeseries + PRs             |
+| Method + Path                                                 | Purpose                                           |
+| ------------------------------------------------------------- | ------------------------------------------------- |
+| `GET /`                                                       | SPA shell (HTML)                                  |
+| `GET /api/exercises`                                          | List exercises (catalog)                          |
+| `GET /api/exercises/suggest?q=...`                            | Fuzzy autocomplete suggestions                    |
+| `GET /api/exercises/last_session?q=...&exclude=...`           | Previous-session recall excluding current workout |
+| `POST /api/exercises`                                         | Get-or-create an exercise by name                 |
+| `PUT /api/exercises/{id}`                                     | Rename (fix typos)                                |
+| `POST /api/exercises/{src}/merge_into/{target}`               | Merge duplicates, move all sets                   |
+| `DELETE /api/exercises/{id}`                                  | Delete exercise and its set history               |
+| `GET/POST /api/workouts`, `GET/PUT/DELETE /api/workouts/{id}` | Workout CRUD (date, title, status, notes)         |
+| `POST /api/workouts/{id}/sets`                                | Add a planned or executed set                     |
+| `PUT/DELETE /api/sets/{id}`                                   | Update/execute/delete a set                       |
+| `POST /api/parse`                                             | Parse notes text into structured sets             |
+| `POST /api/workouts/{id}/import`                              | Parse + append sets to a workout                  |
+| `GET /api/stats/overview`                                     | Totals, PRs, per-exercise summary, freq.          |
+| `GET /api/stats/exercise/{id}`                                | Per-exercise timeseries + PRs                     |
 
 ## 6. Data & Configuration
 
 ### Input Data
 
-| Input                           | Format  | Source              | Schema                                  |
-| ------------------------------- | ------- | ------------------- | --------------------------------------- |
-| Asteroid field parameters       | JSON    | Demo configuration  | Defined in asteroid_jumper config files |
-| Solar system initial conditions | JSON    | Demo configuration  | Defined in solar system model config    |
-| GROOT simulation parameters     | YAML    | Experiment specs    | Schema defined in GROOT docs            |
-| Training datasets               | CSV/NPZ | GROOT data pipeline | Varies by experiment                    |
-| Workout notes text              | Text    | User input (Plans)  | Lines like `Bench 3x5 @ 135`, `135x5`   |
+| Input                           | Format  | Source              | Schema                                                                     |
+| ------------------------------- | ------- | ------------------- | -------------------------------------------------------------------------- |
+| Asteroid field parameters       | JSON    | Demo configuration  | Defined in asteroid_jumper config files                                    |
+| Solar system initial conditions | JSON    | Demo configuration  | Defined in solar system model config                                       |
+| GROOT simulation parameters     | YAML    | Experiment specs    | Schema defined in GROOT docs                                               |
+| Training datasets               | CSV/NPZ | GROOT data pipeline | Varies by experiment                                                       |
+| Workout notes text              | Text    | User input (Plans)  | Lines like `Bench 3x5 @ 135`, `135x5`                                      |
 | Workout set entries             | JSON    | Workout Tracker API | `exercise_name`, `actual_reps`, `actual_weight`, `rpe`, `unit`, `executed` |
 
 ### Output Data
 
-| Output                  | Format   | Destination         | Description                               |
-| ----------------------- | -------- | ------------------- | ----------------------------------------- |
-| Simulation trajectories | JSON     | Memory/file         | Asteroid navigator and solar system paths |
-| Model checkpoints       | PKL/PT   | `data/checkpoints/` | GROOT training model states               |
-| Evaluation metrics      | CSV/JSON | `eval/results/`     | Performance reports and benchmarks        |
-| Training logs           | TXT/CSV  | `logs/`             | Training progress and diagnostics         |
-| Workout tracker DB      | SQLite   | `~/.workout_tracker.db` (configurable) | Exercises, workouts, sets schema |
+| Output                  | Format   | Destination                            | Description                               |
+| ----------------------- | -------- | -------------------------------------- | ----------------------------------------- |
+| Simulation trajectories | JSON     | Memory/file                            | Asteroid navigator and solar system paths |
+| Model checkpoints       | PKL/PT   | `data/checkpoints/`                    | GROOT training model states               |
+| Evaluation metrics      | CSV/JSON | `eval/results/`                        | Performance reports and benchmarks        |
+| Training logs           | TXT/CSV  | `logs/`                                | Training progress and diagnostics         |
+| Workout tracker DB      | SQLite   | `~/.workout_tracker.db` (configurable) | Exercises, workouts, sets schema          |
 
 ### Configuration
 
@@ -206,10 +207,11 @@ Test pyramid approach with emphasis on unit tests covering individual components
 - [ ] Archived snapshots remain excluded from normal lint/test collection unless explicitly restored
 - [ ] Live simulation markers correctly skip in fast CI runs
 - [ ] All 20 test files execute without errors on Python 3.11+3.12
-- [ ] Workout Tracker: 91 tests across models, parser, autocomplete, stats, db, routes pass
+- [ ] Workout Tracker: 92 tests across models, parser, autocomplete, stats, db, routes pass
 - [ ] Workout Tracker: fuzzy autocomplete recovers from typos (e.g. `bnech` → `Bench Press`)
 - [ ] Workout Tracker: parser handles `3x5 @ 135`, `135x5`, header-then-sets, comma-separated, bodyweight
 - [ ] Workout Tracker: Flask startup and request-scoped SQLite connections release file handles on Windows before temporary database cleanup
+- [ ] Workout Tracker: upgraded databases rebuild legacy exercise foreign keys so deleting an exercise cascades existing sets
 
 ## 8. Quality Standards
 
@@ -242,9 +244,9 @@ Test pyramid approach with emphasis on unit tests covering individual components
 
 ### Runtime Dependencies
 
-| Package | Version | Purpose                                                       |
-| ------- | ------- | ------------------------------------------------------------- |
-| PyYAML  | >=6.0   | YAML configuration parsing for maintained Project GROOT tools |
+| Package | Version | Purpose                                                         |
+| ------- | ------- | --------------------------------------------------------------- |
+| PyYAML  | >=6.0   | YAML configuration parsing for maintained Project GROOT tools   |
 | Flask   | >=3.0   | Workout Tracker HTTP server (optional; only if running the app) |
 
 ### Development Dependencies
@@ -336,7 +338,11 @@ Active development with focus on Project GROOT implementation. Demos (Asteroid F
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | ---------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 2026-04-20 | 1.0.23  | Test coverage(#nightly): close Workout Tracker startup schema connection after initialization; add route regressions for exercise rename/merge/delete, workout deletion, set validation/delete, executed imports, per-exercise stats, and Windows SQLite file-handle cleanup; set pytest `pythonpath` to `src` for targeted package tests.                                                                                  |
+| 2026-04-22 | 1.1.4   | Fix(#354): add a Workout Tracker migration that rebuilds legacy `sets` tables so `exercise_id` uses `ON DELETE CASCADE`, keeping upgraded SQLite databases aligned with fresh installs and preserving existing workout-set history during deletes.                                                                                                                                                                         |
+| 2026-04-22 | 1.1.3   | Fix(#330,#332,#336): harden Workout Tracker entry parsing and execution semantics by preserving entered set order, splitting comma-separated set shorthand into independent sets, and capping per-session autocomplete search results to keep response behavior deterministic and stable under large exercise histories.                                                                                                   |
+| 2026-04-21 | 1.0.25  | Fix(#343): key Workout Tracker previous-session recall cache entries by active workout context as well as exercise name, so recall results fetched while editing one workout are not reused after switching to another workout.                                                                                                                                                                                            |
+| 2026-04-21 | 1.0.24  | Fix(#342): make Workout Tracker previous-session recall select from all candidate workouts instead of the 500 most recent workouts; add a route regression for older exercise history hidden behind newer unrelated workouts.                                                                                                                                                                                              |
+| 2026-04-20 | 1.0.23  | Test coverage(#nightly): close Workout Tracker startup schema connection after initialization; add route regressions for exercise rename/merge/delete, workout deletion, set validation/delete, executed imports, per-exercise stats, and Windows SQLite file-handle cleanup; set pytest `pythonpath` to `src` for targeted package tests.                                                                                 |
 | 2026-04-14 | 1.0.22  | docs(#256): document independent-experiments convention in README; add project maturity table; clarify per-project quality scope.                                                                                                                                                                                                                                                                                          |
 | 2026-04-14 | 1.0.21  | Refactor(#246): decompose `asteroid_jumper/renderer.py` into `camera.py` (Camera viewport class), `draw.py` (sprite/primitive drawing helpers), and `particles.py` (TrailBuffer particle system); `draw_helpers.py` retained as backward-compat re-export shim; 18 camera tests + 9 draw tests + 17 particle tests added.                                                                                                  |
 | 2026-04-14 | 1.0.20  | Refactor(#259): split 3 monolithic scripts; extracted `eval_plots.py`, `eval_report.py`, `renderer_draw.py`, `mypy_agent_types.py`, and `mypy_fix_strategies.py` into focused companion modules.                                                                                                                                                                                                                           |

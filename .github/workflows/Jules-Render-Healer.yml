@@ -33,7 +33,7 @@ jobs:
       'failure'
     runs-on: ${{ needs.pick-runner.outputs.runner }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
       - run: npm install -g @google/jules
 
       - name: Heal Deployment

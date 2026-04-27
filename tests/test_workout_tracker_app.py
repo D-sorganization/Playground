@@ -395,6 +395,39 @@ class TestExerciseLastSession:
         assert r.json["date"] == "2024-05-01"
         assert [s["weight"] for s in r.json["sets"]] == [225]
 
+<<<<<<< HEAD
+=======
+    def test_last_session_uses_all_candidate_workouts(self, client) -> None:
+        older = _create_workout(client, date="2023-01-01", status="completed")
+        client.post(
+            f"/api/workouts/{older['id']}/sets",
+            json={
+                "exercise_name": "Bench Press",
+                "actual_reps": 5,
+                "actual_weight": 135,
+                "executed": True,
+            },
+        )
+        newer = _create_workout(client, date="2023-01-02", status="completed")
+        client.post(
+            f"/api/workouts/{newer['id']}/sets",
+            json={
+                "exercise_name": "Bench Press",
+                "actual_reps": 5,
+                "actual_weight": 155,
+                "executed": True,
+            },
+        )
+        for day in range(1, 501):
+            _create_workout(client, date=f"2024-01-{(day % 28) + 1:02d}")
+
+        r = client.get("/api/exercises/last_session?q=Bench%20Press")
+
+        assert r.status_code == 200
+        assert r.json["date"] == "2023-01-02"
+        assert [s["weight"] for s in r.json["sets"]] == [155]
+
+>>>>>>> origin/main
     def test_unknown_exercise_returns_empty(self, client) -> None:
         r = client.get("/api/exercises/last_session?q=Nonexistent")
         assert r.status_code == 200
