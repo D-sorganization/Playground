@@ -130,3 +130,4 @@ errors.txt
 log_*.txt
 mypy_out.txt
 pytest_errors.txt
+archive/
