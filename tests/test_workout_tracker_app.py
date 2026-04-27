@@ -395,6 +395,8 @@ class TestExerciseLastSession:
         assert r.json["date"] == "2024-05-01"
         assert [s["weight"] for s in r.json["sets"]] == [225]
 
+<<<<<<< HEAD
+=======
     def test_last_session_uses_all_candidate_workouts(self, client) -> None:
         older = _create_workout(client, date="2023-01-01", status="completed")
         client.post(
@@ -425,6 +427,7 @@ class TestExerciseLastSession:
         assert r.json["date"] == "2023-01-02"
         assert [s["weight"] for s in r.json["sets"]] == [155]
 
+>>>>>>> origin/main
     def test_unknown_exercise_returns_empty(self, client) -> None:
         r = client.get("/api/exercises/last_session?q=Nonexistent")
         assert r.status_code == 200
