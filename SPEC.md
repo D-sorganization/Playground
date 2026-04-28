@@ -27,8 +27,8 @@
 | **Primary Language(s)** | Python 3.11+                                    |
 | **License**             | MIT                                             |
 | **Current Version**     | 1.0.1                                           |
-| **Spec Version**        | 1.1.4                                           |
-| **Last Spec Update**    | 2026-04-22                                      |
+| **Spec Version**        | 1.1.6                                           |
+| **Last Spec Update**    | 2026-04-27                                      |
 
 ## 2. Purpose & Mission
 
@@ -338,7 +338,7 @@ Active development with focus on Project GROOT implementation. Demos (Asteroid F
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | ---------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 2026-04-27 | 1.1.5   | Fix(#botched): added trailing newline to bench_basic.py and resolved git merge conflicts in SPEC.md, app.py, and test_workout_tracker_app.py |
+| 2026-04-27 | 1.1.5   | Fix(#botched): added trailing newline to bench_basic.py and resolved git merge conflicts in SPEC.md, app.py, and test_workout_tracker_app.py                                                                                                                                                                                                                                                                               |
 | 2026-04-22 | 1.1.4   | Fix(#354): add a Workout Tracker migration that rebuilds legacy `sets` tables so `exercise_id` uses `ON DELETE CASCADE`, keeping upgraded SQLite databases aligned with fresh installs and preserving existing workout-set history during deletes.                                                                                                                                                                         |
 | 2026-04-22 | 1.1.3   | Fix(#330,#332,#336): harden Workout Tracker entry parsing and execution semantics by preserving entered set order, splitting comma-separated set shorthand into independent sets, and capping per-session autocomplete search results to keep response behavior deterministic and stable under large exercise histories.                                                                                                   |
 | 2026-04-21 | 1.0.25  | Fix(#343): key Workout Tracker previous-session recall cache entries by active workout context as well as exercise name, so recall results fetched while editing one workout are not reused after switching to another workout.                                                                                                                                                                                            |
