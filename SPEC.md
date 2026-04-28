@@ -27,7 +27,7 @@
 | **Primary Language(s)** | Python 3.11+                                    |
 | **License**             | MIT                                             |
 | **Current Version**     | 1.0.1                                           |
-| **Spec Version**        | 1.1.7                                           |
+| **Spec Version**        | 1.1.8                                           |
 | **Last Spec Update**    | 2026-04-28                                      |
 
 ## 2. Purpose & Mission
@@ -84,6 +84,7 @@ Playground/
 ├── archive/                    # Historical snapshots excluded from active lint/test collection
 ├── tests/                       # Test suite (20+ test files, incl. workout_tracker)
 ├── tools/                       # MATLAB utilities and scripts
+├── SECURITY.md                  # Supported-version and vulnerability reporting policy
 ├── .github/workflows/           # CI/CD pipelines (41 workflows)
 └── .fleetrc                     # Fleet protocol compliance config
 ```
@@ -110,6 +111,7 @@ Playground/
 | GROOT Data               | `src/Project_GROOT/data/`             | Dataset management and preprocessing                                               |
 | MATLAB Tools             | `tools/`                              | MATLAB utilities for analysis and visualization                                    |
 | Archive Snapshots        | `archive/`                            | Historical references retained outside the maintained source surface               |
+| Security Policy          | `SECURITY.md`                         | Supported-version and vulnerability disclosure guidance                            |
 
 ## 5. Desired Functionality
 
@@ -186,6 +188,8 @@ Configuration is managed via:
 ### Testing Strategy
 
 Test pyramid approach with emphasis on unit tests covering individual components, integration tests validating workflows, and live simulation markers for long-running experiments. Coverage is tracked via Codecov and enforced at CI time. Tests use pytest with custom markers for selective execution.
+
+Coverage collection omits `archive/*` so historical snapshots do not affect maintained-source coverage metrics.
 
 ### Test Organization
 
@@ -340,6 +344,7 @@ Active development with focus on Project GROOT implementation. Demos (Asteroid F
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | ---------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-04-28 | 1.1.8   | Docs(#392): document the repository `SECURITY.md` supported-version and vulnerability reporting policy, and record that coverage omits archived snapshots from maintained-source metrics.                                                                                                                                                                                                                                  |
 | 2026-04-28 | 1.1.7   | Docs(#365): add contributor-facing repository architecture guidance and link it from README/SPEC so project boundaries, runtime data flow, and new-experiment expectations are visible from top-level docs.                                                                                                                                                                                                                |
 | 2026-04-28 | 1.1.6   | Chore(#364): remove stale tracked `archive/` snapshots while preserving the documented quarantine contract that archived material stays outside normal lint and test collection.                                                                                                                                                                                                                                           |
 | 2026-04-27 | 1.1.5   | Fix(#botched): added trailing newline to bench_basic.py and resolved git merge conflicts in SPEC.md, app.py, and test_workout_tracker_app.py                                                                                                                                                                                                                                                                               |
