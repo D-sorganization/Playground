@@ -38,6 +38,9 @@ mypy_path = "src"
 explicit_package_bases = true
 ignore_missing_imports = true
 
+[tool.coverage.run]
+omit = ["archive/*"]
+
 [tool.coverage.report]
 fail_under = 60
 show_missing = true
