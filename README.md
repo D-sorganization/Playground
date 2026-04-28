@@ -23,6 +23,24 @@ This repository intentionally hosts **independent experiments** at different mat
 
 Adding a new experiment: create `src/<experiment>/`, add tests under `tests/test_<experiment>_*.py`, and update this table.
 
+## Architecture
+
+Playground is organized around orthogonal project packages under `src/`. The repository-level
+architecture is intentionally thin: shared tooling, CI, and documentation wrap independent
+experiments without creating shared domain dependencies between them.
+
+| Layer                | Location              | Notes                                                             |
+| -------------------- | --------------------- | ----------------------------------------------------------------- |
+| Maintained projects  | `src/<project>/`      | Self-contained runtime code for each experiment                   |
+| Shared contracts     | `src/contracts.py`    | Small design-by-contract helpers available to maintained modules  |
+| Tests                | `tests/`              | Pytest coverage grouped by project or workflow                    |
+| Project docs         | `src/<project>/docs/` | Deep documentation for a single experiment                        |
+| Repository docs      | `docs/`               | Architecture, workflow, development, and assessment documentation |
+| Historical snapshots | `archive/`            | Reference-only material excluded from active lint/test collection |
+
+For contributor-facing architecture details, project boundaries, and guidance for adding new
+experiments, see [docs/architecture/REPOSITORY_ARCHITECTURE.md](docs/architecture/REPOSITORY_ARCHITECTURE.md).
+
 ## Prerequisites
 
 - Python 3.11 or higher
@@ -135,12 +153,11 @@ Playground/
   src/
     Project_GROOT/    # Golf swing imitation-learning pipeline
     asteroid_jumper/  # PyQt6 asteroid navigation game
-  Calculator/         # TI-89 calculator with Flask web UI
-  Solar System Model/ # Solar system simulation
-  Asteroid Field Navigator/ # RRT path planner
+    mypy_agent/       # Experimental type-analysis utilities
+    workout_tracker/  # Flask/SQLite workout planning PWA
+    contracts.py      # Shared DbC helpers
   tests/              # Pytest test suite
   scripts/            # Utility and analysis scripts
-  tools/              # Code quality tooling
   docs/               # Documentation
   .github/workflows/  # CI/CD pipelines
 ```

@@ -27,7 +27,7 @@
 | **Primary Language(s)** | Python 3.11+                                    |
 | **License**             | MIT                                             |
 | **Current Version**     | 1.0.1                                           |
-| **Spec Version**        | 1.1.6                                           |
+| **Spec Version**        | 1.1.7                                           |
 | **Last Spec Update**    | 2026-04-28                                      |
 
 ## 2. Purpose & Mission
@@ -55,6 +55,8 @@ The Playground is a fleet-wide sandbox for testing, experimentation, and learnin
 ### System Context
 
 The Playground is an independent repository with no fleet dependencies. It may serve as a reference or template for CI/CD practices but does not depend on or expose interfaces to other fleet repositories. The repository is self-contained and designed for internal experimentation.
+
+Contributor-facing repository architecture guidance is maintained in `docs/architecture/REPOSITORY_ARCHITECTURE.md`. That document describes project boundaries, active source ownership, runtime data flow, and the checklist for adding or changing maintained experiments.
 
 ### Module Map
 
@@ -338,8 +340,9 @@ Active development with focus on Project GROOT implementation. Demos (Asteroid F
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | ---------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 2026-04-28 | 1.1.6   | Chore(#364): remove stale tracked `archive/` snapshots while preserving the documented quarantine contract that archived material stays outside normal lint and test collection. |
-| 2026-04-27 | 1.1.5   | Fix(#botched): added trailing newline to bench_basic.py and resolved git merge conflicts in SPEC.md, app.py, and test_workout_tracker_app.py |
+| 2026-04-28 | 1.1.7   | Docs(#365): add contributor-facing repository architecture guidance and link it from README/SPEC so project boundaries, runtime data flow, and new-experiment expectations are visible from top-level docs.                                                                                                                                                                                                                |
+| 2026-04-28 | 1.1.6   | Chore(#364): remove stale tracked `archive/` snapshots while preserving the documented quarantine contract that archived material stays outside normal lint and test collection.                                                                                                                                                                                                                                           |
+| 2026-04-27 | 1.1.5   | Fix(#botched): added trailing newline to bench_basic.py and resolved git merge conflicts in SPEC.md, app.py, and test_workout_tracker_app.py                                                                                                                                                                                                                                                                               |
 | 2026-04-22 | 1.1.4   | Fix(#354): add a Workout Tracker migration that rebuilds legacy `sets` tables so `exercise_id` uses `ON DELETE CASCADE`, keeping upgraded SQLite databases aligned with fresh installs and preserving existing workout-set history during deletes.                                                                                                                                                                         |
 | 2026-04-22 | 1.1.3   | Fix(#330,#332,#336): harden Workout Tracker entry parsing and execution semantics by preserving entered set order, splitting comma-separated set shorthand into independent sets, and capping per-session autocomplete search results to keep response behavior deterministic and stable under large exercise histories.                                                                                                   |
 | 2026-04-21 | 1.0.25  | Fix(#343): key Workout Tracker previous-session recall cache entries by active workout context as well as exercise name, so recall results fetched while editing one workout are not reused after switching to another workout.                                                                                                                                                                                            |
