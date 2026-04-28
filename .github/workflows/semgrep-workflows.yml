@@ -1,0 +1,45 @@
+name: Semgrep Workflow Security
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: "30 6 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  scan-workflows:
+    name: Scan GitHub Actions workflows
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Semgrep against workflow files
+        id: semgrep
+        continue-on-error: true
+        run: |
+          pipx run semgrep \
+            --config p/github-actions \
+            --config p/secrets \
+            --sarif \
+            --output semgrep.sarif \
+            .github/workflows
+
+      - name: Upload Semgrep SARIF
+        if: always() && hashFiles('semgrep.sarif') != ''
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: semgrep.sarif
+          category: semgrep-workflows
+
+      - name: Fail on Semgrep runtime errors
+        if: steps.semgrep.outcome == 'failure'
+        run: exit 1
