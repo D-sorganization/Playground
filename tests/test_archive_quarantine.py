@@ -20,5 +20,3 @@ def test_archive_is_excluded_from_ruff_checks() -> None:
     ruff_config = pyproject["tool"]["ruff"]
 
     assert "archive" in ruff_config["exclude"]
-
-
