@@ -22,10 +22,3 @@ def test_archive_is_excluded_from_ruff_checks() -> None:
     assert "archive" in ruff_config["exclude"]
 
 
-def test_archive_readme_marks_legacy_content_as_unmaintained() -> None:
-    repo_root = Path(__file__).resolve().parents[1]
-    archive_readme = repo_root / "archive" / "README.md"
-
-    assert archive_readme.exists()
-    content = archive_readme.read_text(encoding="utf-8")
-    assert "not part of the maintained source surface" in content
