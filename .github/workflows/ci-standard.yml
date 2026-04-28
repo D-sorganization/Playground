@@ -95,8 +95,7 @@ jobs:
       - name: Security Audit (pip-audit)
         run: |
           pip install pip-audit
-          pip-audit || echo "::warning::pip-audit found vulnerabilities (non-blocking)"
-        continue-on-error: true
+          pip-audit
 
       - name: Upload MATLAB Report
         uses: actions/upload-artifact@v7

@@ -22,6 +22,23 @@ If you discover a security vulnerability, please follow these steps:
 - CI/CD pipelines run automated security checks.
 - Dependencies are kept up to date and scanned for known vulnerabilities.
 
+## Vulnerability Triage SLA
+
+Dependency vulnerabilities found by `pip-audit` block CI until they are remediated
+or explicitly accepted with a documented allowlist entry. Confirmed vulnerabilities
+are triaged by severity:
+
+| Severity | Triage target | Remediation target |
+| -------- | ------------- | ------------------ |
+| Critical | 1 business day | 7 calendar days |
+| High     | 2 business days | 30 calendar days |
+| Medium   | 5 business days | 60 calendar days |
+| Low      | 10 business days | Next regular maintenance cycle |
+
+If a vulnerable dependency cannot be upgraded safely within the target window,
+maintainers must document the compensating control, planned follow-up, and review
+date before adding or extending any allowlist exception.
+
 ## Disclosure Policy
 
 Once a vulnerability is confirmed and a fix is released, we will publicly disclose the issue in our [CHANGELOG](CHANGELOG.md) and credit the reporter (if desired).
