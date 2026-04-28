@@ -1,6 +1,7 @@
 flask==3.0.3
 sympy==1.13.1
 pytest
+pytest-benchmark
 pytest-cov
 numpy
 matplotlib

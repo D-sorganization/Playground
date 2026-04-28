@@ -27,7 +27,7 @@
 | **Primary Language(s)** | Python 3.11+                                    |
 | **License**             | MIT                                             |
 | **Current Version**     | 1.0.1                                           |
-| **Spec Version**        | 1.1.8                                           |
+| **Spec Version**        | 1.1.9                                           |
 | **Last Spec Update**    | 2026-04-28                                      |
 
 ## 2. Purpose & Mission
@@ -198,6 +198,7 @@ Coverage collection omits `archive/*` so historical snapshots do not affect main
 | Unit            | `tests/unit/`        | pytest    | `@pytest.mark.unit`            |
 | Integration     | `tests/integration/` | pytest    | `@pytest.mark.integration`     |
 | Live Simulation | `tests/live_sim/`    | pytest    | `@pytest.mark.live_simulation` |
+| Benchmarks      | `tests/test_bench_*.py` | pytest-benchmark | `@pytest.mark.benchmark` |
 
 ### Coverage Requirements
 
@@ -218,6 +219,7 @@ Coverage collection omits `archive/*` so historical snapshots do not affect main
 - [ ] Workout Tracker: parser handles `3x5 @ 135`, `135x5`, header-then-sets, comma-separated, bodyweight
 - [ ] Workout Tracker: Flask startup and request-scoped SQLite connections release file handles on Windows before temporary database cleanup
 - [ ] Workout Tracker: upgraded databases rebuild legacy exercise foreign keys so deleting an exercise cascades existing sets
+- [ ] Workout Tracker: benchmark suite covers parser, autocomplete, and stats hot paths with pytest-benchmark JSON snapshots stored under `.benchmarks/`
 
 ## 8. Quality Standards
 
@@ -243,6 +245,7 @@ Coverage collection omits `archive/*` so historical snapshots do not affect main
 | Workflow                | Trigger         | Purpose                                                                                       | Blocking? |
 | ----------------------- | --------------- | --------------------------------------------------------------------------------------------- | --------- |
 | `ci-standard.yml`       | Push/PR         | Quality gates, linting, type checking, tests (with venv bootstrap for pytest PATH resolution) | Yes       |
+| `benchmarks.yml`        | Weekly/manual   | Runs Workout Tracker pytest-benchmark suite and uploads JSON benchmark snapshots              | No        |
 | `jules-agent-*.yml`     | Schedule/Manual | Jules agent integration and automation                                                        | No        |
 | Fleet compliance checks | Push/PR         | Enforce .fleetrc protocol standards                                                           | Yes       |
 
@@ -260,6 +263,7 @@ Coverage collection omits `archive/*` so historical snapshots do not affect main
 | Package    | Version | Purpose                |
 | ---------- | ------- | ---------------------- |
 | pytest     | >=7.0   | Testing framework      |
+| pytest-benchmark | Latest | Performance benchmarks |
 | pytest-cov | >=4.0   | Coverage reporting     |
 | ruff       | Latest  | Linting and formatting |
 | black      | Latest  | Code formatting        |
@@ -344,6 +348,7 @@ Active development with focus on Project GROOT implementation. Demos (Asteroid F
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | ---------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-04-28 | 1.1.9   | Fix(#373): replace placeholder benchmark file with pytest-benchmark coverage for Workout Tracker parser, fuzzy autocomplete, and stats rollups; configure benchmark storage under `.benchmarks/`; add a weekly/manual benchmark workflow that uploads JSON results.                                                                                                                                                         |
 | 2026-04-28 | 1.1.8   | Docs(#392): document the repository `SECURITY.md` supported-version and vulnerability reporting policy, and record that coverage omits archived snapshots from maintained-source metrics.                                                                                                                                                                                                                                  |
 | 2026-04-28 | 1.1.7   | Docs(#365): add contributor-facing repository architecture guidance and link it from README/SPEC so project boundaries, runtime data flow, and new-experiment expectations are visible from top-level docs.                                                                                                                                                                                                                |
 | 2026-04-28 | 1.1.6   | Chore(#364): remove stale tracked `archive/` snapshots while preserving the documented quarantine contract that archived material stays outside normal lint and test collection.                                                                                                                                                                                                                                           |

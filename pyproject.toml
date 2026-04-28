@@ -27,8 +27,10 @@ target-version = ['py311']
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
+addopts = ["--benchmark-storage=.benchmarks"]
 markers = [
     "live_simulation: marks tests as live simulation tests requiring fleet infrastructure (deselect with '-m \"not live_simulation\"')",
+    "benchmark: marks tests as pytest-benchmark performance tests",
 ]
 norecursedirs = ["archive", ".git", ".pytest_cache", "__pycache__"]
 
