@@ -232,8 +232,8 @@ Coverage collection omits `archive/*` so historical snapshots do not affect main
 | mypy      | Latest  | Type checking        | Yes       |
 | bandit    | Latest  | Security scanning    | Yes       |
 | pip-audit | Latest  | Dependency auditing  | Yes       |
-| CodeQL    | GitHub-hosted | Multi-language SAST for Python and JavaScript/TypeScript | Yes |
-| Semgrep   | Latest  | GitHub Actions workflow and secret-pattern scanning with SARIF upload | No |
+| CodeQL    | GitHub-hosted | Multi-language SAST for Python and JavaScript/TypeScript with SARIF artifact upload | Yes |
+| Semgrep   | Latest  | GitHub Actions workflow and secret-pattern scanning with SARIF artifact upload | No |
 
 ### Design Principles
 
@@ -247,8 +247,8 @@ Coverage collection omits `archive/*` so historical snapshots do not affect main
 | Workflow                | Trigger         | Purpose                                                                                       | Blocking? |
 | ----------------------- | --------------- | --------------------------------------------------------------------------------------------- | --------- |
 | `ci-standard.yml`       | Push/PR         | Quality gates, linting, type checking, tests (with venv bootstrap for pytest PATH resolution) | Yes       |
-| `codeql.yml`            | Push/PR/Weekly  | CodeQL SAST analysis for maintained Python and JavaScript/TypeScript source                   | Yes       |
-| `semgrep-workflows.yml` | Push/PR/Weekly  | Semgrep scan of GitHub Actions workflows and secret patterns; uploads SARIF to code scanning  | No        |
+| `codeql.yml`            | Push/PR/Weekly  | CodeQL SAST analysis for maintained Python and JavaScript/TypeScript source; uploads SARIF artifacts without requiring GitHub code scanning to be enabled | Yes       |
+| `semgrep-workflows.yml` | Push/PR/Weekly  | Semgrep scan of GitHub Actions workflows and secret patterns; uploads SARIF artifacts for triage | No        |
 | `benchmarks.yml`        | Weekly/manual   | Runs Workout Tracker pytest-benchmark suite and uploads JSON benchmark snapshots              | No        |
 | `jules-agent-*.yml`     | Schedule/Manual | Jules agent integration and automation                                                        | No        |
 | Fleet compliance checks | Push/PR         | Enforce .fleetrc protocol standards                                                           | Yes       |
@@ -352,7 +352,7 @@ Active development with focus on Project GROOT implementation. Demos (Asteroid F
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | ---------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 2026-04-28 | 1.1.10  | Fix(#367): add CodeQL SAST for Python and JavaScript/TypeScript on push, pull request, and weekly schedule; add Semgrep workflow scanning for GitHub Actions and secret-pattern rules with SARIF upload to GitHub code scanning.                                                                                                                                                                                            |
+| 2026-04-28 | 1.1.10  | Fix(#367,#370): add CodeQL SAST for Python and JavaScript/TypeScript on push, pull request, and weekly schedule; add Semgrep workflow scanning for GitHub Actions and secret-pattern rules; upload SARIF artifacts so security scanning works even when GitHub code scanning is unavailable.                                                                                                                                  |
 | 2026-04-28 | 1.1.9   | Fix(#373): replace placeholder benchmark file with pytest-benchmark coverage for Workout Tracker parser, fuzzy autocomplete, and stats rollups; configure benchmark storage under `.benchmarks/`; add a weekly/manual benchmark workflow that uploads JSON results.                                                                                                                                                         |
 | 2026-04-28 | 1.1.8   | Docs(#392): document the repository `SECURITY.md` supported-version and vulnerability reporting policy, and record that coverage omits archived snapshots from maintained-source metrics.                                                                                                                                                                                                                                  |
 | 2026-04-28 | 1.1.7   | Docs(#365): add contributor-facing repository architecture guidance and link it from README/SPEC so project boundaries, runtime data flow, and new-experiment expectations are visible from top-level docs.                                                                                                                                                                                                                |
