@@ -10,7 +10,7 @@ import json
 import numpy as np
 import pytest
 
-from src.Project_GROOT.tools.retarget_to_sim import (
+from Project_GROOT.tools.retarget_to_sim import (
     PoseRetargeter,
     _build_retarget_parser,
     _save_retarget_report,
