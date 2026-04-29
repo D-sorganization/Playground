@@ -32,8 +32,8 @@ jobs:
             echo "runner=d-sorg-fleet" >> "$GITHUB_OUTPUT"
             echo "Self-hosted runner online — routing locally"
           else
-            echo "runner=ubuntu-latest" >> $GITHUB_OUTPUT
-            echo "No self-hosted runner — using GitHub-hosted"
+            echo "runner=d-sorg-fleet" >> $GITHUB_OUTPUT
+            echo "No self-hosted runner — using local self-hosted"
           fi
   comprehensive-assessment:
     needs: pick-runner
@@ -46,12 +46,12 @@ jobs:
           fetch-depth: 0
 
       - name: Setup Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
       - name: Setup Node
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v4
         with:
           node-version: "22"
 
