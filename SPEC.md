@@ -27,7 +27,7 @@
 | **Primary Language(s)** | Python 3.11+                                    |
 | **License**             | MIT                                             |
 | **Current Version**     | 1.0.1                                           |
-| **Spec Version**        | 1.1.9                                           |
+| **Spec Version**        | 1.1.10                                          |
 | **Last Spec Update**    | 2026-04-28                                      |
 
 ## 2. Purpose & Mission
@@ -103,7 +103,7 @@ Playground/
 | WT Parser                | `src/workout_tracker/parser.py`       | Parse notes like `Bench 3x5 @ 135` into structured sets                            |
 | WT Autocomplete          | `src/workout_tracker/autocomplete.py` | Trigram + Damerau-Levenshtein fuzzy ranking for exercise names                     |
 | WT Stats                 | `src/workout_tracker/stats.py`        | Epley/Brzycki 1RM, PRs, per-exercise summary, timeseries, frequency                |
-| WT App                   | `src/workout_tracker/app.py`          | Flask factory, `/api/*` JSON surface, PWA shell                                    |
+| WT App                   | `src/workout_tracker/app.py`          | Flask factory, `/api/*` JSON surface, `/api/health` diagnostic, PWA shell          |
 | Project GROOT            | `src/Project_GROOT/`                  | Integrated simulation, training, evaluation, and data framework                    |
 | GROOT Simulation         | `src/Project_GROOT/sim/`              | Core simulation engine for environment and agent interactions                      |
 | GROOT Training           | `src/Project_GROOT/train/`            | Training pipelines and model optimization                                          |
@@ -305,6 +305,7 @@ python -m src.Project_GROOT.eval --results data/checkpoints/model.pt
 pip install flask
 python -m workout_tracker   # -> http://127.0.0.1:5000
 # Override SQLite path: WORKOUT_DB_PATH=/tmp/wt.db python -m workout_tracker
+# Health check: GET /api/health returns database reachability and logs diagnostics
 
 # Running tests
 pytest                          # All tests
@@ -348,6 +349,7 @@ Active development with focus on Project GROOT implementation. Demos (Asteroid F
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | ---------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-04-28 | 1.1.10  | Fix(#369): add Workout Tracker startup diagnostic logging with structured database metadata and expose `/api/health` as a lightweight database reachability check that also emits a structured health log record.                                                                                                                                                                                                            |
 | 2026-04-28 | 1.1.9   | Fix(#373): replace placeholder benchmark file with pytest-benchmark coverage for Workout Tracker parser, fuzzy autocomplete, and stats rollups; configure benchmark storage under `.benchmarks/`; add a weekly/manual benchmark workflow that uploads JSON results.                                                                                                                                                         |
 | 2026-04-28 | 1.1.8   | Docs(#392): document the repository `SECURITY.md` supported-version and vulnerability reporting policy, and record that coverage omits archived snapshots from maintained-source metrics.                                                                                                                                                                                                                                  |
 | 2026-04-28 | 1.1.7   | Docs(#365): add contributor-facing repository architecture guidance and link it from README/SPEC so project boundaries, runtime data flow, and new-experiment expectations are visible from top-level docs.                                                                                                                                                                                                                |

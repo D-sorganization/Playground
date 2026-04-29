@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import tempfile
 from pathlib import Path
 
@@ -42,12 +43,46 @@ class TestFactory:
 
         assert not db_path.exists()
 
+    def test_startup_logs_database_diagnostic(self, tmp_path, caplog) -> None:
+        db_path = tmp_path / "observability.db"
+
+        with caplog.at_level(logging.INFO, logger="workout_tracker.app"):
+            create_app(db_path=str(db_path))
+
+        startup_records = [
+            record
+            for record in caplog.records
+            if record.message == "workout_tracker_startup"
+        ]
+        assert startup_records
+        record = startup_records[-1]
+        assert record.db_path == str(db_path)
+        assert record.db_ready is True
+
 
 class TestIndex:
     def test_renders(self, client) -> None:
         r = client.get("/")
         assert r.status_code == 200
         assert b"Workout" in r.data
+
+
+class TestHealthRoute:
+    def test_health_reports_and_logs_database_status(self, client, caplog) -> None:
+        with caplog.at_level(logging.INFO, logger="workout_tracker.app"):
+            r = client.get("/api/health")
+
+        assert r.status_code == 200
+        assert r.json == {"database": "reachable", "status": "ok"}
+        health_records = [
+            record
+            for record in caplog.records
+            if record.message == "workout_tracker_health_check"
+        ]
+        assert health_records
+        record = health_records[-1]
+        assert record.status == "ok"
+        assert record.database == "reachable"
 
 
 class TestExerciseRoutes:

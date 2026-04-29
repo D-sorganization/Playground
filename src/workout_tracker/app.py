@@ -68,6 +68,7 @@ def create_app(db_path: str | None = None) -> _FlaskApp:
     # Initialize the schema once at startup
     with closing(connect(app.config["DB_PATH"])) as conn:
         init_db(conn)
+    _log_startup_diagnostic(app.config["DB_PATH"])
 
     @app.before_request
     def _open_conn() -> None:
@@ -91,6 +92,19 @@ def register_routes(app: _FlaskApp) -> None:
     @app.get("/")
     def index() -> Any:
         return render_template("index.html")
+
+    @app.get("/api/health")
+    def health() -> Any:
+        g.conn.execute("SELECT 1").fetchone()
+        logger.info(
+            "workout_tracker_health_check",
+            extra={
+                "status": "ok",
+                "database": "reachable",
+                "db_path": app.config["DB_PATH"],
+            },
+        )
+        return jsonify({"status": "ok", "database": "reachable"})
 
     # ---------- exercises ----------
 
@@ -405,3 +419,15 @@ def register_routes(app: _FlaskApp) -> None:
     @app.errorhandler(404)
     def _missing(err: Any) -> Any:
         return jsonify({"error": "not found"}), 404
+
+
+def _log_startup_diagnostic(db_path: str) -> None:
+    db_file = Path(db_path)
+    logger.info(
+        "workout_tracker_startup",
+        extra={
+            "db_path": db_path,
+            "db_ready": db_file.exists(),
+            "db_size_bytes": db_file.stat().st_size if db_file.exists() else 0,
+        },
+    )
