@@ -91,28 +91,28 @@ Playground/
 
 ### Key Components
 
-| Component                | Location                              | Purpose                                                                            |
-| ------------------------ | ------------------------------------- | ---------------------------------------------------------------------------------- |
-| Asteroid Field Navigator | `src/asteroid_jumper/`                | Demo project: navigate through asteroid fields with collision detection            |
-| AJ Camera                | `src/asteroid_jumper/camera.py`       | Viewport, pan, zoom, and world↔screen coordinate transforms                       |
-| AJ Draw                  | `src/asteroid_jumper/draw.py`         | Sprite and primitive drawing helpers (background, asteroids, jumper)               |
-| AJ Particles             | `src/asteroid_jumper/particles.py`    | TrailBuffer particle/trail system for position history management                  |
-| Workout Tracker          | `src/workout_tracker/`                | Notes-based gym tracking PWA: plan, execute, recall, and analyze workouts          |
-| WT Models                | `src/workout_tracker/models.py`       | Exercise/Workout/WorkoutSet dataclasses with DbC-style validators                  |
-| WT Repository            | `src/workout_tracker/db.py`           | SQLite repository (LoD): CRUD, merge, rename, cascade deletes, legacy FK migration |
-| WT Parser                | `src/workout_tracker/parser.py`       | Parse notes like `Bench 3x5 @ 135` into structured sets                            |
-| WT Autocomplete          | `src/workout_tracker/autocomplete.py` | Trigram + Damerau-Levenshtein fuzzy ranking for exercise names                     |
-| WT Stats                 | `src/workout_tracker/stats.py`        | Epley/Brzycki 1RM, PRs, per-exercise summary, timeseries, frequency                |
-| WT App                   | `src/workout_tracker/app.py`          | Flask factory, `/api/*` JSON surface, `/api/health` diagnostic, PWA shell          |
-| Project GROOT            | `src/Project_GROOT/`                  | Integrated simulation, training, evaluation, and data framework                    |
-| GROOT Simulation         | `src/Project_GROOT/sim/`              | Core simulation engine for environment and agent interactions                      |
-| GROOT Training           | `src/Project_GROOT/train/`            | Training pipelines and model optimization                                          |
-| GROOT Evaluation         | `src/Project_GROOT/eval/`             | Evaluation and benchmarking framework                                              |
-| GROOT Data               | `src/Project_GROOT/data/`             | Dataset management and preprocessing                                               |
-| MATLAB Tools             | `tools/`                              | MATLAB utilities for analysis and visualization                                    |
-| Archive Snapshots        | `archive/`                            | Historical references retained outside the maintained source surface               |
-| Security Policy          | `SECURITY.md`                         | Supported-version and vulnerability disclosure guidance                            |
-| Workflow Guard           | `scripts/check_local_only_workflows.py` | CI helper that rejects newly added GitHub-hosted runner routing in workflow diffs |
+| Component                | Location                                | Purpose                                                                            |
+| ------------------------ | --------------------------------------- | ---------------------------------------------------------------------------------- |
+| Asteroid Field Navigator | `src/asteroid_jumper/`                  | Demo project: navigate through asteroid fields with collision detection            |
+| AJ Camera                | `src/asteroid_jumper/camera.py`         | Viewport, pan, zoom, and world↔screen coordinate transforms                       |
+| AJ Draw                  | `src/asteroid_jumper/draw.py`           | Sprite and primitive drawing helpers (background, asteroids, jumper)               |
+| AJ Particles             | `src/asteroid_jumper/particles.py`      | TrailBuffer particle/trail system for position history management                  |
+| Workout Tracker          | `src/workout_tracker/`                  | Notes-based gym tracking PWA: plan, execute, recall, and analyze workouts          |
+| WT Models                | `src/workout_tracker/models.py`         | Exercise/Workout/WorkoutSet dataclasses with DbC-style validators                  |
+| WT Repository            | `src/workout_tracker/db.py`             | SQLite repository (LoD): CRUD, merge, rename, cascade deletes, legacy FK migration |
+| WT Parser                | `src/workout_tracker/parser.py`         | Parse notes like `Bench 3x5 @ 135` into structured sets                            |
+| WT Autocomplete          | `src/workout_tracker/autocomplete.py`   | Trigram + Damerau-Levenshtein fuzzy ranking for exercise names                     |
+| WT Stats                 | `src/workout_tracker/stats.py`          | Epley/Brzycki 1RM, PRs, per-exercise summary, timeseries, frequency                |
+| WT App                   | `src/workout_tracker/app.py`            | Flask factory, `/api/*` JSON surface, `/api/health` diagnostic, PWA shell          |
+| Project GROOT            | `src/Project_GROOT/`                    | Integrated simulation, training, evaluation, and data framework                    |
+| GROOT Simulation         | `src/Project_GROOT/sim/`                | Core simulation engine for environment and agent interactions                      |
+| GROOT Training           | `src/Project_GROOT/train/`              | Training pipelines and model optimization                                          |
+| GROOT Evaluation         | `src/Project_GROOT/eval/`               | Evaluation and benchmarking framework                                              |
+| GROOT Data               | `src/Project_GROOT/data/`               | Dataset management and preprocessing                                               |
+| MATLAB Tools             | `tools/`                                | MATLAB utilities for analysis and visualization                                    |
+| Archive Snapshots        | `archive/`                              | Historical references retained outside the maintained source surface               |
+| Security Policy          | `SECURITY.md`                           | Supported-version and vulnerability disclosure guidance                            |
+| Workflow Guard           | `scripts/check_local_only_workflows.py` | CI helper that rejects newly added GitHub-hosted runner routing in workflow diffs  |
 
 ## 5. Desired Functionality
 
@@ -194,12 +194,12 @@ Coverage collection omits `archive/*` so historical snapshots do not affect main
 
 ### Test Organization
 
-| Category        | Location             | Framework | Markers                        |
-| --------------- | -------------------- | --------- | ------------------------------ |
-| Unit            | `tests/unit/`        | pytest    | `@pytest.mark.unit`            |
-| Integration     | `tests/integration/` | pytest    | `@pytest.mark.integration`     |
-| Live Simulation | `tests/live_sim/`    | pytest    | `@pytest.mark.live_simulation` |
-| Benchmarks      | `tests/test_bench_*.py` | pytest-benchmark | `@pytest.mark.benchmark` |
+| Category        | Location                | Framework        | Markers                        |
+| --------------- | ----------------------- | ---------------- | ------------------------------ |
+| Unit            | `tests/unit/`           | pytest           | `@pytest.mark.unit`            |
+| Integration     | `tests/integration/`    | pytest           | `@pytest.mark.integration`     |
+| Live Simulation | `tests/live_sim/`       | pytest           | `@pytest.mark.live_simulation` |
+| Benchmarks      | `tests/test_bench_*.py` | pytest-benchmark | `@pytest.mark.benchmark`       |
 
 ### Coverage Requirements
 
@@ -227,15 +227,15 @@ Coverage collection omits `archive/*` so historical snapshots do not affect main
 
 ### Code Quality Tools
 
-| Tool      | Version | Purpose              | Blocking? |
-| --------- | ------- | -------------------- | --------- |
-| ruff      | Latest  | Linting + formatting | Yes       |
-| black     | Latest  | Code formatting      | Yes       |
-| mypy      | Latest  | Type checking        | Yes       |
-| bandit    | Latest  | Security scanning    | Yes       |
-| pip-audit | Latest  | Dependency auditing  | Yes       |
-| CodeQL    | GitHub-hosted | Multi-language SAST for Python and JavaScript/TypeScript with SARIF artifact upload | Yes |
-| Semgrep   | Latest  | GitHub Actions workflow and secret-pattern scanning with SARIF artifact upload | No |
+| Tool      | Version       | Purpose                                                                             | Blocking? |
+| --------- | ------------- | ----------------------------------------------------------------------------------- | --------- |
+| ruff      | Latest        | Linting + formatting                                                                | Yes       |
+| black     | Latest        | Code formatting                                                                     | Yes       |
+| mypy      | Latest        | Type checking                                                                       | Yes       |
+| bandit    | Latest        | Security scanning                                                                   | Yes       |
+| pip-audit | Latest        | Dependency auditing                                                                 | Yes       |
+| CodeQL    | GitHub-hosted | Multi-language SAST for Python and JavaScript/TypeScript with SARIF artifact upload | Yes       |
+| Semgrep   | Latest        | GitHub Actions workflow and secret-pattern scanning with SARIF artifact upload      | No        |
 
 ### Design Principles
 
@@ -246,14 +246,14 @@ Coverage collection omits `archive/*` so historical snapshots do not affect main
 
 ### CI/CD Pipeline
 
-| Workflow                | Trigger         | Purpose                                                                                       | Blocking? |
-| ----------------------- | --------------- | --------------------------------------------------------------------------------------------- | --------- |
-| `ci-standard.yml`       | Push/PR         | Quality gates, linting, type checking, tests (with venv bootstrap for pytest PATH resolution) | Yes       |
+| Workflow                | Trigger         | Purpose                                                                                                                                                   | Blocking? |
+| ----------------------- | --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
+| `ci-standard.yml`       | Push/PR         | Quality gates, linting, type checking, tests (with venv bootstrap for pytest PATH resolution)                                                             | Yes       |
 | `codeql.yml`            | Push/PR/Weekly  | CodeQL SAST analysis for maintained Python and JavaScript/TypeScript source; uploads SARIF artifacts without requiring GitHub code scanning to be enabled | Yes       |
-| `semgrep-workflows.yml` | Push/PR/Weekly  | Semgrep scan of GitHub Actions workflows and secret patterns; uploads SARIF artifacts for triage | No        |
-| `benchmarks.yml`        | Weekly/manual   | Runs Workout Tracker pytest-benchmark suite and uploads JSON benchmark snapshots              | No        |
-| `jules-agent-*.yml`     | Schedule/Manual | Jules agent integration and automation                                                        | No        |
-| Fleet compliance checks | Push/PR         | Enforce .fleetrc protocol standards                                                           | Yes       |
+| `semgrep-workflows.yml` | Push/PR/Weekly  | Semgrep scan of GitHub Actions workflows and secret patterns; uploads SARIF artifacts for triage                                                          | No        |
+| `benchmarks.yml`        | Weekly/manual   | Runs Workout Tracker pytest-benchmark suite and uploads JSON benchmark snapshots                                                                          | No        |
+| `jules-agent-*.yml`     | Schedule/Manual | Jules agent integration and automation                                                                                                                    | No        |
+| Fleet compliance checks | Push/PR         | Enforce .fleetrc protocol standards                                                                                                                       | Yes       |
 
 ## 9. Dependencies
 
@@ -266,16 +266,16 @@ Coverage collection omits `archive/*` so historical snapshots do not affect main
 
 ### Development Dependencies
 
-| Package    | Version | Purpose                |
-| ---------- | ------- | ---------------------- |
-| pytest     | >=7.0   | Testing framework      |
-| pytest-benchmark | Latest | Performance benchmarks |
-| pytest-cov | >=4.0   | Coverage reporting     |
-| ruff       | Latest  | Linting and formatting |
-| black      | Latest  | Code formatting        |
-| mypy       | >=1.0   | Static type checking   |
-| bandit     | >=1.7   | Security scanning      |
-| pip-audit  | >=2.4   | Dependency auditing    |
+| Package          | Version | Purpose                |
+| ---------------- | ------- | ---------------------- |
+| pytest           | >=7.0   | Testing framework      |
+| pytest-benchmark | Latest  | Performance benchmarks |
+| pytest-cov       | >=4.0   | Coverage reporting     |
+| ruff             | Latest  | Linting and formatting |
+| black            | Latest  | Code formatting        |
+| mypy             | >=1.0   | Static type checking   |
+| bandit           | >=1.7   | Security scanning      |
+| pip-audit        | >=2.4   | Dependency auditing    |
 
 ### Fleet Dependencies
 
@@ -355,10 +355,10 @@ Active development with focus on Project GROOT implementation. Demos (Asteroid F
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | ---------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 2026-04-28 | 1.1.12  | CI(#363): add a local-only workflow guard with unit coverage so GitHub Actions workflows cannot introduce GitHub-hosted runner routing; document that dependency vulnerabilities found by blocking `pip-audit` require remediation or a documented allowlist exception.                                                                                                                                                     |
-| 2026-04-28 | 1.1.11  | Fix(#369): add Workout Tracker startup diagnostic logging with structured database metadata and expose `/api/health` as a lightweight database reachability check that also emits a structured health log record.                                                                                                                                                                                                            |
-| 2026-04-28 | 1.1.10  | Fix(#367,#370): add CodeQL SAST for Python and JavaScript/TypeScript on push, pull request, and weekly schedule; add Semgrep workflow scanning for GitHub Actions and secret-pattern rules; upload SARIF artifacts so security scanning works even when GitHub code scanning is unavailable.                                                                                                                                  |
-| 2026-04-28 | 1.1.9   | Fix(#373): replace placeholder benchmark file with pytest-benchmark coverage for Workout Tracker parser, fuzzy autocomplete, and stats rollups; configure benchmark storage under `.benchmarks/`; add a weekly/manual benchmark workflow that uploads JSON results.                                                                                                                                                         |
+| 2026-04-28 | 1.1.12  | CI(#363): add a local-only workflow guard with unit coverage so GitHub Actions workflows cannot introduce GitHub-hosted runner routing; document that dependency vulnerabilities found by blocking `pip-audit` require remediation or a documented allowlist exception.                                                                                                                                                    |
+| 2026-04-28 | 1.1.11  | Fix(#369): add Workout Tracker startup diagnostic logging with structured database metadata and expose `/api/health` as a lightweight database reachability check that also emits a structured health log record.                                                                                                                                                                                                          |
+| 2026-04-28 | 1.1.10  | Fix(#367,#370): add CodeQL SAST for Python and JavaScript/TypeScript on push, pull request, and weekly schedule; add Semgrep workflow scanning for GitHub Actions and secret-pattern rules; upload SARIF artifacts so security scanning works even when GitHub code scanning is unavailable.                                                                                                                               |
+| 2026-04-28 | 1.1.9   | Fix(#373): replace placeholder benchmark file with pytest-benchmark coverage for Workout Tracker parser, fuzzy autocomplete, and stats rollups; configure benchmark storage under `.benchmarks/`; add a weekly/manual benchmark workflow that uploads JSON results.                                                                                                                                                        |
 | 2026-04-28 | 1.1.8   | Docs(#392): document the repository `SECURITY.md` supported-version and vulnerability reporting policy, and record that coverage omits archived snapshots from maintained-source metrics.                                                                                                                                                                                                                                  |
 | 2026-04-28 | 1.1.7   | Docs(#365): add contributor-facing repository architecture guidance and link it from README/SPEC so project boundaries, runtime data flow, and new-experiment expectations are visible from top-level docs.                                                                                                                                                                                                                |
 | 2026-04-28 | 1.1.6   | Chore(#364): remove stale tracked `archive/` snapshots while preserving the documented quarantine contract that archived material stays outside normal lint and test collection.                                                                                                                                                                                                                                           |
