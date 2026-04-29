@@ -85,7 +85,7 @@ jobs:
           echo "ASSESSMENT_BRANCH=$BRANCH_NAME" >> $GITHUB_ENV
 
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
@@ -177,7 +177,7 @@ jobs:
           echo "critical_issues=$CRITICAL_ISSUES" >> $GITHUB_OUTPUT
 
       - name: Upload Assessment Reports
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v4
         with:
           name: assessment-reports
           path: |
@@ -247,7 +247,7 @@ jobs:
           fetch-depth: 0
 
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
@@ -418,12 +418,12 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Download assessment summary
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v4
         with:
           name: assessment-reports
 
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
