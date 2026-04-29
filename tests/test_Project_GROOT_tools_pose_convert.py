@@ -2,8 +2,10 @@
 
 import numpy as np
 
-import src.Project_GROOT.tools.pose_convert as target_module
-from src.Project_GROOT.tools.pose_convert import PoseConverter
+import Project_GROOT.tools.pose_convert as target_module
+import Project_GROOT.tools.pose_converter as converter
+import Project_GROOT.tools.pose_extractors as extractors
+from Project_GROOT.tools.pose_converter import PoseConverter
 
 
 def test_module_syntax_and_import():
@@ -13,22 +15,22 @@ def test_module_syntax_and_import():
 
 def test_has_symbol_PoseExtractor():
     """Verify PoseExtractor exists in module."""
-    assert hasattr(target_module, "PoseExtractor")
+    assert hasattr(extractors, "PoseExtractor")
 
 
 def test_has_symbol_MediaPipePoseExtractor():
     """Verify MediaPipePoseExtractor exists in module."""
-    assert hasattr(target_module, "MediaPipePoseExtractor")
+    assert hasattr(extractors, "MediaPipePoseExtractor")
 
 
 def test_has_symbol_MMPosePoseExtractor():
     """Verify MMPosePoseExtractor exists in module."""
-    assert hasattr(target_module, "MMPosePoseExtractor")
+    assert hasattr(extractors, "MMPosePoseExtractor")
 
 
 def test_has_symbol_PoseConverter():
     """Verify PoseConverter exists in module."""
-    assert hasattr(target_module, "PoseConverter")
+    assert hasattr(converter, "PoseConverter")
 
 
 def test_has_symbol_main():
