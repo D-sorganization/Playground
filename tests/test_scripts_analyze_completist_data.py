@@ -7,6 +7,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
 
 import analyze_completist_data as target_module
+import completist_report
 from analyze_completist_data import (
     _build_priority_table,
     _build_report_lines,
@@ -139,21 +140,21 @@ def test_build_priority_table_max_20_rows():
 
 def test_save_report_files_creates_dated_file(tmp_path, monkeypatch):
     """_save_report_files writes a dated markdown file."""
-    monkeypatch.setattr(target_module, "REPORT_DIR", str(tmp_path))
+    monkeypatch.setattr(completist_report, "REPORT_DIR", str(tmp_path))
     _save_report_files("2026-04-14", "report content")
     assert (tmp_path / "Completist_Report_2026-04-14.md").exists()
 
 
 def test_save_report_files_creates_latest(tmp_path, monkeypatch):
     """_save_report_files writes COMPLETIST_LATEST.md."""
-    monkeypatch.setattr(target_module, "REPORT_DIR", str(tmp_path))
+    monkeypatch.setattr(completist_report, "REPORT_DIR", str(tmp_path))
     _save_report_files("2026-04-14", "report content")
     assert (tmp_path / "COMPLETIST_LATEST.md").exists()
 
 
 def test_save_report_files_content(tmp_path, monkeypatch):
     """_save_report_files writes the provided content."""
-    monkeypatch.setattr(target_module, "REPORT_DIR", str(tmp_path))
+    monkeypatch.setattr(completist_report, "REPORT_DIR", str(tmp_path))
     _save_report_files("2026-04-14", "hello world")
     content = (tmp_path / "COMPLETIST_LATEST.md").read_text()
     assert "hello world" in content
