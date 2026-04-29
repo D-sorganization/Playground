@@ -38,16 +38,18 @@ jobs:
       - uses: actions/checkout@v4
       - name: Bootstrap Python venv
         run: |
+          VENV_PATH="$RUNNER_TEMP/ci-venv-${GITHUB_RUN_ID}-${GITHUB_JOB}"
+          rm -rf "$VENV_PATH"
           for py in python3.11 python3.12 python3.10 python3; do
             if command -v $py &>/dev/null; then
-              $py -m venv "$RUNNER_TEMP/ci-venv"
+              $py -m venv "$VENV_PATH"
               break
             fi
           done
-          source "$RUNNER_TEMP/ci-venv/bin/activate"
-          pip install --upgrade pip setuptools wheel
-          pip install ruff==0.14.10 mypy==1.13.0 bandit==1.7.7 pydocstyle==6.3.0
-          echo "$RUNNER_TEMP/ci-venv/bin" >> $GITHUB_PATH
+          source "$VENV_PATH/bin/activate"
+          pip install --no-cache-dir --upgrade pip setuptools wheel
+          pip install --no-cache-dir ruff==0.14.10 mypy==1.13.0 bandit==1.7.7 pydocstyle==6.3.0
+          echo "$VENV_PATH/bin" >> $GITHUB_PATH
 
       # FIX: Less aggressive Ruff (Errors, Warnings, Imports only)
       - name: Lint
@@ -94,12 +96,11 @@ jobs:
 
       - name: Security Audit (pip-audit)
         run: |
-          pip install pip-audit
-          pip-audit || echo "::warning::pip-audit found vulnerabilities (non-blocking)"
-        continue-on-error: true
+          pip install --no-cache-dir pip-audit
+          pip-audit
 
       - name: Upload MATLAB Report
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: matlab-quality-report
@@ -116,16 +117,18 @@ jobs:
       - uses: actions/checkout@v4
       - name: Bootstrap Python venv
         run: |
+          VENV_PATH="$RUNNER_TEMP/ci-venv-${GITHUB_RUN_ID}-${GITHUB_JOB}"
+          rm -rf "$VENV_PATH"
           for py in python3.11 python3.12 python3.10 python3; do
             if command -v $py &>/dev/null; then
-              $py -m venv "$RUNNER_TEMP/ci-venv"
+              $py -m venv "$VENV_PATH"
               break
             fi
           done
-          source "$RUNNER_TEMP/ci-venv/bin/activate"
-          pip install --upgrade pip setuptools wheel
-          pip install -r requirements.txt numpy
-          echo "$RUNNER_TEMP/ci-venv/bin" >> $GITHUB_PATH
+          source "$VENV_PATH/bin/activate"
+          pip install --no-cache-dir --upgrade pip setuptools wheel
+          pip install --no-cache-dir -r requirements.txt numpy
+          echo "$VENV_PATH/bin" >> $GITHUB_PATH
       - name: Run tests
         run: PYTHONPATH=. pytest tests/ --cov=. --cov-report=xml --cov-fail-under=60
       - uses: codecov/codecov-action@v5
@@ -185,3 +188,14 @@ jobs:
           else
             echo "No arduino directory found, skipping."
           fi
+
+  local-only-workflows:
+    name: Reject hosted runner routing
+    runs-on: d-sorg-fleet
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run local-only workflow guard
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/check_local_only_workflows.py
