@@ -1,0 +1,39 @@
+name: Semgrep Workflow Security
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: "30 6 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  scan-workflows:
+    name: Scan GitHub Actions workflows
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Semgrep against workflow files
+        run: |
+          pipx run semgrep \
+            --config p/github-actions \
+            --config p/secrets \
+            --no-error \
+            --sarif \
+            --output semgrep.sarif \
+            .github/workflows
+
+      - name: Upload Semgrep SARIF artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: semgrep-workflow-sarif
+          path: semgrep.sarif
+          if-no-files-found: error
