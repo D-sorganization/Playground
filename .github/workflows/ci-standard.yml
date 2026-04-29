@@ -188,3 +188,15 @@ jobs:
           else
             echo "No arduino directory found, skipping."
           fi
+
+  local-only-workflows:
+    name: Reject hosted runner routing
+    runs-on: d-sorg-fleet
+    steps:
+      - uses: actions/checkout@v6
+      - name: Run local-only workflow guard
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/check_local_only_workflows.py
+
