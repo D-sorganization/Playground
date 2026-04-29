@@ -14,7 +14,7 @@ permissions:
 jobs:
   scan-workflows:
     name: Scan GitHub Actions workflows
-    runs-on: ubuntu-latest
+    runs-on: d-sorg-fleet
     permissions:
       contents: read
     steps:
