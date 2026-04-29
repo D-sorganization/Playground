@@ -27,7 +27,7 @@
 | **Primary Language(s)** | Python 3.11+                                    |
 | **License**             | MIT                                             |
 | **Current Version**     | 1.0.1                                           |
-| **Spec Version**        | 1.1.11                                          |
+| **Spec Version**        | 1.1.12                                          |
 | **Last Spec Update**    | 2026-04-28                                      |
 
 ## 2. Purpose & Mission
@@ -112,6 +112,7 @@ Playground/
 | MATLAB Tools             | `tools/`                              | MATLAB utilities for analysis and visualization                                    |
 | Archive Snapshots        | `archive/`                            | Historical references retained outside the maintained source surface               |
 | Security Policy          | `SECURITY.md`                         | Supported-version and vulnerability disclosure guidance                            |
+| Workflow Guard           | `scripts/check_local_only_workflows.py` | CI helper that rejects newly added GitHub-hosted runner routing in workflow diffs |
 
 ## 5. Desired Functionality
 
@@ -213,7 +214,8 @@ Coverage collection omits `archive/*` so historical snapshots do not affect main
 - [ ] GROOT simulation environment initializes correctly with parametric configurations
 - [ ] Archived snapshots remain excluded from normal lint/test collection unless explicitly restored
 - [ ] Live simulation markers correctly skip in fast CI runs
-- [ ] All 20 test files execute without errors on Python 3.11+3.12
+- [ ] All maintained test files execute without errors on Python 3.11+3.12
+- [ ] CI workflow changes are checked by `scripts/check_local_only_workflows.py` so new `ubuntu-latest`, `windows-latest`, or `macos-latest` routing is rejected
 - [ ] Workout Tracker: 92 tests across models, parser, autocomplete, stats, db, routes pass
 - [ ] Workout Tracker: fuzzy autocomplete recovers from typos (e.g. `bnech` → `Bench Press`)
 - [ ] Workout Tracker: parser handles `3x5 @ 135`, `135x5`, header-then-sets, comma-separated, bodyweight
@@ -353,6 +355,7 @@ Active development with focus on Project GROOT implementation. Demos (Asteroid F
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | ---------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-04-28 | 1.1.12  | CI(#363): add a local-only workflow guard with unit coverage so changed GitHub Actions workflows cannot introduce GitHub-hosted runner routing; document that dependency vulnerabilities found by blocking `pip-audit` require remediation or a documented allowlist exception.                                                                                                                                             |
 | 2026-04-28 | 1.1.11  | Fix(#369): add Workout Tracker startup diagnostic logging with structured database metadata and expose `/api/health` as a lightweight database reachability check that also emits a structured health log record.                                                                                                                                                                                                            |
 | 2026-04-28 | 1.1.10  | Fix(#367,#370): add CodeQL SAST for Python and JavaScript/TypeScript on push, pull request, and weekly schedule; add Semgrep workflow scanning for GitHub Actions and secret-pattern rules; upload SARIF artifacts so security scanning works even when GitHub code scanning is unavailable.                                                                                                                                  |
 | 2026-04-28 | 1.1.9   | Fix(#373): replace placeholder benchmark file with pytest-benchmark coverage for Workout Tracker parser, fuzzy autocomplete, and stats rollups; configure benchmark storage under `.benchmarks/`; add a weekly/manual benchmark workflow that uploads JSON results.                                                                                                                                                         |
