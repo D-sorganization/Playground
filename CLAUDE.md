@@ -1,5 +1,9 @@
 # Claude Agent Instructions
 
+## Branch Policy
+
+All work on `main` branch. PRs target `main`.
+
 ## Quick Reference
 
 ### Build & Test Commands
