@@ -27,7 +27,7 @@
 | **Primary Language(s)** | Python 3.11+                                    |
 | **License**             | MIT                                             |
 | **Current Version**     | 1.0.1                                           |
-| **Spec Version**        | 1.1.13                                          |
+| **Spec Version**        | 1.1.14                                          |
 | **Last Spec Update**    | 2026-04-30                                      |
 
 ## 2. Purpose & Mission
