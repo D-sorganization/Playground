@@ -459,7 +459,10 @@ class TestTrigramSimilarity:
 
 
 class TestDamerauLevenshtein:
-    """Postcondition: distance >= 0. Invariant: symmetric, d(a,b) <= max(len(a), len(b))."""
+    """Postcondition: distance >= 0.
+
+    Invariant: symmetric, d(a,b) <= max(len(a), len(b)).
+    """
 
     def test_postcondition_identical_strings(self) -> None:
         """Postcondition: identical strings have distance 0."""
