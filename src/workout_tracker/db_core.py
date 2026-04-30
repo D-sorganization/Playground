@@ -63,8 +63,7 @@ def _migrate_sets_exercise_fk(conn: sqlite3.Connection) -> None:
     conn.execute("PRAGMA foreign_keys = OFF")
     try:
         conn.execute("BEGIN IMMEDIATE")
-        conn.execute(
-            """
+        conn.execute("""
             CREATE TABLE sets_new (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 workout_id INTEGER NOT NULL,
@@ -82,10 +81,8 @@ def _migrate_sets_exercise_fk(conn: sqlite3.Connection) -> None:
                 FOREIGN KEY (workout_id) REFERENCES workouts(id) ON DELETE CASCADE,
                 FOREIGN KEY (exercise_id) REFERENCES exercises(id) ON DELETE CASCADE
             )
-            """
-        )
-        conn.execute(
-            """
+            """)
+        conn.execute("""
             INSERT INTO sets_new (
                 id,
                 workout_id,
@@ -116,8 +113,7 @@ def _migrate_sets_exercise_fk(conn: sqlite3.Connection) -> None:
                 notes,
                 completed_at
             FROM sets
-            """
-        )
+            """)
         conn.execute("DROP TABLE sets")
         conn.execute("ALTER TABLE sets_new RENAME TO sets")
         conn.execute(
@@ -127,12 +123,10 @@ def _migrate_sets_exercise_fk(conn: sqlite3.Connection) -> None:
             "CREATE INDEX IF NOT EXISTS idx_sets_exercise ON sets(exercise_id)"
         )
         conn.execute("CREATE INDEX IF NOT EXISTS idx_sets_executed ON sets(executed)")
-        conn.execute(
-            """
+        conn.execute("""
             INSERT OR REPLACE INTO sqlite_sequence(name, seq)
             SELECT 'sets', COALESCE(MAX(id), 0) FROM sets
-            """
-        )
+            """)
         conn.commit()
     except Exception:
         conn.rollback()

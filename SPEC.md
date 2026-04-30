@@ -27,8 +27,8 @@
 | **Primary Language(s)** | Python 3.11+                                    |
 | **License**             | MIT                                             |
 | **Current Version**     | 1.0.1                                           |
-| **Spec Version**        | 1.1.12                                          |
-| **Last Spec Update**    | 2026-04-28                                      |
+| **Spec Version**        | 1.1.13                                          |
+| **Last Spec Update**    | 2026-04-30                                      |
 
 ## 2. Purpose & Mission
 
@@ -216,12 +216,13 @@ Coverage collection omits `archive/*` so historical snapshots do not affect main
 - [ ] Live simulation markers correctly skip in fast CI runs
 - [ ] All maintained test files execute without errors on Python 3.11+3.12
 - [ ] CI workflows are checked by `scripts/check_local_only_workflows.py` so `ubuntu-latest`, `windows-latest`, or `macos-latest` routing is rejected
-- [ ] Workout Tracker: 92 tests across models, parser, autocomplete, stats, db, routes pass
-- [ ] Workout Tracker: fuzzy autocomplete recovers from typos (e.g. `bnech` → `Bench Press`)
-- [ ] Workout Tracker: parser handles `3x5 @ 135`, `135x5`, header-then-sets, comma-separated, bodyweight
-- [ ] Workout Tracker: Flask startup and request-scoped SQLite connections release file handles on Windows before temporary database cleanup
-- [ ] Workout Tracker: upgraded databases rebuild legacy exercise foreign keys so deleting an exercise cascades existing sets
-- [ ] Workout Tracker: benchmark suite covers parser, autocomplete, and stats hot paths with pytest-benchmark JSON snapshots stored under `.benchmarks/`
+- [x] Workout Tracker: 137 tests across models, parser, autocomplete, stats, db, routes pass (expanded utilities coverage in PR #414)
+- [x] Workout Tracker: fuzzy autocomplete recovers from typos (e.g. `bnech` → `Bench Press`)
+- [x] Workout Tracker: parser handles `3x5 @ 135`, `135x5`, header-then-sets, comma-separated, bodyweight
+- [x] Workout Tracker: Flask startup and request-scoped SQLite connections release file handles on Windows before temporary database cleanup
+- [x] Workout Tracker: upgraded databases rebuild legacy exercise foreign keys so deleting an exercise cascades existing sets
+- [x] Workout Tracker: benchmark suite covers parser, autocomplete, and stats hot paths with pytest-benchmark JSON snapshots stored under `.benchmarks/`
+- [x] Workout Tracker: design-by-contract coverage with precondition, postcondition, invariant, and edge-case tests for utilities (PR #414)
 
 ## 8. Quality Standards
 

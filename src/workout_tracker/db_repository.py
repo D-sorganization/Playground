@@ -346,7 +346,7 @@ class WorkoutRepository:
             executed=bool(row["executed"]),
             notes=row["notes"],
             completed_at=row["completed_at"],
-            exercise_name=row["exercise_name"]
-            if "exercise_name" in row.keys()
-            else None,
+            exercise_name=(
+                row["exercise_name"] if "exercise_name" in row.keys() else None
+            ),
         )
