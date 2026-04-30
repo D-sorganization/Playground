@@ -46,7 +46,6 @@ from workout_tracker.stats import (
     total_volume,
 )
 
-
 # ============================================================================
 # SECTION 1: normalize_name() - String transformation utilities
 # ============================================================================
@@ -352,21 +351,33 @@ class TestSetVolume:
     def test_postcondition_not_executed_is_zero(self) -> None:
         """Postcondition: non-executed sets have 0 volume."""
         s = WorkoutSet(
-            workout_id=1, exercise_id=1, actual_reps=5, actual_weight=135.0, executed=False
+            workout_id=1,
+            exercise_id=1,
+            actual_reps=5,
+            actual_weight=135.0,
+            executed=False,
         )
         assert set_volume(s) == 0.0
 
     def test_edge_case_zero_reps(self) -> None:
         """Edge case: 0 reps -> 0 volume."""
         s = WorkoutSet(
-            workout_id=1, exercise_id=1, actual_reps=0, actual_weight=135.0, executed=True
+            workout_id=1,
+            exercise_id=1,
+            actual_reps=0,
+            actual_weight=135.0,
+            executed=True,
         )
         assert set_volume(s) == 0.0
 
     def test_edge_case_none_weight(self) -> None:
         """Edge case: None weight treated as 0."""
         s = WorkoutSet(
-            workout_id=1, exercise_id=1, actual_reps=5, actual_weight=None, executed=True
+            workout_id=1,
+            exercise_id=1,
+            actual_reps=5,
+            actual_weight=None,
+            executed=True,
         )
         assert set_volume(s) == 0.0
 
@@ -378,10 +389,18 @@ class TestTotalVolume:
         """Postcondition: total = sum of individual volumes."""
         sets = [
             WorkoutSet(
-                workout_id=1, exercise_id=1, actual_reps=5, actual_weight=100, executed=True
+                workout_id=1,
+                exercise_id=1,
+                actual_reps=5,
+                actual_weight=100,
+                executed=True,
             ),
             WorkoutSet(
-                workout_id=1, exercise_id=1, actual_reps=3, actual_weight=200, executed=True
+                workout_id=1,
+                exercise_id=1,
+                actual_reps=3,
+                actual_weight=200,
+                executed=True,
             ),
         ]
         expected = 5 * 100 + 3 * 200
@@ -395,7 +414,11 @@ class TestTotalVolume:
         """Edge case: single set."""
         sets = [
             WorkoutSet(
-                workout_id=1, exercise_id=1, actual_reps=5, actual_weight=100, executed=True
+                workout_id=1,
+                exercise_id=1,
+                actual_reps=5,
+                actual_weight=100,
+                executed=True,
             )
         ]
         assert total_volume(sets) == 500.0
@@ -508,9 +531,7 @@ class TestWorkoutSetValidation:
     def test_precondition_invalid_unit_rejected(self) -> None:
         """Precondition: invalid unit rejected."""
         with pytest.raises(ValueError, match="unit must be"):
-            WorkoutSet(
-                workout_id=1, exercise_id=1, unit="stones"
-            )
+            WorkoutSet(workout_id=1, exercise_id=1, unit="stones")
 
     def test_precondition_rpe_out_of_range(self) -> None:
         """Precondition: RPE outside [0, 10] rejected."""
@@ -770,10 +791,18 @@ class TestOverview:
         """Postcondition: distinct exercise count."""
         sets = [
             WorkoutSet(
-                workout_id=1, exercise_id=1, actual_reps=5, actual_weight=100, executed=True
+                workout_id=1,
+                exercise_id=1,
+                actual_reps=5,
+                actual_weight=100,
+                executed=True,
             ),
             WorkoutSet(
-                workout_id=1, exercise_id=2, actual_reps=5, actual_weight=100, executed=True
+                workout_id=1,
+                exercise_id=2,
+                actual_reps=5,
+                actual_weight=100,
+                executed=True,
             ),
         ]
         ov = overview(sets)
@@ -817,6 +846,7 @@ class TestAutocompleteScoring:
         """Postcondition: exact matches get high score."""
         ex = Exercise(name="Bench Press")
         from workout_tracker.models import normalize_name
+
         query = normalize_name("Bench Press")
         s = score(query, ex)
         assert s >= 5000
@@ -825,6 +855,7 @@ class TestAutocompleteScoring:
         """Postcondition: prefix matches get bonus."""
         ex = Exercise(name="Bench Press")
         from workout_tracker.models import normalize_name
+
         query = normalize_name("Bench")
         s = score(query, ex)
         assert s >= 1500
@@ -833,6 +864,7 @@ class TestAutocompleteScoring:
         """Postcondition: substring matches get moderate bonus."""
         ex = Exercise(name="Bench Press")
         from workout_tracker.models import normalize_name
+
         query = normalize_name("ench")
         s = score(query, ex)
         assert s > 0
@@ -842,6 +874,7 @@ class TestAutocompleteScoring:
         ex1 = Exercise(name="Bench Press", use_count=0)
         ex2 = Exercise(name="Bench Press", use_count=100)
         from workout_tracker.models import normalize_name
+
         query = normalize_name("test")
         s1 = score(query, ex1)
         s2 = score(query, ex2)
@@ -951,5 +984,3 @@ class TestExerciseTimeseries:
         ]
         result = exercise_timeseries(sets)
         assert result == []
-
-

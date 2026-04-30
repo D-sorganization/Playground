@@ -18,8 +18,7 @@ def repo() -> WorkoutRepository:
 
 
 def _init_legacy_schema(conn: sqlite3.Connection) -> None:
-    conn.executescript(
-        """
+    conn.executescript("""
         PRAGMA foreign_keys = ON;
 
         CREATE TABLE IF NOT EXISTS exercises (
@@ -58,8 +57,7 @@ def _init_legacy_schema(conn: sqlite3.Connection) -> None:
             FOREIGN KEY (workout_id) REFERENCES workouts(id) ON DELETE CASCADE,
             FOREIGN KEY (exercise_id) REFERENCES exercises(id)
         );
-        """
-    )
+        """)
     conn.commit()
 
 

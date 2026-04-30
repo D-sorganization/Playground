@@ -44,7 +44,9 @@ def _assess_code_structure(
     return findings, score
 
 
-def _assess_documentation(python_files: list[Path]) -> tuple[list[str], int]:  # noqa: ARG001
+def _assess_documentation(
+    python_files: list[Path],
+) -> tuple[list[str], int]:  # noqa: ARG001
     """Assessment B: Documentation."""
     findings: list[str] = []
     score = 10
@@ -61,7 +63,9 @@ def _assess_documentation(python_files: list[Path]) -> tuple[list[str], int]:  #
     return findings, score
 
 
-def _assess_test_coverage(python_files: list[Path]) -> tuple[list[str], int]:  # noqa: ARG001
+def _assess_test_coverage(
+    python_files: list[Path],
+) -> tuple[list[str], int]:  # noqa: ARG001
     """Assessment C: Test Coverage."""
     findings: list[str] = []
     score = 10
@@ -82,7 +86,9 @@ def _assess_error_handling(python_files: list[Path]) -> tuple[list[str], int]:
     score = 10
     try_count = count_occurrences(r"try:", python_files)
     except_count = count_occurrences(r"except\s+.*:", python_files)
-    bare_except_count = count_occurrences(r"except Exception as e:", python_files)  # noqa: BLE001
+    bare_except_count = count_occurrences(
+        r"except Exception as e:", python_files
+    )  # noqa: BLE001
     findings.append(f"- Try blocks: {try_count}")
     findings.append(f"- Except blocks: {except_count}")
     findings.append(f"- Bare except blocks: {bare_except_count}")
@@ -137,7 +143,9 @@ def _assess_security(python_files: list[Path]) -> tuple[list[str], int]:
     return findings, score
 
 
-def _assess_dependencies(python_files: list[Path]) -> tuple[list[str], int]:  # noqa: ARG001
+def _assess_dependencies(
+    python_files: list[Path],
+) -> tuple[list[str], int]:  # noqa: ARG001
     """Assessment G: Dependencies."""
     findings: list[str] = []
     score = 10
@@ -163,7 +171,9 @@ def _assess_cicd(python_files: list[Path]) -> tuple[list[str], int]:  # noqa: AR
     return findings, score
 
 
-def _assess_code_style(python_files: list[Path]) -> tuple[list[str], int]:  # noqa: ARG001
+def _assess_code_style(
+    python_files: list[Path],
+) -> tuple[list[str], int]:  # noqa: ARG001
     """Assessment I: Code Style."""
     findings: list[str] = []
     score = 10
