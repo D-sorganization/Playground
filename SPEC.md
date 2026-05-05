@@ -27,7 +27,7 @@
 | **Primary Language(s)** | Python 3.11+                                    |
 | **License**             | MIT                                             |
 | **Current Version**     | 1.0.1                                           |
-| **Spec Version**        | 1.1.15                                          |
+| **Spec Version**        | 1.1.16                                          |
 | **Last Spec Update**    | 2026-05-05                                      |
 
 ## 2. Purpose & Mission
@@ -356,6 +356,7 @@ Active development with focus on Project GROOT implementation. Demos (Asteroid F
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | ---------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-05-05 | 1.1.16  | Fix(#418): restore the legacy helper exports from `scripts/analyze_completist_data.py` after the completist tooling split so the maintained script tests still collect and exercise the decomposed helper modules without changing repository behavior.                                                                                                                                                                  |
 | 2026-05-05 | 1.1.15  | Fix(#418): apply Ruff formatting to the five maintained Python files that were causing `quality-gate` to fail on `main`, and tighten `asteroid_jumper.renderer_draw.draw_hud_lines()` typing so the subsequent mypy step stays green; repository behavior and interfaces are unchanged.                                                                                                                                   |
 | 2026-04-28 | 1.1.12  | CI(#363): add a local-only workflow guard with unit coverage so GitHub Actions workflows cannot introduce GitHub-hosted runner routing; document that dependency vulnerabilities found by blocking `pip-audit` require remediation or a documented allowlist exception.                                                                                                                                                    |
 | 2026-04-28 | 1.1.11  | Fix(#369): add Workout Tracker startup diagnostic logging with structured database metadata and expose `/api/health` as a lightweight database reachability check that also emits a structured health log record.                                                                                                                                                                                                          |

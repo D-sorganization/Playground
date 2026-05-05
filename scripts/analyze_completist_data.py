@@ -18,9 +18,11 @@ from typing import NotRequired, TypedDict
 from completist_analyzers import _collect_report_data
 from completist_issues import _create_high_impact_issues
 from completist_report import (
+    _build_priority_table,
     _build_report_lines,
     _save_report_files,
 )
+from completist_utils import is_excluded
 
 # Constants and Configuration
 DATA_DIR = ".jules/completist_data"
@@ -45,8 +47,17 @@ EXCLUDED_PATHS = [
     "pyproject.toml",
 ]
 
-
 logger = logging.getLogger(__name__)
+
+__all__ = [
+    "Finding",
+    "generate_report",
+    "is_excluded",
+    "_build_priority_table",
+    "_build_report_lines",
+    "_collect_report_data",
+    "_save_report_files",
+]
 
 
 class Finding(TypedDict):
