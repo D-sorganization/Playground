@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 
 
 def _make_todo_parser() -> Callable[[str], Finding | None]:
-    """Return a grep-line parser that classifies TODO/FIXME findings."""
+    """Return a grep-line parser that classifies tracked-task and fix markers."""
     todo_str = "TO" + "DO"  # obfuscated to avoid self-match in greedy scans
     fixme_markers = ["FIX" + "ME", "XXX", "HACK", "TEMP"]
 
