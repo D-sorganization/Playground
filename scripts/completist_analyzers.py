@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 
 
 def _make_todo_parser() -> Callable[[str], Finding | None]:
-    """Return a grep-line parser that classifies TODO/FIXME findings."""
+    """Return a grep-line parser that classifies tracked-task and fix markers."""
     todo_str = "TO" + "DO"  # obfuscated to avoid self-match in greedy scans
     fixme_markers = ["FIX" + "ME", "XXX", "HACK", "TEMP"]
 
@@ -117,9 +117,9 @@ def analyze_abstract_methods() -> list[Finding]:
     return _scan_completist_file("ABSTRACT", _parser)
 
 
-def _collect_report_data() -> (
-    tuple[list[Finding], list[Finding], list[Finding], list[Finding]]
-):
+def _collect_report_data() -> tuple[
+    list[Finding], list[Finding], list[Finding], list[Finding]
+]:
     """Run all analyzers and return (criticals, todos, fixmes, missing_docs).
 
     criticals are stub/NotImplementedError findings outside test files,
