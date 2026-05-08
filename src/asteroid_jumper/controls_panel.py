@@ -25,6 +25,7 @@ from asteroid_jumper.controller import (
     DEFAULT_IMPULSE,
     JUMPER_MASS,
 )
+from asteroid_jumper.wheel_blocker import suppress_wheel_events
 
 
 class ControlsPanel(QWidget):
@@ -92,6 +93,7 @@ class ControlsPanel(QWidget):
         self._shape_combo = QComboBox()
         self._shape_combo.addItems(["Ellipse", "Circle", "Random"])
         self._shape_combo.currentIndexChanged.connect(self._on_shape_changed)
+        suppress_wheel_events(self._shape_combo)
         vbox.addWidget(self._shape_combo)
 
         # Semi-a
@@ -212,4 +214,5 @@ def _make_dspin(
     spin.setValue(default)
     spin.setSingleStep(step)
     spin.setDecimals(decimals)
+    suppress_wheel_events(spin)
     return spin
