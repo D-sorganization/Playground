@@ -42,7 +42,9 @@ for repo in repos:
                 if status_res.returncode == 0:
                     status = json.loads(status_res.stdout)
                     print(
-                        f"#{num}: {title} -> mergeable: {status.get('mergeable')}, state: {status.get('mergeable_state')}"
+                        f"#{num}: {title} -> mergeable: "
+                        f"{status.get('mergeable')}, "
+                        f"state: {status.get('mergeable_state')}"
                     )
                 else:
                     print(f"#{num}: {title}")
