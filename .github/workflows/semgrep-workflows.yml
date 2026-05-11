@@ -23,7 +23,8 @@ jobs:
 
       - name: Run Semgrep against workflow files
         run: |
-          pipx run semgrep \
+          python3 -m pip install semgrep
+          semgrep \
             --config p/github-actions \
             --config p/secrets \
             --no-error \
