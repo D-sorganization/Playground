@@ -17,7 +17,7 @@ class WheelEventBlocker(QObject):
         if event.type() == QEvent.Type.Wheel:
             event.ignore()
             return True
-        return super().eventFilter(obj, event)
+        return bool(super().eventFilter(obj, event))
 
 
 _blocker: WheelEventBlocker | None = None
