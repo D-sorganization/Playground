@@ -117,9 +117,9 @@ def analyze_abstract_methods() -> list[Finding]:
     return _scan_completist_file("ABSTRACT", _parser)
 
 
-def _collect_report_data() -> tuple[
-    list[Finding], list[Finding], list[Finding], list[Finding]
-]:
+def _collect_report_data() -> (
+    tuple[list[Finding], list[Finding], list[Finding], list[Finding]]
+):
     """Run all analyzers and return (criticals, todos, fixmes, missing_docs).
 
     criticals are stub/NotImplementedError findings outside test files,
