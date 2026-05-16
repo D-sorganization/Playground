@@ -132,7 +132,7 @@ jobs:
           pip install --no-cache-dir -r requirements.txt numpy
           echo "$VENV_PATH/bin" >> $GITHUB_PATH
       - name: Run tests
-        run: PYTHONPATH=. pytest tests/ --cov=. --cov-report=xml --cov-fail-under=60
+        run: PYTHONPATH=.:src pytest tests/ --cov=. --cov-report=xml --cov-fail-under=60
       - uses: codecov/codecov-action@v5
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
