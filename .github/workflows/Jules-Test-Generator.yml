@@ -51,6 +51,8 @@ jobs:
           echo "files=$FILES_FLAT" >> $GITHUB_OUTPUT
 
       - uses: actions/setup-node@v4
+        with:
+          cache: 'npm'
         with: { node-version: "22" }
       - run: npm install -g @google/jules
 
