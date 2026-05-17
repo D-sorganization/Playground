@@ -150,6 +150,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
+        with:
+          cache: 'npm'
         with: { node-version: "22" }
       - name: Install & Test
         working-directory: ./
@@ -184,6 +186,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
+        with:
+          cache: 'pip'
         with: { python-version: "3.11" }
       - run: pip install platformio
       - name: Verify Build
