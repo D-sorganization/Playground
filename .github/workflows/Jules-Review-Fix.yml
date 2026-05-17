@@ -29,6 +29,7 @@ jobs:
             echo "No self-hosted runner — using local self-hosted"
           fi
   jules-address-feedback:
+    timeout-minutes: 60
     needs: pick-runner
     runs-on: ${{ needs.pick-runner.outputs.runner }}
     permissions:

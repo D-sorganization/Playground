@@ -29,6 +29,7 @@ jobs:
             echo "No self-hosted runner — using local self-hosted"
           fi
   fix-deploy:
+    timeout-minutes: 30
     needs: pick-runner
     if:
       github.event.deployment.environment == 'production' && github.event.deployment_status.state ==

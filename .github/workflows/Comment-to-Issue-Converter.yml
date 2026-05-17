@@ -63,6 +63,7 @@ jobs:
             echo "No self-hosted runner — using local self-hosted"
           fi
   process-comments:
+    timeout-minutes: 30
     needs: pick-runner
     runs-on: ${{ needs.pick-runner.outputs.runner }}
     # HARDENING: Skip bot-triggered events to prevent cascades

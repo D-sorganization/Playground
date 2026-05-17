@@ -34,6 +34,7 @@ jobs:
             echo "No self-hosted runner — using local self-hosted"
           fi
   quality-gate:
+    timeout-minutes: 60
     needs: pick-runner
     runs-on: ${{ needs.pick-runner.outputs.runner }}
     steps:
@@ -110,6 +111,7 @@ jobs:
           if-no-files-found: ignore
 
   tests:
+    timeout-minutes: 60
     needs: [pick-runner, quality-gate]
     runs-on: ${{ needs.pick-runner.outputs.runner }}
     strategy:
@@ -142,6 +144,7 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
 
   javascript-tests:
+    timeout-minutes: 30
     needs: [pick-runner, quality-gate]
     runs-on: ${{ needs.pick-runner.outputs.runner }}
     steps:
@@ -160,6 +163,7 @@ jobs:
           fi
 
   matlab-tests:
+    timeout-minutes: 30
     needs: [pick-runner, quality-gate]
     runs-on: ${{ needs.pick-runner.outputs.runner }}
     if: false
@@ -174,6 +178,7 @@ jobs:
             run_all
 
   arduino-build:
+    timeout-minutes: 60
     needs: [pick-runner, quality-gate]
     runs-on: ${{ needs.pick-runner.outputs.runner }}
     steps:
@@ -192,6 +197,7 @@ jobs:
           fi
 
   local-only-workflows:
+    timeout-minutes: 30
     name: Reject hosted runner routing
     runs-on: d-sorg-fleet
     steps:

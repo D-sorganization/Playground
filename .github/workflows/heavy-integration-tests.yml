@@ -12,6 +12,7 @@ on:
 
 jobs:
   heavy-tests:
+    timeout-minutes: 120
     runs-on: d-sorg-fleet-4core
     steps:
       - uses: actions/checkout@v4

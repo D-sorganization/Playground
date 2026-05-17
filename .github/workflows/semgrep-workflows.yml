@@ -13,6 +13,7 @@ permissions:
 
 jobs:
   scan-workflows:
+    timeout-minutes: 30
     name: Scan GitHub Actions workflows
     runs-on: d-sorg-fleet
     permissions:

@@ -10,6 +10,7 @@ permissions:
 
 jobs:
   workout-tracker-benchmarks:
+    timeout-minutes: 90
     runs-on: d-sorg-fleet
     steps:
       - uses: actions/checkout@v4

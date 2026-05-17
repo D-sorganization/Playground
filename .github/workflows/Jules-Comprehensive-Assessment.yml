@@ -36,6 +36,7 @@ jobs:
             echo "No self-hosted runner — using local self-hosted"
           fi
   comprehensive-assessment:
+    timeout-minutes: 90
     needs: pick-runner
     name: Comprehensive Assessment & Audit
     runs-on: ${{ needs.pick-runner.outputs.runner }}

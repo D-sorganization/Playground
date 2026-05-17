@@ -43,6 +43,7 @@ jobs:
             echo "No self-hosted runner — using local self-hosted"
           fi
   compile-prs:
+    timeout-minutes: 60
     needs: pick-runner
     runs-on: ${{ needs.pick-runner.outputs.runner }}
     steps:

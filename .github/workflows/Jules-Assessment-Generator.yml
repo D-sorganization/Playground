@@ -38,6 +38,7 @@ jobs:
             echo "No self-hosted runner — using local self-hosted"
           fi
   generate-assessments:
+    timeout-minutes: 90
     needs: pick-runner
     runs-on: ${{ needs.pick-runner.outputs.runner }}
     steps:
