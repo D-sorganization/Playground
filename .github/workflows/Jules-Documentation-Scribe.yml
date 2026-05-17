@@ -65,7 +65,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           cache: 'npm'
-        with: { node-version: "22" }
+          node-version: "22"
 
       - name: Install & Auth Jules
         if: steps.changes.outputs.files != ''

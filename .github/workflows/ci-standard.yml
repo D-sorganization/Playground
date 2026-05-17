@@ -152,7 +152,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           cache: 'npm'
-        with: { node-version: "22" }
+          node-version: "22"
       - name: Install & Test
         working-directory: ./
         run: |
@@ -188,7 +188,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           cache: 'pip'
-        with: { python-version: "3.11" }
+          python-version: "3.11"
       - run: pip install platformio
       - name: Verify Build
         working-directory: ./
