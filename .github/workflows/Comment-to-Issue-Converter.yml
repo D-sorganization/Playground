@@ -31,7 +31,7 @@ permissions:
 # HARDENING: Prevent concurrent runs and limit frequency
 concurrency:
   group: comment-to-issue-${{ github.repository }}
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 env:
   # HARDENING: Rate limit - max issues to create per run
@@ -181,14 +181,16 @@ jobs:
 
               # Process each review comment
               for comment in review_comments:
-                  comment_id = str(comment.get('id', ''))
-                  if comment_id in tracking['processed_comments']:
+                  thread_root_id = str(comment.get('in_reply_to_id') or comment.get('id', ''))
+                  discussion_id = str(comment.get('pull_request_review_id', '')) or thread_root_id
+                  file_path = comment.get('path', '')
+                  line = comment.get('line', comment.get('original_line', 0))
+                  dedupe_key = f"{pr_num}:{discussion_id}:{file_path}:{line}"
+                  if not dedupe_key or dedupe_key in tracking['processed_comments']:
                       continue
 
                   author = comment.get('user', {}).get('login', 'unknown')
                   body = comment.get('body', '')
-                  file_path = comment.get('path', '')
-                  line = comment.get('line', comment.get('original_line', 0))
                   created_at = comment.get('created_at', '')
                   html_url = comment.get('html_url', '')
 
@@ -215,7 +217,7 @@ jobs:
                   archive_entry = {
                       'pr_number': pr_num,
                       'pr_title': pr_title,
-                      'comment_id': comment_id,
+                      'comment_id': dedupe_key,
                       'source': source,
                       'author': author,
                       'file': file_path,
@@ -231,7 +233,7 @@ jobs:
                   # Create issue if actionable and not archive_only
                   if is_actionable and not archive_only:
                       # Check if issue already exists for this comment
-                      if comment_id in tracking['created_issues']:
+                      if dedupe_key in tracking['created_issues']:
                           continue
 
                       issue_title = f"[review] [{source}] Feedback on {file_path}:{line}"
@@ -277,11 +279,11 @@ jobs:
                           if result.returncode == 0:
                               issue_url = result.stdout.strip()
                               created_issues.append({
-                                  'comment_id': comment_id,
+                                  'comment_id': dedupe_key,
                                   'issue_url': issue_url,
                                   'source': source
                               })
-                              tracking['created_issues'][comment_id] = issue_url
+                              tracking['created_issues'][dedupe_key] = issue_url
                               print(f"Created issue: {issue_url}")
                           else:
                               print(f"Failed to create issue: {result.stderr}")
@@ -289,7 +291,7 @@ jobs:
                           print(f"Error creating issue: {e}")
 
                   # Mark as processed
-                  tracking['processed_comments'].append(comment_id)
+                  tracking['processed_comments'].append(dedupe_key)
 
           # Write archive markdown
           if archived_comments:
