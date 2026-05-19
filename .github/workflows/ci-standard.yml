@@ -148,6 +148,7 @@ jobs:
     timeout-minutes: 30
     needs: pick-runner
     runs-on: ${{ needs.pick-runner.outputs.runner }}
+    if: ${{ hashFiles('javascript/package-lock.json') != '' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -155,15 +156,10 @@ jobs:
           cache: 'npm'
           node-version: "22"
       - name: Install & Test
-        working-directory: ./
+        working-directory: ./javascript
         run: |
-          if [ -d "javascript" ]; then
-            cd javascript
-            npm ci
-            npm run test:coverage
-          else
-            echo "No javascript directory found, skipping."
-          fi
+          npm ci
+          npm run test:coverage
 
   matlab-tests:
     timeout-minutes: 30
@@ -184,6 +180,7 @@ jobs:
     timeout-minutes: 60
     needs: pick-runner
     runs-on: ${{ needs.pick-runner.outputs.runner }}
+    if: ${{ hashFiles('arduino/platformio.ini') != '' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -192,19 +189,14 @@ jobs:
           python-version: "3.11"
       - run: pip install platformio
       - name: Verify Build
-        working-directory: ./
-        run: |
-          if [ -d "arduino" ]; then
-            cd arduino
-            pio run -e uno
-          else
-            echo "No arduino directory found, skipping."
-          fi
+        working-directory: ./arduino
+        run: pio run -e uno
 
   local-only-workflows:
     timeout-minutes: 30
     name: Reject hosted runner routing
-    runs-on: ubuntu-latest
+    needs: pick-runner
+    runs-on: ${{ needs.pick-runner.outputs.runner }}
     steps:
       - uses: actions/checkout@v4
       - name: Run local-only workflow guard

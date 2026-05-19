@@ -6,9 +6,13 @@ import importlib.util
 from pathlib import Path
 
 import pytest
+import yaml
 
 SCRIPT_PATH = (
     Path(__file__).resolve().parents[1] / "scripts" / "check_local_only_workflows.py"
+)
+CI_STANDARD_PATH = (
+    Path(__file__).resolve().parents[1] / ".github" / "workflows" / "ci-standard.yml"
 )
 SPEC = importlib.util.spec_from_file_location("check_local_only_workflows", SCRIPT_PATH)
 assert SPEC is not None
@@ -75,3 +79,23 @@ def test_main_with_violations(
     assert "workflows" in captured.out
     assert "ci.yml:3" in captured.out
     assert "ubuntu-latest" in captured.out
+
+
+def test_ci_standard_local_runner_guard_and_optional_job_inputs() -> None:
+    """CI workflow keeps the runner guard local and skips absent optional projects."""
+    workflow = yaml.safe_load(CI_STANDARD_PATH.read_text(encoding="utf-8"))
+    jobs = workflow["jobs"]
+
+    assert jobs["local-only-workflows"]["needs"] == "pick-runner"
+    assert (
+        jobs["local-only-workflows"]["runs-on"]
+        == "${{ needs.pick-runner.outputs.runner }}"
+    )
+    assert (
+        jobs["javascript-tests"]["if"]
+        == "${{ hashFiles('javascript/package-lock.json') != '' }}"
+    )
+    assert (
+        jobs["arduino-build"]["if"]
+        == "${{ hashFiles('arduino/platformio.ini') != '' }}"
+    )
