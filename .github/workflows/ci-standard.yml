@@ -148,18 +148,22 @@ jobs:
     timeout-minutes: 30
     needs: pick-runner
     runs-on: ${{ needs.pick-runner.outputs.runner }}
-    if: ${{ hashFiles('javascript/package-lock.json') != '' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
+        if: ${{ hashFiles('javascript/package-lock.json') != '' }}
         with:
           cache: "npm"
           node-version: "22"
       - name: Install & Test
-        working-directory: ./javascript
+        if: ${{ hashFiles('javascript/package-lock.json') != '' }}
         run: |
+          cd javascript
           npm ci
           npm run test:coverage
+      - name: Skip JavaScript tests
+        if: ${{ hashFiles('javascript/package-lock.json') == '' }}
+        run: echo "No javascript/package-lock.json found, skipping JavaScript tests."
 
   matlab-tests:
     timeout-minutes: 30
@@ -180,17 +184,23 @@ jobs:
     timeout-minutes: 60
     needs: pick-runner
     runs-on: ${{ needs.pick-runner.outputs.runner }}
-    if: ${{ hashFiles('arduino/platformio.ini') != '' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
+        if: ${{ hashFiles('arduino/platformio.ini') != '' }}
         with:
           cache: "pip"
           python-version: "3.11"
       - run: pip install platformio
+        if: ${{ hashFiles('arduino/platformio.ini') != '' }}
       - name: Verify Build
-        working-directory: ./arduino
-        run: pio run -e uno
+        if: ${{ hashFiles('arduino/platformio.ini') != '' }}
+        run: |
+          cd arduino
+          pio run -e uno
+      - name: Skip Arduino build
+        if: ${{ hashFiles('arduino/platformio.ini') == '' }}
+        run: echo "No arduino/platformio.ini found, skipping Arduino build."
 
   local-only-workflows:
     timeout-minutes: 30
