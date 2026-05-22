@@ -43,7 +43,7 @@ jobs:
         run: |
           VENV_PATH="$RUNNER_TEMP/ci-venv-${GITHUB_RUN_ID}-${GITHUB_JOB}"
           rm -rf "$VENV_PATH"
-          for py in python3.11 python3.12 python3.10 python3; do
+          for py in python3.11 python3.12 python3.10 python; do
             if command -v $py &>/dev/null; then
               $py -m venv "$VENV_PATH"
               break
@@ -124,7 +124,7 @@ jobs:
         run: |
           VENV_PATH="$RUNNER_TEMP/ci-venv-${GITHUB_RUN_ID}-${GITHUB_JOB}"
           rm -rf "$VENV_PATH"
-          for py in python3.11 python3.12 python3.10 python3; do
+          for py in python3.11 python3.12 python3.10 python; do
             if command -v $py &>/dev/null; then
               $py -m venv "$VENV_PATH"
               break
@@ -153,7 +153,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          cache: 'npm'
+          cache: "npm"
           node-version: "22"
       - name: Install & Test
         working-directory: ./javascript
@@ -185,7 +185,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          cache: 'pip'
+          cache: "pip"
           python-version: "3.11"
       - run: pip install platformio
       - name: Verify Build

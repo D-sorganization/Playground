@@ -24,8 +24,9 @@ jobs:
 
       - name: Run Semgrep against workflow files
         run: |
-          pipx install semgrep
-          semgrep \
+          python3 -m venv venv
+          venv/bin/pip install semgrep
+          venv/bin/semgrep \
             --config p/github-actions \
             --config p/secrets \
             --no-error \

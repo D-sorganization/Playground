@@ -293,7 +293,7 @@ repos:
 # =============================================================================
 
 default_language_version:
-  python: python3.11
+  python: python
   node: "20.11.0"
 
 # Files to always exclude from all hooks
