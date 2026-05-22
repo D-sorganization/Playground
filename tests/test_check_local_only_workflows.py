@@ -91,11 +91,16 @@ def test_ci_standard_local_runner_guard_and_optional_job_inputs() -> None:
         jobs["local-only-workflows"]["runs-on"]
         == "${{ needs.pick-runner.outputs.runner }}"
     )
+    javascript_steps = jobs["javascript-tests"]["steps"]
     assert (
-        jobs["javascript-tests"]["if"]
+        javascript_steps[1]["if"]
         == "${{ hashFiles('javascript/package-lock.json') != '' }}"
     )
     assert (
-        jobs["arduino-build"]["if"]
-        == "${{ hashFiles('arduino/platformio.ini') != '' }}"
+        javascript_steps[3]["if"]
+        == "${{ hashFiles('javascript/package-lock.json') == '' }}"
     )
+
+    arduino_steps = jobs["arduino-build"]["steps"]
+    assert arduino_steps[1]["if"] == "${{ hashFiles('arduino/platformio.ini') != '' }}"
+    assert arduino_steps[4]["if"] == "${{ hashFiles('arduino/platformio.ini') == '' }}"
