@@ -27,8 +27,8 @@
 | **Primary Language(s)** | Python 3.11+                                    |
 | **License**             | MIT                                             |
 | **Current Version**     | 1.0.1                                           |
-| **Spec Version**        | 1.1.16                                          |
-| **Last Spec Update**    | 2026-05-05                                      |
+| **Spec Version**        | 1.1.18                                          |
+| **Last Spec Update**    | 2026-05-22                                      |
 
 ## 2. Purpose & Mission
 
@@ -43,6 +43,7 @@ The Playground is a fleet-wide sandbox for testing, experimentation, and learnin
 - Implement and validate Project GROOT simulation, training, and evaluation pipelines
 - Enforce fleet CI standards and provide compliant CI templates for other repositories
 - Maintain clean dependency slate and minimal external requirements
+- Keep workflow and hook guardrails usable on Windows and self-hosted fleet runners, including stale-run cancellation for review automation and native-safe local security hooks.
 
 ### Non-Goals
 
@@ -356,9 +357,10 @@ Active development with focus on Project GROOT implementation. Demos (Asteroid F
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | ---------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-05-22 | 1.1.18  | CI/hook maintenance: align review responder, anti-phantom merge, Semgrep workflow scanning, and local pre-commit hooks with fleet stale-run cancellation and Windows-safe security hook behavior.                                                                                                                                                                                                                          |
 | 2026-05-11 | 1.1.17  | Format formatting violations in `scripts/` and `src/Project_GROOT/` to pass Ruff lint checks in CI, and ensure `test_archive_quarantine.py` passes by adding `norecursedirs = ["archive"]` to `pyproject.toml`.                                                                                                                                                                                                            |
-| 2026-05-05 | 1.1.16  | Fix(#418): restore the legacy helper exports from `scripts/analyze_completist_data.py` after the completist tooling split so the maintained script tests still collect and exercise the decomposed helper modules without changing repository behavior.                                                                                                                                                                  |
-| 2026-05-05 | 1.1.15  | Fix(#418): apply Ruff formatting to the five maintained Python files that were causing `quality-gate` to fail on `main`, and tighten `asteroid_jumper.renderer_draw.draw_hud_lines()` typing so the subsequent mypy step stays green; repository behavior and interfaces are unchanged.                                                                                                                                   |
+| 2026-05-05 | 1.1.16  | Fix(#418): restore the legacy helper exports from `scripts/analyze_completist_data.py` after the completist tooling split so the maintained script tests still collect and exercise the decomposed helper modules without changing repository behavior.                                                                                                                                                                    |
+| 2026-05-05 | 1.1.15  | Fix(#418): apply Ruff formatting to the five maintained Python files that were causing `quality-gate` to fail on `main`, and tighten `asteroid_jumper.renderer_draw.draw_hud_lines()` typing so the subsequent mypy step stays green; repository behavior and interfaces are unchanged.                                                                                                                                    |
 | 2026-04-28 | 1.1.12  | CI(#363): add a local-only workflow guard with unit coverage so GitHub Actions workflows cannot introduce GitHub-hosted runner routing; document that dependency vulnerabilities found by blocking `pip-audit` require remediation or a documented allowlist exception.                                                                                                                                                    |
 | 2026-04-28 | 1.1.11  | Fix(#369): add Workout Tracker startup diagnostic logging with structured database metadata and expose `/api/health` as a lightweight database reachability check that also emits a structured health log record.                                                                                                                                                                                                          |
 | 2026-04-28 | 1.1.10  | Fix(#367,#370): add CodeQL SAST for Python and JavaScript/TypeScript on push, pull request, and weekly schedule; add Semgrep workflow scanning for GitHub Actions and secret-pattern rules; upload SARIF artifacts so security scanning works even when GitHub code scanning is unavailable.                                                                                                                               |

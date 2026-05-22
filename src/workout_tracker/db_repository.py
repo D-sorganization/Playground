@@ -259,7 +259,8 @@ class WorkoutRepository:
                 values.append(datetime.utcnow().isoformat(timespec="seconds"))
         with self._tx() as cur:
             cur.execute(
-                f"UPDATE sets SET {cols} WHERE id = ?",  # noqa: S608 (cols are whitelisted)
+                # cols is built only from the allowed field set above.
+                f"UPDATE sets SET {cols} WHERE id = ?",  # noqa: S608  # nosec B608
                 (*values, set_id),
             )
             if fields.get("executed") and not was_executed:

@@ -22,16 +22,16 @@ jobs:
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
         run: |
           ONLINE=$(gh api /orgs/${{ github.repository_owner }}/actions/runners \
-            --jq '[.runners[] | select(.status == "online") | select(.labels[].name == "d-sorg-fleet")] | length' \
+            --jq '[.runners[] | select(.status == "online") | select(.labels[].name == "d-sorg-fleet-14core")] | length' \
             2>/dev/null || echo "0")
           if [[ "$ONLINE" -gt 0 ]]; then
             mkdir -p "$(dirname "$GITHUB_OUTPUT")"
             mkdir -p "$(dirname "$GITHUB_OUTPUT")"
-            echo "runner=d-sorg-fleet" >> "$GITHUB_OUTPUT"
-            echo "Self-hosted runner online — routing locally"
+            echo "runner=d-sorg-fleet-14core" >> "$GITHUB_OUTPUT"
+            echo "Desktop fleet runner online — routing locally"
           else
-            echo "runner=d-sorg-fleet" >> $GITHUB_OUTPUT
-            echo "No self-hosted runner — using local self-hosted"
+            echo "runner=d-sorg-fleet-14core" >> $GITHUB_OUTPUT
+            echo "No desktop fleet runner reported online — queueing on desktop fleet"
           fi
   quality-gate:
     timeout-minutes: 60
@@ -43,7 +43,7 @@ jobs:
         run: |
           VENV_PATH="$RUNNER_TEMP/ci-venv-${GITHUB_RUN_ID}-${GITHUB_JOB}"
           rm -rf "$VENV_PATH"
-          for py in python3.11 python3.12 python3.10 python3; do
+          for py in python3.11 python3.12 python3.10 python; do
             if command -v $py &>/dev/null; then
               $py -m venv "$VENV_PATH"
               break
@@ -124,7 +124,7 @@ jobs:
         run: |
           VENV_PATH="$RUNNER_TEMP/ci-venv-${GITHUB_RUN_ID}-${GITHUB_JOB}"
           rm -rf "$VENV_PATH"
-          for py in python3.11 python3.12 python3.10 python3; do
+          for py in python3.11 python3.12 python3.10 python; do
             if command -v $py &>/dev/null; then
               $py -m venv "$VENV_PATH"
               break
@@ -148,18 +148,22 @@ jobs:
     timeout-minutes: 30
     needs: pick-runner
     runs-on: ${{ needs.pick-runner.outputs.runner }}
-    if: ${{ hashFiles('javascript/package-lock.json') != '' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
+        if: ${{ hashFiles('javascript/package-lock.json') != '' }}
         with:
-          cache: 'npm'
+          cache: "npm"
           node-version: "22"
       - name: Install & Test
-        working-directory: ./javascript
+        if: ${{ hashFiles('javascript/package-lock.json') != '' }}
         run: |
+          cd javascript
           npm ci
           npm run test:coverage
+      - name: Skip JavaScript tests
+        if: ${{ hashFiles('javascript/package-lock.json') == '' }}
+        run: echo "No javascript/package-lock.json found, skipping JavaScript tests."
 
   matlab-tests:
     timeout-minutes: 30
@@ -180,17 +184,23 @@ jobs:
     timeout-minutes: 60
     needs: pick-runner
     runs-on: ${{ needs.pick-runner.outputs.runner }}
-    if: ${{ hashFiles('arduino/platformio.ini') != '' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
+        if: ${{ hashFiles('arduino/platformio.ini') != '' }}
         with:
-          cache: 'pip'
+          cache: "pip"
           python-version: "3.11"
       - run: pip install platformio
+        if: ${{ hashFiles('arduino/platformio.ini') != '' }}
       - name: Verify Build
-        working-directory: ./arduino
-        run: pio run -e uno
+        if: ${{ hashFiles('arduino/platformio.ini') != '' }}
+        run: |
+          cd arduino
+          pio run -e uno
+      - name: Skip Arduino build
+        if: ${{ hashFiles('arduino/platformio.ini') == '' }}
+        run: echo "No arduino/platformio.ini found, skipping Arduino build."
 
   local-only-workflows:
     timeout-minutes: 30

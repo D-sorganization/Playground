@@ -256,18 +256,30 @@ repos:
             "--ignore=tests/test_Project_GROOT_train_rl_finetune.py",
           ]
         language: python
-        additional_dependencies: [pytest, pytest-cov]
+        additional_dependencies:
+          - flask==3.0.3
+          - matplotlib
+          - numpy
+          - pytest
+          - pytest-asyncio
+          - pytest-benchmark
+          - pytest-cov
+          - PyYAML>=6.0
+          - sympy==1.13.1
         pass_filenames: false
         types: [python]
 
   # Semgrep - Free local security + code quality scanning (pre-push)
-  - repo: https://github.com/semgrep/semgrep
-    rev: v1.102.0
+  # Native Windows is skipped because Semgrep is not installable there.
+  - repo: local
     hooks:
       - id: semgrep
         name: "semgrep (security + quality)"
         stages: [push]
-        args: ["--config", "auto", "--error", "--quiet"]
+        entry: python scripts/run_semgrep_hook.py
+        language: python
+        additional_dependencies:
+          - 'semgrep==1.102.0; platform_system != "Windows"'
         types: [python]
         exclude: ^(tests/|archive/|legacy/|experimental/|\.github/)
 
@@ -293,7 +305,7 @@ repos:
 # =============================================================================
 
 default_language_version:
-  python: python3.11
+  python: python
   node: "20.11.0"
 
 # Files to always exclude from all hooks
@@ -329,4 +341,3 @@ ci:
   autoupdate_branch: "main"
   autoupdate_commit_msg: "chore: update pre-commit hooks"
   skip: [pytest-unit, bandit, mypy, semgrep, radon, fmt, cargo-check] # Skip slow hooks in CI
-
