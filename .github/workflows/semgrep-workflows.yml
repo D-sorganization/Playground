@@ -11,9 +11,13 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   scan-workflows:
-    timeout-minutes: 30
+    timeout-minutes: 45
     name: Scan GitHub Actions workflows
     runs-on: d-sorg-fleet
     permissions:
@@ -25,10 +29,12 @@ jobs:
       - name: Run Semgrep against workflow files
         run: |
           python3 -m venv venv
-          venv/bin/pip install semgrep
+          venv/bin/pip install --upgrade --upgrade-strategy only-if-needed semgrep==1.102.0
           venv/bin/semgrep \
             --config p/github-actions \
             --config p/secrets \
+            --disable-version-check \
+            --metrics=off \
             --no-error \
             --sarif \
             --output semgrep.sarif \

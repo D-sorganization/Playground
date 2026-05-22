@@ -95,11 +95,10 @@ def results() -> dict[str, Any]:
     proc = subprocess.run(
         [node, "-e", script],
         capture_output=True,
-        text=True,
         timeout=30,
         check=True,
     )
-    return json.loads(proc.stdout)
+    return json.loads(proc.stdout.decode("utf-8"))
 
 
 def test_plates_225_on_45_bar_lbs(results: dict[str, Any]) -> None:
