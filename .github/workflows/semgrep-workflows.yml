@@ -29,8 +29,12 @@ jobs:
       - name: Run Semgrep against workflow files
         run: |
           python3 -m venv venv
-          venv/bin/pip install --upgrade --upgrade-strategy only-if-needed semgrep==1.102.0
-          venv/bin/semgrep \
+          timeout 8m venv/bin/pip install \
+            --disable-pip-version-check \
+            --upgrade \
+            --upgrade-strategy only-if-needed \
+            semgrep==1.102.0
+          timeout 12m venv/bin/semgrep \
             --config p/github-actions \
             --config p/secrets \
             --disable-version-check \
