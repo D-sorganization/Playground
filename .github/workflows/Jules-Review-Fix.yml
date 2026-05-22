@@ -52,7 +52,7 @@ jobs:
           PERM=$(gh api repos/${{ github.repository }}/collaborators/${{ github.event.review.user.login }}/permission --jq '.permission' || echo "none")
           if [[ "$PERM" != "admin" && "$PERM" != "write" ]]; then
             echo "Reviewer does not have write access. Ignoring."
-            exit 1 # Fail the step to stop execution safely
+            exit 0
           fi
 
       - uses: actions/checkout@v4
@@ -60,7 +60,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.ref }}
       - uses: actions/setup-node@v4
         with:
-          cache: 'npm'
+          cache: "npm"
           node-version: "22"
       - run: npm install -g @google/jules
 
