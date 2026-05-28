@@ -33,7 +33,7 @@ jobs:
             --disable-pip-version-check \
             --upgrade \
             --upgrade-strategy only-if-needed \
-            semgrep==1.102.0
+            setuptools semgrep==1.102.0
           timeout 12m venv/bin/semgrep \
             --config p/github-actions \
             --config p/secrets \
