@@ -41,6 +41,10 @@ permissions:
   actions: read
   checks: read
 
+concurrency:
+  group: auto-repair-${{ inputs.branch || github.event.workflow_run.head_branch || github.ref }}
+  cancel-in-progress: true
+
 env:
   MAX_REPAIR_ATTEMPTS: 5
   REPAIR_WINDOW_HOURS: 6
@@ -76,10 +80,6 @@ jobs:
     timeout-minutes: 30
     needs: pick-runner
     runs-on: ${{ needs.pick-runner.outputs.runner }}
-    # Prevent multiple repairs on same branch simultaneously
-    concurrency:
-      group: auto-repair-${{ inputs.branch || github.event.workflow_run.head_branch }}
-      cancel-in-progress: true
 
     steps:
       - name: Get Branch Info
