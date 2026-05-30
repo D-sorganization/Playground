@@ -22,15 +22,15 @@ jobs:
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
         run: |
           ONLINE=$(gh api /orgs/${{ github.repository_owner }}/actions/runners \
-            --jq '[.runners[] | select(.status == "online") | select(.labels[].name == "d-sorg-fleet-14core")] | length' \
+            --jq '[.runners[] | select(.status == "online") | select(.labels[].name == "d-sorg-fleet")] | length' \
             2>/dev/null || echo "0")
           if [[ "$ONLINE" -gt 0 ]]; then
             mkdir -p "$(dirname "$GITHUB_OUTPUT")"
             mkdir -p "$(dirname "$GITHUB_OUTPUT")"
-            echo "runner=d-sorg-fleet-14core" >> "$GITHUB_OUTPUT"
+            echo "runner=d-sorg-fleet" >> "$GITHUB_OUTPUT"
             echo "Desktop fleet runner online — routing locally"
           else
-            echo "runner=d-sorg-fleet-14core" >> $GITHUB_OUTPUT
+            echo "runner=d-sorg-fleet" >> $GITHUB_OUTPUT
             echo "No desktop fleet runner reported online — queueing on desktop fleet"
           fi
   quality-gate:
