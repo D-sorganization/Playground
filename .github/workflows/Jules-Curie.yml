@@ -5,6 +5,10 @@ on:
   schedule:
     - cron: "0 8 * * 2" # 1st of month at 2 AM PST (10 UTC)
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   # ── Dispatcher: route to self-hosted if available ──────────────────────────
   pick-runner:

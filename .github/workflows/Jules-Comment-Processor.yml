@@ -27,7 +27,7 @@ permissions:
 
 concurrency:
   group: jules-comment-processor-${{ github.repository }}
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   # ── Dispatcher: route to self-hosted if available ──────────────────────────
@@ -66,7 +66,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-          cache: 'pip'
+          cache: "pip"
 
       - name: Check Queue
         id: queue

@@ -79,7 +79,7 @@ jobs:
     # Prevent multiple repairs on same branch simultaneously
     concurrency:
       group: auto-repair-${{ inputs.branch || github.event.workflow_run.head_branch }}
-      cancel-in-progress: false
+      cancel-in-progress: true
 
     steps:
       - name: Get Branch Info
@@ -160,7 +160,7 @@ jobs:
         if: steps.branch.outputs.skip != 'true' && steps.limits.outputs.exceeded != 'true'
         with:
           python-version: "3.11"
-          cache: 'pip'
+          cache: "pip"
 
       - name: Install Tools
         if: steps.branch.outputs.skip != 'true' && steps.limits.outputs.exceeded != 'true'
