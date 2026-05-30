@@ -10,6 +10,10 @@ permissions:
   pull-requests: write
   issues: write
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   # ── Dispatcher: route to self-hosted if available ──────────────────────────
   pick-runner:
@@ -50,13 +54,12 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-          cache: 'pip'
+          cache: "pip"
 
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: "22"
-          cache: 'npm'
 
       - name: Install Dependencies
         run: |

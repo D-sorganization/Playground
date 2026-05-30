@@ -29,11 +29,12 @@ jobs:
       - name: Run Semgrep against workflow files
         run: |
           python3 -m venv venv
+          # setuptools<81 keeps pkg_resources, which semgrep 1.102.0 imports (removed in setuptools 81)
           timeout 8m venv/bin/pip install \
             --disable-pip-version-check \
             --upgrade \
             --upgrade-strategy only-if-needed \
-            semgrep==1.102.0
+            'setuptools<81' semgrep==1.102.0
           timeout 12m venv/bin/semgrep \
             --config p/github-actions \
             --config p/secrets \

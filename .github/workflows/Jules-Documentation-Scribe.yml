@@ -7,6 +7,10 @@ permissions:
   contents: write
   pull-requests: write
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   # ── Dispatcher: route to self-hosted if available ──────────────────────────
   pick-runner:
@@ -64,7 +68,6 @@ jobs:
         if: steps.changes.outputs.files != ''
         uses: actions/setup-node@v4
         with:
-          cache: 'npm'
           node-version: "22"
 
       - name: Install & Auth Jules
