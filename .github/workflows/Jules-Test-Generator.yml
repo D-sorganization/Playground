@@ -52,7 +52,6 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          cache: 'npm'
           node-version: "22"
       - run: npm install -g @google/jules
 

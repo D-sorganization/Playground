@@ -86,7 +86,6 @@ jobs:
       - uses: actions/setup-node@v4
         if: steps.jules.outputs.enabled == 'true'
         with:
-          cache: 'npm'
           node-version: "22"
       - run: npm install -g @google/jules
         if: steps.jules.outputs.enabled == 'true'
