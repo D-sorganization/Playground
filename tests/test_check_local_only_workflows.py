@@ -36,6 +36,16 @@ def test_main_missing_workflow_dir(
     assert capsys.readouterr().out == ""
 
 
+def _write_workflow(tmp_path: Path, body: str) -> None:
+    workflow_dir = tmp_path / ".github" / "workflows"
+    workflow_dir.mkdir(parents=True, exist_ok=True)
+    (workflow_dir / "ci.yml").write_text(body, encoding="utf-8")
+
+
+FLEET_WORKFLOW = "jobs:\n  test:\n    runs-on: d-sorg-fleet\n"
+HOSTED_WORKFLOW = "jobs:\n  test:\n    runs-on: ubuntu-latest\n"
+
+
 def test_main_no_violations(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -43,12 +53,8 @@ def test_main_no_violations(
 ) -> None:
     """Exit 0 when no banned tokens are found."""
     monkeypatch.chdir(tmp_path)
-    workflow_dir = tmp_path / ".github" / "workflows"
-    workflow_dir.mkdir(parents=True)
-    (workflow_dir / "ci.yml").write_text(
-        "jobs:\n  test:\n    runs-on: d-sorg-fleet\n",
-        encoding="utf-8",
-    )
+    monkeypatch.setenv("REPO_VISIBILITY", "private")
+    _write_workflow(tmp_path, FLEET_WORKFLOW)
 
     exit_code = main()
 
@@ -62,14 +68,10 @@ def test_main_with_violations(
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
 ) -> None:
-    """Exit 1 when banned tokens are found."""
+    """Exit 1 when banned tokens are found on a non-public repository."""
     monkeypatch.chdir(tmp_path)
-    workflow_dir = tmp_path / ".github" / "workflows"
-    workflow_dir.mkdir(parents=True)
-    (workflow_dir / "ci.yml").write_text(
-        "jobs:\n  test:\n    runs-on: ubuntu-latest\n",
-        encoding="utf-8",
-    )
+    monkeypatch.setenv("REPO_VISIBILITY", "private")
+    _write_workflow(tmp_path, HOSTED_WORKFLOW)
 
     exit_code = main()
 
@@ -79,6 +81,58 @@ def test_main_with_violations(
     assert "workflows" in captured.out
     assert "ci.yml:3" in captured.out
     assert "ubuntu-latest" in captured.out
+
+
+def test_unknown_visibility_still_enforces(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Fail closed: an unreadable visibility must not permit hosted routing.
+
+    A false failure costs a re-run; a false pass costs a billed month.
+    """
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.delenv("REPO_VISIBILITY", raising=False)
+    _write_workflow(tmp_path, HOSTED_WORKFLOW)
+
+    assert main() == 1
+
+
+def test_public_repo_permits_hosted_runners(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Hosted runners are free and unmetered on a public repo, so allow them."""
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv("REPO_VISIBILITY", "public")
+    _write_workflow(tmp_path, HOSTED_WORKFLOW)
+
+    exit_code = main()
+
+    assert exit_code == 0
+    assert "hosted runners permitted" in capsys.readouterr().out
+
+
+def test_public_repo_warns_on_fleet_pin(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """A fleet pin on a public repo is a fork-PR exposure, but not a hard failure.
+
+    Warning rather than failing is what lets a repo migrate incrementally.
+    """
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv("REPO_VISIBILITY", "public")
+    _write_workflow(tmp_path, FLEET_WORKFLOW)
+
+    exit_code = main()
+
+    assert exit_code == 0
+    captured = capsys.readouterr()
+    assert "::warning::" in captured.out
+    assert "d-sorg-fleet" in captured.out
 
 
 def test_ci_standard_local_runner_guard_and_optional_job_inputs() -> None:
