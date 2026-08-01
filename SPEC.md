@@ -113,7 +113,7 @@ Playground/
 | MATLAB Tools             | `tools/`                                | MATLAB utilities for analysis and visualization                                    |
 | Archive Snapshots        | `archive/`                              | Historical references retained outside the maintained source surface               |
 | Security Policy          | `SECURITY.md`                           | Supported-version and vulnerability disclosure guidance                            |
-| Workflow Guard           | `scripts/check_local_only_workflows.py` | CI helper that rejects newly added GitHub-hosted runner routing in workflow diffs  |
+| Workflow Guard           | `scripts/check_local_only_workflows.py` | CI helper that checks runner routing against repository visibility                 |
 
 ## 5. Desired Functionality
 
@@ -216,7 +216,7 @@ Coverage collection omits `archive/*` so historical snapshots do not affect main
 - [ ] Archived snapshots remain excluded from normal lint/test collection unless explicitly restored
 - [ ] Live simulation markers correctly skip in fast CI runs
 - [ ] All maintained test files execute without errors on Python 3.11+3.12
-- [ ] CI workflows are checked by `scripts/check_local_only_workflows.py` so `ubuntu-latest`, `windows-latest`, or `macos-latest` routing is rejected
+- [ ] CI workflows are checked by `scripts/check_local_only_workflows.py`, which keys off repository visibility: hosted routing (`ubuntu-latest`, `windows-latest`, `macos-latest`) is rejected on a private or internal repo where it is billed, and permitted on a public repo where hosted runners are free and self-hosted runners would expose fleet hardware to fork pull requests. Unreadable visibility fails closed
 - [x] Workout Tracker: 137 tests across models, parser, autocomplete, stats, db, routes pass (expanded utilities coverage in PR #414)
 - [x] Workout Tracker: fuzzy autocomplete recovers from typos (e.g. `bnech` → `Bench Press`)
 - [x] Workout Tracker: parser handles `3x5 @ 135`, `135x5`, header-then-sets, comma-separated, bodyweight
@@ -357,6 +357,7 @@ Active development with focus on Project GROOT implementation. Demos (Asteroid F
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | ---------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-08-01 | 1.1.19  | CI: route every job to GitHub-hosted runners now that the repository is public — hosted runners are free and unmetered there, while self-hosted runners let a fork PR execute on fleet hardware. `scripts/check_local_only_workflows.py` becomes visibility-aware rather than banning hosted routing outright, and fails closed when visibility is unreadable. Adds the missing `pytest-asyncio` dependency that made pytest exit 4 under `--strict-config`, drops `cache: pip` from three jobs that install nothing, and backfills the `concurrency`/`timeout-minutes` blocks `lint-workflow-files.yml` requires. |
 | 2026-05-22 | 1.1.18  | CI/hook maintenance: align review responder, anti-phantom merge, Semgrep workflow scanning, and local pre-commit hooks with fleet stale-run cancellation and Windows-safe security hook behavior.                                                                                                                                                                                                                          |
 | 2026-05-11 | 1.1.17  | Format formatting violations in `scripts/` and `src/Project_GROOT/` to pass Ruff lint checks in CI, and ensure `test_archive_quarantine.py` passes by adding `norecursedirs = ["archive"]` to `pyproject.toml`.                                                                                                                                                                                                            |
 | 2026-05-05 | 1.1.16  | Fix(#418): restore the legacy helper exports from `scripts/analyze_completist_data.py` after the completist tooling split so the maintained script tests still collect and exercise the decomposed helper modules without changing repository behavior.                                                                                                                                                                    |

@@ -10,20 +10,25 @@ on:
         description: "Reason for running heavy tests manually"
         required: false
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   heavy-tests:
     timeout-minutes: 120
-    runs-on: d-sorg-fleet
+    runs-on: ${{ vars.RUNNER_TARGET == 'local' && 'd-sorg-fleet' || 'ubuntu-latest' }}
     steps:
       - uses: actions/checkout@v4
-      
-      # Dependencies are assumed to be pre-installed on the custom runner.
-      # But we can install any project-specific python requirements if needed.
+
+      # This job used to say dependencies were pre-installed on the custom
+      # runner. A hosted runner is a bare image, so the install below is now
+      # load-bearing rather than a convenience.
       - name: Install local requirements
         run: |
           if [ -f "requirements.txt" ]; then pip install -r requirements.txt; fi
           if [ -f "pyproject.toml" ]; then pip install -e .; fi
-          
+
       - name: Run heavy live simulations
         run: |
           # Example of running only tests marked for live simulation

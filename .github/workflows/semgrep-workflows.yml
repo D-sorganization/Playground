@@ -19,7 +19,7 @@ jobs:
   scan-workflows:
     timeout-minutes: 45
     name: Scan GitHub Actions workflows
-    runs-on: d-sorg-fleet
+    runs-on: ${{ vars.RUNNER_TARGET == 'local' && 'd-sorg-fleet' || 'ubuntu-latest' }}
     permissions:
       contents: read
     steps:
