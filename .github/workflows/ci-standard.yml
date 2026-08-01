@@ -11,28 +11,32 @@ concurrency:
 jobs:
   # ── Dispatcher: route to self-hosted if available ──────────────────────────
   pick-runner:
-    runs-on: d-sorg-fleet
+    runs-on: ${{ vars.RUNNER_TARGET == 'local' && 'd-sorg-fleet' || 'ubuntu-latest' }}
     timeout-minutes: 2
     outputs:
       runner: ${{ steps.check.outputs.runner }}
     steps:
-      - name: Check for self-hosted runner
+      - name: Select runner
         id: check
         env:
-          GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+          REPO_VISIBILITY: ${{ github.event.repository.visibility }}
+          RUNNER_TARGET: ${{ vars.RUNNER_TARGET }}
         run: |
-          ONLINE=$(gh api /orgs/${{ github.repository_owner }}/actions/runners \
-            --jq '[.runners[] | select(.status == "online") | select(.labels[].name == "d-sorg-fleet")] | length' \
-            2>/dev/null || echo "0")
-          if [[ "$ONLINE" -gt 0 ]]; then
-            mkdir -p "$(dirname "$GITHUB_OUTPUT")"
-            mkdir -p "$(dirname "$GITHUB_OUTPUT")"
-            echo "runner=d-sorg-fleet" >> "$GITHUB_OUTPUT"
-            echo "Desktop fleet runner online — routing locally"
+          mkdir -p "$(dirname "$GITHUB_OUTPUT")"
+          if [ "$REPO_VISIBILITY" != "public" ]; then
+            # Hosted runners are billed on a non-public repo, so routing is not a
+            # preference here and RUNNER_TARGET deliberately does not apply.
+            RUNNER=d-sorg-fleet
+            WHY="repository is '${REPO_VISIBILITY:-unknown}'; hosted runners are metered"
+          elif [ "$RUNNER_TARGET" = "local" ]; then
+            RUNNER=d-sorg-fleet
+            WHY="repository is public but RUNNER_TARGET=local"
           else
-            echo "runner=d-sorg-fleet" >> $GITHUB_OUTPUT
-            echo "No desktop fleet runner reported online — queueing on desktop fleet"
+            RUNNER=ubuntu-latest
+            WHY="repository is public; hosted runners are free and keep fork PRs off the fleet"
           fi
+          echo "runner=$RUNNER" >> "$GITHUB_OUTPUT"
+          echo "Routing to $RUNNER ($WHY)."
   quality-gate:
     timeout-minutes: 60
     needs: pick-runner
@@ -120,6 +124,17 @@ jobs:
         python: ["3.11"]
     steps:
       - uses: actions/checkout@v4
+      # `pip install PyQt6` ships the bindings but not the shared objects they
+      # link against. Fleet machines are desktops that already carry them;
+      # a hosted runner is headless and does not. The import failure aborts
+      # pytest during *collection*, so it exits having run nothing.
+      - name: Install Qt runtime libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libegl1 libgl1 libgles2 libdbus-1-3 libxkbcommon-x11-0 \
+            libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 \
+            libxcb-render-util0 libxcb-shape0 libxcb-xinerama0 libxcb-xkb1
       - name: Bootstrap Python venv
         run: |
           VENV_PATH="$RUNNER_TEMP/ci-venv-${GITHUB_RUN_ID}-${GITHUB_JOB}"
@@ -135,6 +150,8 @@ jobs:
           pip install --no-cache-dir -r requirements.txt numpy
           echo "$VENV_PATH/bin" >> $GITHUB_PATH
       - name: Run tests
+        env:
+          QT_QPA_PLATFORM: offscreen
         run: PYTHONPATH=.:src pytest tests/ --cov=. --cov-report=xml --cov-fail-under=60
       - uses: codecov/codecov-action@v5
         env:

@@ -13,18 +13,29 @@ on:
 jobs:
   heavy-tests:
     timeout-minutes: 120
-    runs-on: d-sorg-fleet
+    runs-on: ${{ vars.RUNNER_TARGET == 'local' && 'd-sorg-fleet' || 'ubuntu-latest' }}
     steps:
       - uses: actions/checkout@v4
-      
-      # Dependencies are assumed to be pre-installed on the custom runner.
-      # But we can install any project-specific python requirements if needed.
+
+      # This job used to assume the fleet desktops had everything preinstalled.
+      # A hosted runner is a bare image, so install what the suite needs --
+      # including the Qt shared objects PyQt6 links against but does not ship.
+      - name: Install Qt runtime libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libegl1 libgl1 libgles2 libdbus-1-3 libxkbcommon-x11-0 \
+            libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 \
+            libxcb-render-util0 libxcb-shape0 libxcb-xinerama0 libxcb-xkb1
+
       - name: Install local requirements
         run: |
           if [ -f "requirements.txt" ]; then pip install -r requirements.txt; fi
           if [ -f "pyproject.toml" ]; then pip install -e .; fi
-          
+
       - name: Run heavy live simulations
+        env:
+          QT_QPA_PLATFORM: offscreen
         run: |
           # Example of running only tests marked for live simulation
           pytest -v -m "live_simulation" --cov

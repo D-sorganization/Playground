@@ -32,28 +32,32 @@ concurrency:
 jobs:
   # ── Dispatcher: route to self-hosted if available ──────────────────────────
   pick-runner:
-    runs-on: d-sorg-fleet
+    runs-on: ${{ vars.RUNNER_TARGET == 'local' && 'd-sorg-fleet' || 'ubuntu-latest' }}
     timeout-minutes: 2
     outputs:
       runner: ${{ steps.check.outputs.runner }}
     steps:
-      - name: Check for self-hosted runner
+      - name: Select runner
         id: check
         env:
-          GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+          REPO_VISIBILITY: ${{ github.event.repository.visibility }}
+          RUNNER_TARGET: ${{ vars.RUNNER_TARGET }}
         run: |
-          ONLINE=$(gh api /orgs/${{ github.repository_owner }}/actions/runners \
-            --jq '[.runners[] | select(.status == "online") | select(.labels[].name == "d-sorg-fleet")] | length' \
-            2>/dev/null || echo "0")
-          if [[ "$ONLINE" -gt 0 ]]; then
-            mkdir -p "$(dirname "$GITHUB_OUTPUT")"
-            mkdir -p "$(dirname "$GITHUB_OUTPUT")"
-            echo "runner=d-sorg-fleet" >> "$GITHUB_OUTPUT"
-            echo "Self-hosted runner online — routing locally"
+          mkdir -p "$(dirname "$GITHUB_OUTPUT")"
+          if [ "$REPO_VISIBILITY" != "public" ]; then
+            # Hosted runners are billed on a non-public repo, so routing is not a
+            # preference here and RUNNER_TARGET deliberately does not apply.
+            RUNNER=d-sorg-fleet
+            WHY="repository is '${REPO_VISIBILITY:-unknown}'; hosted runners are metered"
+          elif [ "$RUNNER_TARGET" = "local" ]; then
+            RUNNER=d-sorg-fleet
+            WHY="repository is public but RUNNER_TARGET=local"
           else
-            echo "runner=d-sorg-fleet" >> $GITHUB_OUTPUT
-            echo "No self-hosted runner — using local self-hosted"
+            RUNNER=ubuntu-latest
+            WHY="repository is public; hosted runners are free and keep fork PRs off the fleet"
           fi
+          echo "runner=$RUNNER" >> "$GITHUB_OUTPUT"
+          echo "Routing to $RUNNER ($WHY)."
   process-comments:
     timeout-minutes: 60
     needs: pick-runner
