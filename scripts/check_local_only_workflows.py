@@ -87,7 +87,9 @@ def main() -> int:
             if "runs-on" in line:
                 for token in FLEET_TOKENS:
                     if token in line:
-                        fleet_hits.append(f"{path}:{line_number}: fleet-pinned {token!r}")
+                        fleet_hits.append(
+                            f"{path}:{line_number}: fleet-pinned {token!r}"
+                        )
 
     if is_public:
         for hit in fleet_hits:
