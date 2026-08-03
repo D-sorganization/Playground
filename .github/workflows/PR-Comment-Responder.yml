@@ -247,7 +247,7 @@ jobs:
 
           This comment will be processed by Jules-Comment-Processor on the next scheduled run."
 
-            git push
+            git push origin HEAD:${{ github.head_ref || github.ref_name }}
             echo "::notice::Comment queued for batch processing"
           else
             echo "No changes to commit"
