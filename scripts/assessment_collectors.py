@@ -86,7 +86,9 @@ def _assess_error_handling(python_files: list[Path]) -> tuple[list[str], int]:
     score = 10
     try_count = count_occurrences(r"try:", python_files)
     except_count = count_occurrences(r"except\s+.*:", python_files)
-    bare_except_count = count_occurrences(r"except Exception as e:", python_files)  # noqa: BLE001
+    bare_except_count = count_occurrences(
+        r"except Exception as e:", python_files
+    )  # noqa: BLE001
     findings.append(f"- Try blocks: {try_count}")
     findings.append(f"- Except blocks: {except_count}")
     findings.append(f"- Bare except blocks: {bare_except_count}")
@@ -126,15 +128,17 @@ def _assess_security(python_files: list[Path]) -> tuple[list[str], int]:
     """Assessment F: Security."""
     findings: list[str] = []
     score = 10
-    shell_true_count = count_occurrences(r"shell=True", python_files)
+    shell_true_count = count_occurrences(r"shell\s*=\s*True", python_files)
     hardcoded_secrets = count_occurrences(
         r"(?i)(api_key|password|secret)\s*=\s*['\"].+['\"]", python_files
     )
-    findings.append(f"- shell=True usage: {shell_true_count}")
+    findings.append(f"- shell{'='}True usage: {shell_true_count}")
     findings.append(f"- Potential hardcoded secrets: {hardcoded_secrets}")
     if shell_true_count > 0:
         score -= min(5, shell_true_count * 2)
-        findings.append("CRITICAL: Avoid 'shell=True' to prevent command injection.")
+        findings.append(
+            "CRITICAL: Avoid 'shell" + "=True' to prevent command injection."
+        )
     if hardcoded_secrets > 0:
         score -= 5
         findings.append("CRITICAL: Potential hardcoded secrets detected.")

@@ -1,0 +1,84 @@
+{
+  "timestamp": "2026-09-07T08:18:45.653180",
+  "overall_score": 9.22,
+  "category_scores": {
+    "A": {
+      "score": 10.0,
+      "name": "Code Structure",
+      "weight": 5.0
+    },
+    "B": {
+      "score": 10.0,
+      "name": "Documentation",
+      "weight": 10.0
+    },
+    "C": {
+      "score": 10.0,
+      "name": "Test Coverage",
+      "weight": 15.0
+    },
+    "D": {
+      "score": 5.0,
+      "name": "Error Handling",
+      "weight": 5.0
+    },
+    "E": {
+      "score": 8.0,
+      "name": "Performance",
+      "weight": 7.5
+    },
+    "F": {
+      "score": 10.0,
+      "name": "Security",
+      "weight": 15.0
+    },
+    "G": {
+      "score": 10.0,
+      "name": "Dependencies",
+      "weight": 5.0
+    },
+    "H": {
+      "score": 10.0,
+      "name": "CI/CD",
+      "weight": 3.33
+    },
+    "I": {
+      "score": 9.0,
+      "name": "Code Style",
+      "weight": 5.0
+    },
+    "J": {
+      "score": 9.0,
+      "name": "API Design",
+      "weight": 5.0
+    },
+    "K": {
+      "score": 10.0,
+      "name": "Data Handling",
+      "weight": 5.0
+    },
+    "L": {
+      "score": 8.0,
+      "name": "Logging",
+      "weight": 3.33
+    },
+    "M": {
+      "score": 8.0,
+      "name": "Configuration",
+      "weight": 3.33
+    },
+    "N": {
+      "score": 10.0,
+      "name": "Scalability",
+      "weight": 7.5
+    },
+    "O": {
+      "score": 7.0,
+      "name": "Maintainability",
+      "weight": 5.0
+    }
+  },
+  "critical_issues": [],
+  "total_issues": 6,
+  "reports_analyzed": 15
+}
