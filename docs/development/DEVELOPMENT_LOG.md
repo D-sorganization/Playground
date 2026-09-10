@@ -18,8 +18,18 @@ reachable from any live state and `abandoned` from `parked`.
 
 ## Active
 
-No entries yet. Create one from
-`docs/templates/DEVELOPMENT_LOG.md` when work starts.
+### DL-0001 · Adopt Mermaid C4 Architecture Map Contract 1608
+
+- **State:** in_progress
+- **Owner:** local
+- **Issue:** #1608
+- **Branch:** docs/1608-c4-architecture-map
+- **PR:** not created
+- **Paths:** `docs/architecture/C4.md`, `scripts/architecture_map_contract.py`, `tests/test_architecture_map_contract.py`, `.github/workflows/architecture-map-contract.yml`
+- **Started:** 2026-09-10
+- **Last verified:** 2026-09-10 (`316bd6a`)
+- **Summary:** Adopt maintainable Mermaid C4 architecture-map contract and automated CI verification for Playground per Repository_Management #1608.
+- **Next step:** Create canonical C4.md, scripts, and tests, run verification, and open PR.
 
 ## Shipped (Last 90 Days)
 

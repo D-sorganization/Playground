@@ -41,6 +41,8 @@ experiments without creating shared domain dependencies between them.
 For contributor-facing architecture details, project boundaries, and guidance for adding new
 experiments, see [docs/architecture/REPOSITORY_ARCHITECTURE.md](docs/architecture/REPOSITORY_ARCHITECTURE.md).
 
+- **C4 Architecture Map**: See [docs/architecture/C4.md](docs/architecture/C4.md) for system context, container boundaries, and feature mappings.
+
 ## Prerequisites
 
 - Python 3.11 or higher
