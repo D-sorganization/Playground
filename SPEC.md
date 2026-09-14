@@ -420,3 +420,4 @@ Active development with focus on Project GROOT implementation. Demos (Asteroid F
   5. VERSION: Bump the Spec Version field when making substantive changes.
      Use semver: major (structure change), minor (new features), patch (corrections).
 -->
+- 2026-09-14: Configured PYTHONPATH=.:src for workout tracker benchmark suite (#465).
