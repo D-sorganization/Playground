@@ -7,7 +7,7 @@
 | A | Code Structure | 10.0/10 | Code |
 | B | Documentation | 10.0/10 | Docs |
 | C | Test Coverage | 10.0/10 | Testing |
-| D | Error Handling | 6.0/10 | Code |
+| D | Error Handling | 5.0/10 | Code |
 | E | Performance | 8.0/10 | Perf |
 | F | Security | 10.0/10 | Security |
 | G | Dependencies | 10.0/10 | Ops |
@@ -23,7 +23,7 @@
 
 ## Grouped Scores
 
-- **Code** (25.0%): 8.00/10
+- **Code** (25.0%): 7.75/10
 - **Testing** (15.0%): 10.00/10
 - **Docs** (10.0%): 10.00/10
 - **Security** (15.0%): 10.00/10
@@ -33,7 +33,7 @@
 
 ## Weighted Average
 
-**Final Score: 9.20/10**
+**Final Score: 9.14/10**
 
 ## Top 5 Recommendations
 
