@@ -239,6 +239,11 @@ jobs:
 
           git add .jules/pending/pr_comments.json
 
+          TARGET_BRANCH=$(gh pr view ${{ steps.pr_state.outputs.pr_number }} --repo ${{ github.repository }} --json headRefName --jq .headRefName)
+          if [ -z "$TARGET_BRANCH" ]; then
+            TARGET_BRANCH="${{ github.head_ref || github.ref_name }}"
+          fi
+
           if ! git diff --staged --quiet; then
             git commit -m "chore: queue PR comment for batch processing
 
@@ -247,7 +252,7 @@ jobs:
 
           This comment will be processed by Jules-Comment-Processor on the next scheduled run."
 
-            git push origin HEAD:${{ github.head_ref || github.ref_name }}
+            git push origin HEAD:refs/heads/$TARGET_BRANCH
             echo "::notice::Comment queued for batch processing"
           else
             echo "No changes to commit"

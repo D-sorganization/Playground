@@ -11,9 +11,16 @@ logger = logging.getLogger(__name__)
 
 # Assessment definitions matched to prompt
 
+# Modules that contain the static-analysis regex patterns (and the finding
+# strings describing them); scanning them would count the patterns themselves.
+_SELF_SCANNING_MODULES = frozenset({"run_assessment.py", "assessment_collectors.py"})
+
 
 def find_python_files() -> list[Path]:
-    """Find all Python files in the repository."""
+    """Find all Python files in the repository.
+
+    Postcondition: no file named in ``_SELF_SCANNING_MODULES`` is returned.
+    """
     python_files: list[Path] = []
     for pattern in ["**/*.py"]:
         python_files.extend(Path(".").glob(pattern))
@@ -28,11 +35,12 @@ def find_python_files() -> list[Path]:
         "build",
         "dist",
     }
-    # Exclude self to avoid self-counting patterns
+    # Exclude the assessment's own pattern sources to avoid self-counting
     return [
         f
         for f in python_files
-        if not any(p in f.parts for p in excluded) and f.name != "run_assessment.py"
+        if not any(p in f.parts for p in excluded)
+        and f.name not in _SELF_SCANNING_MODULES
     ]
 
 
