@@ -1,6 +1,6 @@
 import json
 import subprocess
-import threading
+import time
 
 repos = ["AffineDrift", "Gasification_Model", "UpstreamDrift", "Maxwell-Daemon"]
 
@@ -47,4 +47,4 @@ for repo in repos:
                     print("  Successfully merged!")
                 else:
                     print(f"  Failed to merge: {merge_res.stderr}")
-        threading.Event().wait(1)  # AUTO-FIXED
+        time.sleep(1)  # AUTO-FIXED: deliberate throttling

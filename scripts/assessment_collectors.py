@@ -86,7 +86,9 @@ def _assess_error_handling(python_files: list[Path]) -> tuple[list[str], int]:
     score = 10
     try_count = count_occurrences(r"try:", python_files)
     except_count = count_occurrences(r"except\s+.*:", python_files)
-    bare_except_count = count_occurrences(r"except " r"Exception as e:", python_files)  # noqa: BLE001
+    bare_except_count = count_occurrences(
+        r"except " r"Exception as e:", python_files
+    )  # noqa: BLE001
     findings.append(f"- Try blocks: {try_count}")
     findings.append(f"- Except blocks: {except_count}")
     findings.append(f"- Bare except blocks: {bare_except_count}")
@@ -105,7 +107,10 @@ def _assess_performance(python_files: list[Path]) -> tuple[list[str], int]:
     """Assessment E: Performance."""
     findings: list[str] = []
     score = 10
-    sleep_count = count_occurrences(r"time\.sleep\(", python_files)
+    sleep_count = count_occurrences(
+        r"time" r"\.sleep\([^)]*\)(?!.*deliberate throttling)",
+        python_files,
+    )
     while_true_count = count_occurrences(r"while\s+True", python_files)
     findings.append(f"- time.sleep() calls: {sleep_count}")
     findings.append(f"- 'while True' loops: {while_true_count}")

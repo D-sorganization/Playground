@@ -13,7 +13,13 @@ logger = logging.getLogger(__name__)
 
 # Modules that contain the static-analysis regex patterns (and the finding
 # strings describing them); scanning them would count the patterns themselves.
-_SELF_SCANNING_MODULES = frozenset({"run_assessment.py", "assessment_collectors.py", "test_scripts_assessment_self_match.py"})
+_SELF_SCANNING_MODULES = frozenset(
+    {
+        "run_assessment.py",
+        "assessment_collectors.py",
+        "test_scripts_assessment_self_match.py",
+    }
+)
 
 
 def find_python_files() -> list[Path]:

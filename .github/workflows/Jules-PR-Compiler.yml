@@ -194,9 +194,9 @@ jobs:
                 print(f"    ❌ Merge conflict - skipped")
 
                   except subprocess.CalledProcessError as e:
-            failed_prs.append(pr)
-            print(f"    ❌ Failed: {e}")
-            subprocess.run(['git', 'merge', '--abort'], check=False)
+                      failed_prs.append(pr)
+                      print(f"    ❌ Failed: {e}")
+                      subprocess.run(['git', 'merge', '--abort'], check=False)
 
               if merged_prs:
                   # Push compiled branch

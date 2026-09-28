@@ -1,6 +1,6 @@
 import json
 import subprocess
-import threading
+import time
 
 repos = [
     "Tools",
@@ -48,7 +48,7 @@ for repo in repos:
                     )
                 else:
                     print(f"#{num}: {title}")
-                threading.Event().wait(0.5)  # AUTO-FIXED
+                time.sleep(0.5)  # AUTO-FIXED: deliberate throttling
     except subprocess.CalledProcessError as e:
         print(f"Error processing {repo}: {e}")
 

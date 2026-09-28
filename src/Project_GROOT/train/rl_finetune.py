@@ -43,29 +43,29 @@ def _validate_rl_config(config: dict) -> None:
     assert "train" in config, "Contract violation: config must have 'train' section"
 
     num_envs = config["env"]["num_envs"]
-    assert isinstance(num_envs, int) and num_envs > 0, (
-        f"Contract violation: env.num_envs must be a positive int, got {num_envs!r}"
-    )
+    assert (
+        isinstance(num_envs, int) and num_envs > 0
+    ), f"Contract violation: env.num_envs must be a positive int, got {num_envs!r}"
 
     num_steps = config["train"]["num_steps"]
-    assert isinstance(num_steps, int) and num_steps > 0, (
-        f"Contract violation: train.num_steps must be a positive int, got {num_steps!r}"
-    )
+    assert (
+        isinstance(num_steps, int) and num_steps > 0
+    ), f"Contract violation: train.num_steps must be a positive int, got {num_steps!r}"
 
     lr = config["train"]["learning_rate"]
-    assert isinstance(lr, (int, float)) and lr > 0, (
-        f"Contract violation: train.learning_rate must be positive, got {lr!r}"
-    )
+    assert (
+        isinstance(lr, (int, float)) and lr > 0
+    ), f"Contract violation: train.learning_rate must be positive, got {lr!r}"
 
     gamma = config["train"]["gamma"]
-    assert isinstance(gamma, (int, float)) and 0.0 < gamma <= 1.0, (
-        f"Contract violation: train.gamma must be in (0, 1], got {gamma!r}"
-    )
+    assert (
+        isinstance(gamma, (int, float)) and 0.0 < gamma <= 1.0
+    ), f"Contract violation: train.gamma must be in (0, 1], got {gamma!r}"
 
     clip_param = config["train"]["clip_param"]
-    assert isinstance(clip_param, (int, float)) and 0.0 < clip_param < 1.0, (
-        f"Contract violation: train.clip_param must be in (0, 1), got {clip_param!r}"
-    )
+    assert (
+        isinstance(clip_param, (int, float)) and 0.0 < clip_param < 1.0
+    ), f"Contract violation: train.clip_param must be in (0, 1), got {clip_param!r}"
 
 
 class SimplePPOTrainer:
