@@ -356,9 +356,9 @@ def _validate_imitation_config(config: dict) -> None:
 
     hidden_dims = config["model"].get("hidden_dims", [])
     assert len(hidden_dims) > 0, "hidden_dims must be a non-empty list"
-    assert all(
-        d > 0 for d in hidden_dims
-    ), f"hidden_dims must all be positive, got {hidden_dims}"
+    assert all(d > 0 for d in hidden_dims), (
+        f"hidden_dims must all be positive, got {hidden_dims}"
+    )
 
 
 def _build_imitation_parser() -> argparse.ArgumentParser:
