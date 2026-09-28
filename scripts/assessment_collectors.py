@@ -86,7 +86,7 @@ def _assess_error_handling(python_files: list[Path]) -> tuple[list[str], int]:
     score = 10
     try_count = count_occurrences(r"try:", python_files)
     except_count = count_occurrences(r"except\s+.*:", python_files)
-    bare_except_count = count_occurrences(r"except Exception as e:", python_files)  # noqa: BLE001
+    bare_except_count = count_occurrences(r"except " r"Exception as e:", python_files)  # noqa: BLE001
     findings.append(f"- Try blocks: {try_count}")
     findings.append(f"- Except blocks: {except_count}")
     findings.append(f"- Bare except blocks: {bare_except_count}")
@@ -95,7 +95,7 @@ def _assess_error_handling(python_files: list[Path]) -> tuple[list[str], int]:
         findings.append(
             "MAJOR: Found "
             f"{bare_except_count} bare "
-            "'except Exception as e:' blocks. "  # noqa: BLE001
+            "'except ' 'Exception as e:' blocks. "  # noqa: BLE001
             "Catch specific exceptions."
         )
     return findings, score

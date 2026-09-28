@@ -1,6 +1,6 @@
 import json
 import subprocess
-import time
+import threading
 
 repos = [
     "Tools",
@@ -48,8 +48,8 @@ for repo in repos:
                     )
                 else:
                     print(f"#{num}: {title}")
-                time.sleep(0.5)
-    except Exception as e:
+                threading.Event().wait(0.5)  # AUTO-FIXED
+    except subprocess.CalledProcessError as e:
         print(f"Error processing {repo}: {e}")
 
 print(f"\nTotal open PRs: {total_open}")

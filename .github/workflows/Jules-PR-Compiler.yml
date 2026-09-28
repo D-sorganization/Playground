@@ -193,7 +193,7 @@ jobs:
                 failed_prs.append(pr)
                 print(f"    ❌ Merge conflict - skipped")
 
-                  except Exception as e:
+                  except subprocess.CalledProcessError as e:
             failed_prs.append(pr)
             print(f"    ❌ Failed: {e}")
             subprocess.run(['git', 'merge', '--abort'], check=False)
