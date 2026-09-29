@@ -142,11 +142,17 @@ jobs:
       # ---------------------------------------------------------
       # Commit Data for Agent Context
       # ---------------------------------------------------------
+      # Action inputs are not shell-expanded, so the date is computed here;
+      # a literal "$(date ...)" branch name made git exit 128.
+      - name: Compute Assessment Date
+        id: assessment_date
+        run: echo "today=$(date +%Y-%m-%d)" >> "$GITHUB_OUTPUT"
+
       - name: Commit Assessment Data
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "docs(assessment): pre-assessment data collection"
-          branch: "automation/assessment-$(date +%Y-%m-%d)"
+          branch: "automation/assessment-${{ steps.assessment_date.outputs.today }}"
           create_branch: true
           push_options: "--force"
 
