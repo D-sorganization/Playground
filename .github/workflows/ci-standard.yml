@@ -3,6 +3,8 @@ on:
   push:
     branches: [main]
   pull_request:
+  # Merge queue (Repository_Management#1890): required checks must report on the queue's merge commit.
+  merge_group:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
