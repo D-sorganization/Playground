@@ -1,0 +1,557 @@
+{
+  "timestamp": "2026-10-06T08:01:20.697856",
+  "repository": "Playground",
+  "files_analyzed": 120,
+  "issues": [
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/scripts/mypy_fix_strategies.py",
+        "/home/runner/work/Playground/Playground/src/mypy_agent/fix_strategies.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/scripts/mypy_fix_strategies.py",
+        "/home/runner/work/Playground/Playground/src/mypy_agent/fix_strategies.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/scripts/mypy_fix_strategies.py",
+        "/home/runner/work/Playground/Playground/src/mypy_agent/fix_strategies.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/scripts/mypy_fix_strategies.py",
+        "/home/runner/work/Playground/Playground/src/mypy_agent/fix_strategies.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/scripts/mypy_fix_strategies.py",
+        "/home/runner/work/Playground/Playground/src/mypy_agent/fix_strategies.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/scripts/mypy_fix_strategies.py",
+        "/home/runner/work/Playground/Playground/src/mypy_agent/fix_strategies.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/scripts/mypy_fix_strategies.py",
+        "/home/runner/work/Playground/Playground/src/mypy_agent/fix_strategies.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/scripts/mypy_fix_strategies.py",
+        "/home/runner/work/Playground/Playground/src/mypy_agent/fix_strategies.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/scripts/mypy_fix_strategies.py",
+        "/home/runner/work/Playground/Playground/src/mypy_agent/fix_strategies.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/scripts/mypy_fix_strategies.py",
+        "/home/runner/work/Playground/Playground/src/mypy_agent/fix_strategies.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/scripts/mypy_fix_strategies.py",
+        "/home/runner/work/Playground/Playground/src/mypy_agent/fix_strategies.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/scripts/mypy_fix_strategies.py",
+        "/home/runner/work/Playground/Playground/src/mypy_agent/fix_strategies.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/scripts/mypy_fix_strategies.py",
+        "/home/runner/work/Playground/Playground/src/mypy_agent/fix_strategies.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/scripts/mypy_fix_strategies.py",
+        "/home/runner/work/Playground/Playground/src/mypy_agent/fix_strategies.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/scripts/mypy_fix_strategies.py",
+        "/home/runner/work/Playground/Playground/src/mypy_agent/fix_strategies.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/scripts/mypy_fix_strategies.py",
+        "/home/runner/work/Playground/Playground/src/mypy_agent/fix_strategies.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/scripts/mypy_fix_strategies.py",
+        "/home/runner/work/Playground/Playground/src/mypy_agent/fix_strategies.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/scripts/mypy_fix_strategies.py",
+        "/home/runner/work/Playground/Playground/src/mypy_agent/fix_strategies.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/scripts/mypy_fix_strategies.py",
+        "/home/runner/work/Playground/Playground/src/mypy_agent/fix_strategies.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/scripts/mypy_fix_strategies.py",
+        "/home/runner/work/Playground/Playground/src/mypy_agent/fix_strategies.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/scripts/mypy_fix_strategies.py",
+        "/home/runner/work/Playground/Playground/src/mypy_agent/fix_strategies.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/scripts/mypy_fix_strategies.py",
+        "/home/runner/work/Playground/Playground/src/mypy_agent/fix_strategies.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/scripts/mypy_fix_strategies.py",
+        "/home/runner/work/Playground/Playground/src/mypy_agent/fix_strategies.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/scripts/mypy_fix_strategies.py",
+        "/home/runner/work/Playground/Playground/src/mypy_agent/fix_strategies.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/scripts/mypy_fix_strategies.py",
+        "/home/runner/work/Playground/Playground/src/mypy_agent/fix_strategies.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/scripts/mypy_fix_strategies.py",
+        "/home/runner/work/Playground/Playground/src/mypy_agent/fix_strategies.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/scripts/mypy_fix_strategies.py",
+        "/home/runner/work/Playground/Playground/src/mypy_agent/fix_strategies.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/scripts/mypy_fix_strategies.py",
+        "/home/runner/work/Playground/Playground/src/mypy_agent/fix_strategies.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/scripts/mypy_fix_strategies.py",
+        "/home/runner/work/Playground/Playground/src/mypy_agent/fix_strategies.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/scripts/mypy_fix_strategies.py",
+        "/home/runner/work/Playground/Playground/src/mypy_agent/fix_strategies.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/scripts/mypy_fix_strategies.py",
+        "/home/runner/work/Playground/Playground/src/mypy_agent/fix_strategies.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/scripts/mypy_fix_strategies.py",
+        "/home/runner/work/Playground/Playground/src/mypy_agent/fix_strategies.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/scripts/mypy_fix_strategies.py",
+        "/home/runner/work/Playground/Playground/src/mypy_agent/fix_strategies.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/scripts/mypy_fix_strategies.py",
+        "/home/runner/work/Playground/Playground/src/mypy_agent/fix_strategies.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/scripts/mypy_fix_strategies.py",
+        "/home/runner/work/Playground/Playground/src/mypy_agent/fix_strategies.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/scripts/mypy_fix_strategies.py",
+        "/home/runner/work/Playground/Playground/src/mypy_agent/fix_strategies.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/scripts/mypy_fix_strategies.py",
+        "/home/runner/work/Playground/Playground/src/mypy_agent/fix_strategies.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/scripts/mypy_fix_strategies.py",
+        "/home/runner/work/Playground/Playground/src/mypy_agent/fix_strategies.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/scripts/mypy_fix_strategies.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/scripts/mypy_fix_strategies.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/scripts/mypy_fix_strategies.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/scripts/mypy_fix_strategies.py",
+        "/home/runner/work/Playground/Playground/src/mypy_agent/fix_strategies.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 6 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/scripts/assessment_collectors.py",
+        "/home/runner/work/Playground/Playground/scripts/assessment_report.py",
+        "/home/runner/work/Playground/Playground/scripts/assessment_utils.py",
+        "/home/runner/work/Playground/Playground/scripts/create_issues_from_assessment.py",
+        "/home/runner/work/Playground/Playground/scripts/generate_assessment_summary.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/scripts/mypy_agent_types.py",
+        "/home/runner/work/Playground/Playground/src/mypy_agent/types.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/scripts/mypy_agent_types.py",
+        "/home/runner/work/Playground/Playground/src/mypy_agent/types.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/scripts/mypy_agent_types.py",
+        "/home/runner/work/Playground/Playground/src/mypy_agent/types.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/scripts/mypy_agent_types.py",
+        "/home/runner/work/Playground/Playground/src/mypy_agent/types.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/scripts/mypy_agent_types.py",
+        "/home/runner/work/Playground/Playground/src/mypy_agent/types.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/scripts/mypy_agent_types.py",
+        "/home/runner/work/Playground/Playground/src/mypy_agent/types.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/scripts/mypy_agent_types.py",
+        "/home/runner/work/Playground/Playground/src/mypy_agent/types.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    }
+  ]
+}

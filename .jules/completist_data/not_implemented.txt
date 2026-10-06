@@ -1,0 +1,14 @@
+./scripts/completist_analyzers.py:125:    criticals are stub/NotImplementedError findings outside test files,
+./scripts/completist_utils.py:108:        "NotImplementedError": 4,
+./tests/test_Project_GROOT_train_rl_finetune.py:101:    """SimplePPOTrainer.train() raises NotImplementedError (scaffold guard)."""
+./tests/test_Project_GROOT_train_rl_finetune.py:110:    with pytest.raises(NotImplementedError, match="not yet implemented"):
+./src/Project_GROOT/train/rl_finetune.py:121:            NotImplementedError: Always raised until Isaac Lab is integrated.
+./src/Project_GROOT/train/rl_finetune.py:123:        raise NotImplementedError(
+./src/Project_GROOT/tools/pose_extractors.py:57:        raise NotImplementedError
+./src/Project_GROOT/tools/pose_extractors.py:61:        raise NotImplementedError
+./src/Project_GROOT/tools/pose_extractors.py:164:        raise NotImplementedError("MMPose backend coming soon")
+./src/Project_GROOT/tools/pose_extractors.py:167:        raise NotImplementedError
+./src/Project_GROOT/tools/club_track.py:169:        raise NotImplementedError("Optical flow tracking coming soon")
+./src/Project_GROOT/eval/rollout_eval.py:77:            NotImplementedError: Until Isaac Lab integration is complete.
+./src/Project_GROOT/eval/rollout_eval.py:97:            NotImplementedError: Always raised until Isaac Lab is integrated.
+./src/Project_GROOT/eval/rollout_eval.py:99:        raise NotImplementedError(
