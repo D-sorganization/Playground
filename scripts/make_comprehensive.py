@@ -35,7 +35,7 @@ GROUPS = {
 scores = {}
 findings = []
 
-for file in Path("docs/assessments").glob("Assessment_*_CATEGORY.md"):
+for file in Path("docs/assessments").glob("Assessment_*_Category.md"):
     if file.name.count("_") < 2 and "CICD" not in file.name:
         continue
     if "Results" in file.name:
