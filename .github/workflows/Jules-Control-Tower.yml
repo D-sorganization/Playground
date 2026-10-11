@@ -51,6 +51,7 @@ permissions:
 jobs:
   # ── Dispatcher: route to self-hosted if available ──────────────────────────
   pick-runner:
+    if: (!github.event.pull_request || github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ${{ vars.RUNNER_TARGET == 'local' && 'd-sorg-fleet' || 'ubuntu-latest' }}
     timeout-minutes: 2
     outputs:
@@ -77,18 +78,18 @@ jobs:
           fi
           echo "runner=$RUNNER" >> "$GITHUB_OUTPUT"
           echo "Routing to $RUNNER ($WHY)."
-  triage:
-    timeout-minutes: 30
+  # The iteration-limit check reads the failed run's head branch, so it runs
+  # only for same-repository runs (RM#1989); fork runs skip it and triage.
+  check-limits:
+    timeout-minutes: 10
     needs: pick-runner
+    if: github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'failure' && github.event.workflow_run.head_repository.full_name == github.repository && (!github.event.pull_request || github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ${{ needs.pick-runner.outputs.runner }}
-    # Removed global actor check to allow scheduled runs even if file modified by bot
     outputs:
-      target: ${{ steps.decide.outputs.target }}
+      exceeded: ${{ steps.check-limits.outputs.exceeded }}
     steps:
-      # SAFEGUARD: Check if we've exceeded max repair iterations in the time window
       - name: Check Iteration Limits
         id: check-limits
-        if: github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'failure'
         env:
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
         run: |
@@ -110,10 +111,20 @@ jobs:
           else
             echo "exceeded=false" >> $GITHUB_OUTPUT
           fi
-
+  triage:
+    timeout-minutes: 30
+    needs: [pick-runner, check-limits]
+    if:
+      ${{ !cancelled() && needs.pick-runner.result == 'success' && (!github.event.pull_request || github.event.pull_request.head.repo.full_name == github.repository) &&
+      (needs.check-limits.result == 'skipped' || needs.check-limits.result == 'success') }}
+    runs-on: ${{ needs.pick-runner.outputs.runner }}
+    # Removed global actor check to allow scheduled runs even if file modified by bot
+    outputs:
+      target: ${{ steps.decide.outputs.target }}
+    steps:
       - name: Analyze Event Context
         id: decide
-        if: steps.check-limits.outcome == 'skipped' || steps.check-limits.outputs.exceeded != 'true'
+        if: needs.check-limits.result == 'skipped' || needs.check-limits.outputs.exceeded != 'true'
         uses: actions/github-script@v7
         with:
           script: |
@@ -232,7 +243,9 @@ jobs:
 
   call-repair:
     needs: triage
-    if: needs.triage.outputs.target == 'auto-repair'
+    if:
+      github.event.workflow_run.head_repository.full_name == github.repository && (!github.event.pull_request || github.event.pull_request.head.repo.full_name == github.repository) &&
+      (needs.triage.outputs.target == 'auto-repair')
     uses: ./.github/workflows/Jules-Auto-Repair.yml
     with:
       run_id: ${{ github.event.workflow_run.id }}
@@ -241,7 +254,9 @@ jobs:
 
   call-hotfix-creator:
     needs: triage
-    if: needs.triage.outputs.target == 'hotfix-creator'
+    if:
+      github.event.workflow_run.head_repository.full_name == github.repository && (!github.event.pull_request || github.event.pull_request.head.repo.full_name == github.repository) &&
+      (needs.triage.outputs.target == 'hotfix-creator')
     uses: ./.github/workflows/Jules-Hotfix-Creator.yml
     with:
       run_id: ${{ github.event.workflow_run.id }}
@@ -250,66 +265,66 @@ jobs:
 
   call-scribe:
     needs: triage
-    if: needs.triage.outputs.target == 'doc-scribe'
+    if: (!github.event.pull_request || github.event.pull_request.head.repo.full_name == github.repository) && (needs.triage.outputs.target == 'doc-scribe')
     uses: ./.github/workflows/Jules-Documentation-Scribe.yml
     secrets: inherit
 
   call-tests:
     needs: triage
-    if: needs.triage.outputs.target == 'test-generator'
+    if: (!github.event.pull_request || github.event.pull_request.head.repo.full_name == github.repository) && (needs.triage.outputs.target == 'test-generator')
     uses: ./.github/workflows/Jules-Test-Generator.yml
     secrets: inherit
 
   call-auto-refactor:
     needs: triage
-    if: needs.triage.outputs.target == 'auto-refactor'
+    if: (!github.event.pull_request || github.event.pull_request.head.repo.full_name == github.repository) && (needs.triage.outputs.target == 'auto-refactor')
     uses: ./.github/workflows/Jules-Auto-Refactor.yml
     secrets: inherit
 
   call-auto-rebase:
     needs: triage
-    if: needs.triage.outputs.target == 'auto-rebase'
+    if: (!github.event.pull_request || github.event.pull_request.head.repo.full_name == github.repository) && (needs.triage.outputs.target == 'auto-rebase')
     uses: ./.github/workflows/Jules-Auto-Rebase.yml
     secrets: inherit
 
   call-archivist:
     needs: triage
-    if: needs.triage.outputs.target == 'archivist'
+    if: (!github.event.pull_request || github.event.pull_request.head.repo.full_name == github.repository) && (needs.triage.outputs.target == 'archivist')
     uses: ./.github/workflows/Jules-Archivist.yml
     secrets: inherit
 
   call-sentinel:
     needs: triage
-    if: needs.triage.outputs.target == 'sentinel'
+    if: (!github.event.pull_request || github.event.pull_request.head.repo.full_name == github.repository) && (needs.triage.outputs.target == 'sentinel')
     uses: ./.github/workflows/Jules-Sentinel.yml
     secrets: inherit
 
   call-code-quality-reviewer:
     needs: triage
-    if: needs.triage.outputs.target == 'code-quality-reviewer'
+    if: (!github.event.pull_request || github.event.pull_request.head.repo.full_name == github.repository) && (needs.triage.outputs.target == 'code-quality-reviewer')
     uses: ./.github/workflows/Jules-Code-Quality-Reviewer.yml
     secrets: inherit
 
   call-assessment-generator:
     needs: triage
-    if: needs.triage.outputs.target == 'assessment-generator'
+    if: (!github.event.pull_request || github.event.pull_request.head.repo.full_name == github.repository) && (needs.triage.outputs.target == 'assessment-generator')
     uses: ./.github/workflows/Jules-Assessment-Generator.yml
     secrets: inherit
 
   call-issue-resolver:
     needs: triage
-    if: needs.triage.outputs.target == 'issue-resolver'
+    if: (!github.event.pull_request || github.event.pull_request.head.repo.full_name == github.repository) && (needs.triage.outputs.target == 'issue-resolver')
     uses: ./.github/workflows/Jules-Issue-Resolver.yml
     secrets: inherit
 
   call-completist:
     needs: triage
-    if: needs.triage.outputs.target == 'completist'
+    if: (!github.event.pull_request || github.event.pull_request.head.repo.full_name == github.repository) && (needs.triage.outputs.target == 'completist')
     uses: ./.github/workflows/Jules-Completist.yml
     secrets: inherit
 
   call-pr-compiler:
     needs: triage
-    if: needs.triage.outputs.target == 'pr-compiler'
+    if: (!github.event.pull_request || github.event.pull_request.head.repo.full_name == github.repository) && (needs.triage.outputs.target == 'pr-compiler')
     uses: ./.github/workflows/Jules-PR-Compiler.yml
     secrets: inherit
