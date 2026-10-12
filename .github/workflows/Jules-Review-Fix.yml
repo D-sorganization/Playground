@@ -10,6 +10,7 @@ concurrency:
 jobs:
   # ── Dispatcher: route to self-hosted if available ──────────────────────────
   pick-runner:
+    if: (!github.event.pull_request || github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ${{ vars.RUNNER_TARGET == 'local' && 'd-sorg-fleet' || 'ubuntu-latest' }}
     timeout-minutes: 2
     outputs:
@@ -43,7 +44,7 @@ jobs:
     permissions:
       pull-requests: read
       contents: write
-    if: github.event.review.user.login != 'jules-bot'
+    if: (!github.event.pull_request || github.event.pull_request.head.repo.full_name == github.repository) && (github.event.review.user.login != 'jules-bot')
 
     steps:
       - name: Validate Reviewer Permission

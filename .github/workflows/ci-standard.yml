@@ -13,6 +13,7 @@ concurrency:
 jobs:
   # ── Dispatcher: route to self-hosted if available ──────────────────────────
   pick-runner:
+    if: (!github.event.pull_request || github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ${{ vars.RUNNER_TARGET == 'local' && 'd-sorg-fleet' || 'ubuntu-latest' }}
     timeout-minutes: 2
     outputs:
@@ -42,6 +43,7 @@ jobs:
   lint:
     timeout-minutes: 60
     needs: pick-runner
+    if: (!github.event.pull_request || github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ${{ needs.pick-runner.outputs.runner }}
     steps:
       - uses: actions/checkout@v4
@@ -119,6 +121,7 @@ jobs:
   tests:
     timeout-minutes: 60
     needs: pick-runner
+    if: (!github.event.pull_request || github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ${{ needs.pick-runner.outputs.runner }}
     strategy:
       fail-fast: false
@@ -153,6 +156,7 @@ jobs:
   javascript-tests:
     timeout-minutes: 30
     needs: pick-runner
+    if: (!github.event.pull_request || github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ${{ needs.pick-runner.outputs.runner }}
     steps:
       - uses: actions/checkout@v4
@@ -175,7 +179,7 @@ jobs:
     timeout-minutes: 30
     needs: pick-runner
     runs-on: ${{ needs.pick-runner.outputs.runner }}
-    if: false
+    if: (!github.event.pull_request || github.event.pull_request.head.repo.full_name == github.repository) && (false)
     continue-on-error: true
     steps:
       - uses: actions/checkout@v4
@@ -189,6 +193,7 @@ jobs:
   arduino-build:
     timeout-minutes: 60
     needs: pick-runner
+    if: (!github.event.pull_request || github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ${{ needs.pick-runner.outputs.runner }}
     steps:
       - uses: actions/checkout@v4
@@ -212,6 +217,7 @@ jobs:
     timeout-minutes: 30
     name: Reject hosted runner routing
     needs: pick-runner
+    if: (!github.event.pull_request || github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ${{ needs.pick-runner.outputs.runner }}
     steps:
       - uses: actions/checkout@v4
@@ -232,7 +238,7 @@ jobs:
   # job, and GitHub treats a skipped required check as passing.
   quality-gate:
     needs: [pick-runner, lint, tests]
-    if: always()
+    if: (!github.event.pull_request || github.event.pull_request.head.repo.full_name == github.repository) && (always())
     runs-on: ${{ needs.pick-runner.outputs.runner }}
     timeout-minutes: 5
     steps:

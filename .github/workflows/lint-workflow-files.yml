@@ -3,7 +3,7 @@ name: Lint Workflow Files
 on:
   pull_request:
     paths:
-      - '.github/workflows/**'
+      - ".github/workflows/**"
 
 permissions:
   contents: read
@@ -15,6 +15,7 @@ concurrency:
 
 jobs:
   lint:
+    if: (!github.event.pull_request || github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ${{ vars.RUNNER_TARGET == 'local' && 'd-sorg-fleet' || 'ubuntu-latest' }}
     timeout-minutes: 5
     steps:

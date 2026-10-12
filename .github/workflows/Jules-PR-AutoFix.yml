@@ -80,15 +80,32 @@ jobs:
           fi
           echo "runner=$RUNNER" >> "$GITHUB_OUTPUT"
           echo "Routing to $RUNNER ($WHY)."
-  iterative-fix:
+  # Reads the failed run's head branch; same-repository runs only (RM#1989).
+  workflow-run-branch:
     needs: pick-runner
+    if: github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'failure' && github.event.workflow_run.head_repository.full_name == github.repository
+    runs-on: ${{ needs.pick-runner.outputs.runner }}
+    timeout-minutes: 2
+    outputs:
+      branch: ${{ steps.read.outputs.branch }}
+    steps:
+      - name: Read the failed run's branch
+        id: read
+        env:
+          RUN_BRANCH: ${{ github.event.workflow_run.head_branch }}
+        run: echo "branch=$RUN_BRANCH" >> "$GITHUB_OUTPUT"
+
+  iterative-fix:
+    needs: [pick-runner, workflow-run-branch]
     name: Fix and Verify CI (Iterative)
     runs-on: ${{ needs.pick-runner.outputs.runner }}
     timeout-minutes: 30
     # Only run on failures (not success) for workflow_run events
     if: |
+      !cancelled() && needs.pick-runner.result == 'success' && (
       github.event_name == 'workflow_dispatch' ||
-      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'failure')
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'failure' &&
+      needs.workflow-run-branch.result == 'success'))
 
     outputs:
       final_status: ${{ steps.final-status.outputs.status }}
@@ -103,7 +120,7 @@ jobs:
           if [ -n "${{ github.event.inputs.branch }}" ]; then
             BRANCH="${{ github.event.inputs.branch }}"
           else
-            BRANCH="${{ github.event.workflow_run.head_branch }}"
+            BRANCH="${{ needs.workflow-run-branch.outputs.branch }}"
           fi
 
           echo "Target branch: $BRANCH"
