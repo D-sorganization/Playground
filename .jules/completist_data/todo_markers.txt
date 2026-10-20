@@ -1,0 +1,3 @@
+./scripts/completist_analyzers.py:30:    fixme_markers = ["FIX" + "ME", "XXX", "HACK", "TEMP"]
+./scripts/setup_hooks.py:109:  - quality-check (no TODOs/FIXMEs)
+./scripts/pragmatic_programmer_review.py:219:                "recommendation": "Review TODOs",
