@@ -1,37 +1,59 @@
-from collections.abc import Callable
-from functools import wraps
-from typing import ParamSpec, TypeVar
+"""Design by Contract (DbC) framework for Repository_Management.
 
-P = ParamSpec("P")
-R = TypeVar("R")
+Provides ``require()`` and ``ensure()`` helpers that raise descriptive
+``ContractViolationError`` exceptions when preconditions or postconditions
+are not met.  Intended for use at the top of public functions to make
+expectations explicit and fail fast.
 
+Usage::
 
-def require(
-    condition: Callable[P, bool], message: str = "Precondition failed"
-) -> Callable[[Callable[P, R]], Callable[P, R]]:
-    def decorator(func: Callable[P, R]) -> Callable[P, R]:
-        @wraps(func)
-        def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
-            if not condition(*args, **kwargs):
-                raise ValueError(message)
-            return func(*args, **kwargs)
+    from src.contracts import require, ensure
 
-        return wrapper
+    def divide(a: float, b: float) -> float:
+        require(b != 0, "divisor must be non-zero")
+        result = a / b
+        ensure(isinstance(result, float), "result must be a float")
+        return result
+"""
 
-    return decorator
+from __future__ import annotations
 
 
-def ensure(
-    condition: Callable[[R], bool], message: str = "Postcondition failed"
-) -> Callable[[Callable[P, R]], Callable[P, R]]:
-    def decorator(func: Callable[P, R]) -> Callable[P, R]:
-        @wraps(func)
-        def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
-            result = func(*args, **kwargs)
-            if not condition(result):
-                raise RuntimeError(message)
-            return result
+class ContractViolationError(Exception):
+    """Raised when a DbC precondition or postcondition is violated."""
 
-        return wrapper
 
-    return decorator
+class PreconditionError(ContractViolationError):
+    """Raised when a precondition (``require``) is violated."""
+
+
+class PostconditionError(ContractViolationError):
+    """Raised when a postcondition (``ensure``) is violated."""
+
+
+def require(condition: bool, message: str = "Precondition violated") -> None:
+    """Assert a precondition before executing a function body.
+
+    Args:
+        condition: Boolean expression that must be ``True``.
+        message: Human-readable description of the expectation.
+
+    Raises:
+        PreconditionError: If *condition* is falsy.
+    """
+    if not condition:
+        raise PreconditionError(message)
+
+
+def ensure(condition: bool, message: str = "Postcondition violated") -> None:
+    """Assert a postcondition after computing a result.
+
+    Args:
+        condition: Boolean expression that must be ``True``.
+        message: Human-readable description of the guarantee.
+
+    Raises:
+        PostconditionError: If *condition* is falsy.
+    """
+    if not condition:
+        raise PostconditionError(message)
