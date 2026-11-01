@@ -30,6 +30,15 @@ jobs:
           if [ -f "pyproject.toml" ]; then pip install -e .; fi
 
       - name: Run heavy live simulations
+        # No coverage gate here: the repo-wide fail_under applies to the main
+        # suite, not this marker subset (#504). Exit 5 means no test carries
+        # the live_simulation marker yet; any other failure still fails.
         run: |
-          # Example of running only tests marked for live simulation
-          pytest -v -m "live_simulation" --cov
+          set +e
+          pytest -v -m "live_simulation"
+          rc=$?
+          if [ "$rc" -eq 5 ]; then
+            echo "::notice::No live_simulation tests selected"
+            rc=0
+          fi
+          exit $rc
