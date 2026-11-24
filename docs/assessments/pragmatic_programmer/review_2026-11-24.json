@@ -1,0 +1,558 @@
+{
+  "timestamp": "2026-11-24T08:01:12.984827",
+  "repository": "Playground",
+  "files_analyzed": 132,
+  "issues": [
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/tests/test_Project_GROOT_train_imitation_train.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/tests/test_Project_GROOT_train_imitation_train.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/tests/test_Project_GROOT_train_imitation_train.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/tests/test_Project_GROOT_train_imitation_train.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/tests/test_Project_GROOT_train_imitation_train.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 4 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_app.py",
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_controls_panel.py",
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_main_window.py",
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_metrics_panel.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 4 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_app.py",
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_controls_panel.py",
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_main_window.py",
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_metrics_panel.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 4 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_app.py",
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_controls_panel.py",
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_main_window.py",
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_metrics_panel.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw.py",
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw_helpers.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw.py",
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw_helpers.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw.py",
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw_helpers.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw.py",
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw_helpers.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw.py",
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw_helpers.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw.py",
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw_helpers.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw.py",
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw_helpers.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw.py",
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw_helpers.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw.py",
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw_helpers.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw.py",
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw_helpers.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw.py",
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw_helpers.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw.py",
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw_helpers.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw.py",
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw_helpers.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw.py",
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw_helpers.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw.py",
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw_helpers.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw.py",
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw_helpers.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw.py",
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw_helpers.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw.py",
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw_helpers.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw.py",
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw_helpers.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw.py",
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw_helpers.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw.py",
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw_helpers.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw.py",
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw_helpers.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw.py",
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw_helpers.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw.py",
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw_helpers.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw.py",
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw_helpers.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw.py",
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw_helpers.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw.py",
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw_helpers.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw.py",
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw_helpers.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw.py",
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw_helpers.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw.py",
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw_helpers.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw.py",
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw_helpers.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw.py",
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw_helpers.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw.py",
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw_helpers.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw.py",
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw_helpers.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw.py",
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw_helpers.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw.py",
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw_helpers.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw.py",
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw_helpers.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw.py",
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw_helpers.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw.py",
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw_helpers.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw.py",
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw_helpers.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw.py",
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw_helpers.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    },
+    {
+      "principle": "DRY",
+      "severity": "MAJOR",
+      "title": "Duplicate code block",
+      "description": "Found in 2 locations",
+      "files": [
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw.py",
+        "/home/runner/work/Playground/Playground/tests/test_asteroid_jumper_draw_helpers.py"
+      ],
+      "recommendation": "Refactor into shared utility"
+    }
+  ]
+}
